@@ -200,9 +200,6 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="hidden w-[100px] sm:table-cell">
-                    <span className="sr-only">Image</span>
-                  </TableHead>
                   <TableHead>Visitor</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="hidden md:table-cell">
@@ -217,15 +214,6 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
               <TableBody>
                 {visitors.map(visitor => (
                   <TableRow key={visitor.id}>
-                    <TableCell className="hidden sm:table-cell">
-                      <Image
-                        alt="Visitor image"
-                        className="aspect-square rounded-md object-cover"
-                        height="64"
-                        src={visitor.selfieUrl}
-                        width="64"
-                      />
-                    </TableCell>
                     <TableCell className="font-medium">
                         <div>{visitor.name}</div>
                         <div className="text-sm text-muted-foreground">{visitor.mobile}</div>

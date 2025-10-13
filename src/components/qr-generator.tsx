@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
@@ -50,10 +51,10 @@ export function QrCodeGenerator() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Main Location</label>
+          <label className="text-sm font-medium">Location</label>
           <Select onValueChange={handleMainLocationChange} value={mainLocationId ?? undefined}>
             <SelectTrigger>
-              <SelectValue placeholder="Select main location" />
+              <SelectValue placeholder="Select location" />
             </SelectTrigger>
             <SelectContent>
               {locations.map((location) => (
@@ -64,7 +65,7 @@ export function QrCodeGenerator() {
             </SelectContent>
           </Select>
         </div>
-        {selectedMainLocation && selectedMainLocation.subLocations.length > 0 && (
+        {selectedMainLocation && selectedMainLocation.id === 'corporate-office' && selectedMainLocation.subLocations.length > 0 && (
             <div className="space-y-2">
             <label className="text-sm font-medium">Sub Location</label>
             <Select

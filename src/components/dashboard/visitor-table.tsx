@@ -10,6 +10,7 @@ import {
   Eye,
 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
+import { utils, writeFile } from "xlsx";
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -65,6 +66,7 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
     const { toast } = useToast()
     const [visitorList, setVisitorList] = React.useState(visitors)
     const [selectedVisitor, setSelectedVisitor] = React.useState<Visitor | null>(null);
+    const [activeTab, setActiveTab] = React.useState("all");
 
     React.useEffect(() => {
         setVisitorList(visitors);
@@ -106,9 +108,40 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
         setVisitorList(currentVisitors => [newVisitor, ...currentVisitors]);
     }
 
+    const handleExport = () => {
+        let dataToExport = visitorList;
+        if (activeTab === "checked-in") {
+            dataToExport = visitorList.filter(v => v.status === "Checked-in");
+        } else if (activeTab === "checked-out") {
+            dataToExport = visitorList.filter(v => v.status === "Checked-out");
+        }
+        
+        const formattedData = dataToExport.map(v => ({
+            "Name": v.name,
+            "Mobile": v.mobile,
+            "Email": v.email || 'N/A',
+            "Host Name": v.hostName,
+            "Host Department": v.hostDepartment,
+            "Reason For Visit": v.reasonForVisit,
+            "Location": `${v.location.main}${v.location.sub ? ` - ${v.location.sub}` : ''}`,
+            "Status": v.status,
+            "Check-in Time": format(v.checkInTime, "yyyy-MM-dd HH:mm:ss"),
+            "Check-out Time": v.checkOutTime ? format(v.checkOutTime, "yyyy-MM-dd HH:mm:ss") : 'N/A',
+        }));
+
+        const worksheet = utils.json_to_sheet(formattedData);
+        const workbook = utils.book_new();
+        utils.book_append_sheet(workbook, worksheet, "Visitors");
+        writeFile(workbook, `Visitors_${activeTab}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+        toast({
+            title: "Export Successful",
+            description: "The visitor list has been exported to an Excel file."
+        });
+    }
+
   return (
     <>
-    <Tabs defaultValue="all">
+    <Tabs defaultValue="all" onValueChange={setActiveTab}>
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
@@ -134,7 +167,7 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
               <DropdownMenuCheckboxItem>Department</DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button size="sm" variant="outline" className="h-8 gap-1">
+          <Button size="sm" variant="outline" className="h-8 gap-1" onClick={handleExport}>
             <File className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Export
@@ -296,5 +329,3 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
         </Card>
     )
 }
-
-    

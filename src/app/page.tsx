@@ -12,7 +12,7 @@ export default function Home() {
         <div className="container flex items-center justify-between h-16 px-4 mx-auto">
           <div className="flex items-center gap-2">
             <Building className="w-8 h-8 text-primary" />
-            <h1 className="text-xl font-bold text-foreground">VisiTrack Pro</h1>
+            <h1 className="text-xl font-bold text-foreground">viitor tarck</h1>
           </div>
           <Button asChild>
             <Link href="/login">
@@ -27,7 +27,7 @@ export default function Home() {
           <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
             <Logo />
             <h2 className="mt-6 text-3xl font-extrabold tracking-tight sm:text-4xl font-headline">
-              Welcome to VisiTrack Pro
+              Welcome to viitor tarck
             </h2>
             <p className="max-w-2xl mt-4 text-lg text-muted-foreground">
               The seamless visitor management solution. Please select your location to generate a check-in QR code.
@@ -47,7 +47,7 @@ export default function Home() {
         </div>
       </main>
       <footer className="py-4 text-center text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} VisiTrack Pro. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} viitor tarck. All rights reserved.</p>
       </footer>
     </div>
   );

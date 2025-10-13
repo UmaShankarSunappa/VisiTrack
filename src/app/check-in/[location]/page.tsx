@@ -19,16 +19,19 @@ export default function CheckInPage({ params }: CheckInPageProps) {
   const mainLocation = locations.find(l => params.location.startsWith(l.id));
 
   if (mainLocation) {
+    // The sub-location ID is whatever is left after the main location ID and the hyphen.
     const subLocId = params.location.substring(mainLocation.id.length + 1);
+    
     if (subLocId && subLocId !== 'none') {
       const subLocation = mainLocation.subLocations.find(s => s.id === subLocId);
       if (subLocation) {
-        locationName = `${mainLocation.name}-${subLocation.name}`;
+        locationName = `${mainLocation.name} - ${subLocation.name}`;
       }
     } else {
       locationName = mainLocation.name;
     }
   }
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -36,7 +39,7 @@ export default function CheckInPage({ params }: CheckInPageProps) {
         <div className="container mx-auto px-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
             <Building className="w-8 h-8 text-primary" />
-            <h1 className="text-xl font-bold">VisiTrack Pro</h1>
+            <h1 className="text-xl font-bold">viitor tarck</h1>
           </Link>
         </div>
       </header>

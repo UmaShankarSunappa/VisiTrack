@@ -167,7 +167,10 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                   <TableHead className="py-2 px-4 whitespace-nowrap">Mobile</TableHead>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Status</TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
-                    Host
+                    Host Name
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
+                    Department
                   </TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                     Check-in Time
@@ -193,7 +196,10 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
-                      {visitor.hostName} ({visitor.hostDepartment})
+                      {visitor.hostName}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
+                      {visitor.hostDepartment}
                     </TableCell>
                     <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                       {format(visitor.checkInTime, "PPpp")}

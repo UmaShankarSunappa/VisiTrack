@@ -22,11 +22,29 @@ import type { Visitor } from "@/lib/types";
 
 export default function DashboardPage() {
     const [date, setDate] = React.useState<Date | undefined>(new Date());
-    const [allVisitors] = React.useState<Visitor[]>(mockVisitors);
+    const [allVisitors, setAllVisitors] = React.useState<Visitor[]>([]);
     const [filteredVisitors, setFilteredVisitors] = React.useState<Visitor[]>([]);
     const [locationName, setLocationName] = React.useState<string | null>(null);
 
-     React.useEffect(() => {
+    React.useEffect(() => {
+        // On component mount, load visitors from localStorage or use initial mock data
+        let visitors: Visitor[] = [];
+        const storedVisitors = localStorage.getItem('visitors');
+        if (storedVisitors) {
+            // Must re-serialize dates
+            visitors = JSON.parse(storedVisitors).map((v: Visitor) => ({
+                ...v,
+                checkInTime: new Date(v.checkInTime),
+                checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+            }));
+        } else {
+           visitors = mockVisitors;
+           // And save it for the first time
+           localStorage.setItem('visitors', JSON.stringify(visitors));
+        }
+        setAllVisitors(visitors);
+        
+        // Also get receptionist location
         if (typeof window !== "undefined") {
             const storedLocation = localStorage.getItem('receptionistLocation');
             setLocationName(storedLocation);
@@ -84,3 +102,5 @@ export default function DashboardPage() {
         </>
     )
 }
+
+    

@@ -25,6 +25,8 @@ export type Visitor = {
   status: 'Checked-in' | 'Checked-out';
   location: {
     main: string;
-    sub: string;
+    sub?: string;
   }
 };
+
+    

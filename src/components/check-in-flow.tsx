@@ -5,7 +5,7 @@ import { useState, useTransition, useRef, useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { departments } from "@/lib/data";
+import { departments, mockVisitors } from "@/lib/data";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, CheckCircle, LogOut } from "lucide-react";
+import type { Visitor } from "@/lib/types";
 
 const step1Schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -424,6 +425,40 @@ function Step4({ formData, locationName, onReset }: { formData: FormData; locati
   const [checkedOut, setCheckedOut] = useState(false);
   const { toast } = useToast();
 
+   useEffect(() => {
+    // This effect runs once when the component mounts.
+    const [main, sub] = locationName.split(' - ');
+    const newVisitor: Visitor = {
+      id: new Date().toISOString(), // Simple unique ID
+      ...formData,
+      selfieUrl: formData.selfie,
+      checkInTime: new Date(),
+      status: 'Checked-in',
+      location: { main, sub },
+    };
+
+    // Retrieve existing visitors from localStorage, or start with mock data
+    let allVisitors: Visitor[] = [];
+    const storedVisitors = localStorage.getItem('visitors');
+    if (storedVisitors) {
+        // Must re-serialize dates
+        allVisitors = JSON.parse(storedVisitors).map((v: Visitor) => ({
+            ...v,
+            checkInTime: new Date(v.checkInTime),
+            checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+        }));
+    } else {
+       allVisitors = mockVisitors;
+    }
+
+    // Add the new visitor and save back to localStorage
+    const updatedVisitors = [...allVisitors, newVisitor];
+    localStorage.setItem('visitors', JSON.stringify(updatedVisitors));
+    
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array ensures this runs only once.
+
+
   const handleSelfCheckout = () => {
     // In a real app, this would be an API call
     setCheckedOut(true);
@@ -477,3 +512,5 @@ function Step4({ formData, locationName, onReset }: { formData: FormData; locati
     </div>
   );
 }
+
+    

@@ -65,8 +65,8 @@ export function VisitorDetailsDialog({ visitor, open, onOpenChange }: VisitorDet
             <strong className="text-muted-foreground">Location:</strong>
             <span>{visitor.location.main}{visitor.location.sub ? `, ${visitor.location.sub}`: ''}</span>
 
-            <strong className="text-muted-foreground col-span-2">Reason for Visit:</strong>
-            <p className="col-span-2">{visitor.reasonForVisit}</p>
+            <strong className="text-muted-foreground">Reason for Visit:</strong>
+            <span>{visitor.reasonForVisit}</span>
 
             <strong className="text-muted-foreground">Status:</strong>
             <Badge variant={visitor.status === 'Checked-in' ? 'secondary' : 'outline'}>

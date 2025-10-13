@@ -35,10 +35,6 @@ const step1Schema = z.object({
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
 });
 
-const otpSchema = z.object({
-  otp: z.string().length(6, "OTP must be 6 digits."),
-});
-
 const step2Schema = z.object({
   hostName: z.string().min(2, "Host name is required."),
   hostDepartment: z.enum(departments),
@@ -46,7 +42,6 @@ const step2Schema = z.object({
 });
 
 type Step1Data = z.infer<typeof step1Schema>;
-type OtpData = z.infer<typeof otpSchema>;
 type Step2Data = z.infer<typeof step2Schema>;
 type FormData = Step1Data & Step2Data & { selfie: string };
 
@@ -173,9 +168,6 @@ export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
 
 
 function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; defaultValues: Partial<Step1Data> }) {
-  // Always mark OTP as verified for manual entry
-  const [isOtpVerified] = useState(true);
-
   const form = useForm<Step1Data>({
     resolver: zodResolver(step1Schema),
     defaultValues,
@@ -238,7 +230,7 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
           )}
         />
         <DialogFooter>
-            <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
+            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Next
             </Button>
@@ -442,4 +434,3 @@ function Step3({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
   );
 }
 
-    

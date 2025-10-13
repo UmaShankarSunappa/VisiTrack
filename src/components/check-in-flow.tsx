@@ -161,6 +161,7 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
     if (isOtpVerified) {
       onNext(data);
     } else {
+       toast({ title: "Verification Required", description: "Please verify your mobile number with OTP.", variant: "destructive" });
        form.trigger();
     }
   };
@@ -551,4 +552,3 @@ function Step4({ formData, locationName, onReset }: { formData: FormData; locati
   );
 }
 
-    

@@ -7,7 +7,6 @@ import { format, isSameDay } from "date-fns"
 import {
   File,
   ListFilter,
-  MoreHorizontal,
   LogOut,
   Calendar as CalendarIcon,
   Eye,
@@ -64,6 +63,7 @@ import type { Visitor } from "@/lib/types"
 import { AddVisitorDialog } from "./add-visitor-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { VisitorDetailsDialog } from "./visitor-details-dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 
 export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
@@ -211,9 +211,7 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                   <TableHead className="hidden md:table-cell">
                     Check-in Time
                   </TableHead>
-                  <TableHead>
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -244,49 +242,55 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                       {format(visitor.checkInTime, "PPpp")}
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-haspopup="true"
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleViewDetails(visitor)}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          {visitor.status === 'Checked-in' && (
-                             <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                        <LogOut className="h-4 w-4 mr-2" />
-                                        Check-out
-                                    </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure you want to check-out this visitor?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This will mark {visitor.name} as checked-out. This action cannot be undone.
-                                    </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleCheckout(visitor.id)}>
-                                        Confirm Check-out
-                                    </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        <TooltipProvider>
+                            <div className="flex items-center gap-2">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            aria-label="View Details"
+                                            size="icon"
+                                            variant="outline"
+                                            onClick={() => handleViewDetails(visitor)}
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>View Details</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                                {visitor.status === 'Checked-in' && (
+                                    <AlertDialog>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button aria-label="Check-out" size="icon" variant="destructive">
+                                                        <LogOut className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Check-out</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure you want to check-out this visitor?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This will mark {visitor.name} as checked-out. This action cannot be undone.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleCheckout(visitor.id)}>
+                                                Confirm Check-out
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                )}
+                            </div>
+                        </TooltipProvider>
                     </TableCell>
                   </TableRow>
                 ))}

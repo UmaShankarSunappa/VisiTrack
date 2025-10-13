@@ -29,26 +29,23 @@ import { UserPlus, Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck,
 import { Progress } from "@/components/ui/progress";
 import type { Visitor } from "@/lib/types";
 
-const step1Schema = z.object({
+const combinedSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
-});
-
-const otpSchema = z.object({
-  otp: z.string().length(6, "OTP must be 6 digits."),
-});
-
-const step2Schema = z.object({
   hostName: z.string().min(2, "Host name is required."),
   hostDepartment: z.enum(departments),
   reasonForVisit: z.string().min(5, "Please provide a reason for your visit."),
 });
 
-type Step1Data = z.infer<typeof step1Schema>;
+
+const otpSchema = z.object({
+  otp: z.string().length(6, "OTP must be 6 digits."),
+});
+
+type CombinedData = z.infer<typeof combinedSchema>;
 type OtpData = z.infer<typeof otpSchema>;
-type Step2Data = z.infer<typeof step2Schema>;
-type FormData = Step1Data & Step2Data & { selfie: string };
+type FormData = CombinedData & { selfie: string };
 
 type AddVisitorDialogProps = {
     onVisitorAdded: (visitor: Visitor) => void;
@@ -68,7 +65,7 @@ export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
     }
   }, [open]);
 
-  const totalSteps = 3;
+  const totalSteps = 2;
   const progress = (step / totalSteps) * 100;
   
   const handleNextStep = (data: Partial<FormData>) => {
@@ -129,11 +126,9 @@ export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
   const renderStep = () => {
     switch (step) {
       case 1:
-        return <Step1 onNext={handleNextStep} defaultValues={formData} />;
+        return <VisitorDetailsStep onNext={handleNextStep} defaultValues={formData} />;
       case 2:
-        return <Step2 onNext={handleNextStep} onBack={handlePrevStep} defaultValues={formData} />;
-      case 3:
-        return <Step3 onNext={handleFinalSubmit} onBack={handlePrevStep} />;
+        return <Step2 onNext={handleFinalSubmit} onBack={handlePrevStep} />;
       default:
         return null;
     }
@@ -172,15 +167,15 @@ export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
 }
 
 
-function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; defaultValues: Partial<Step1Data> }) {
+function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: CombinedData) => void; defaultValues: Partial<CombinedData> }) {
   const [otpSent, setOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const { toast } = useToast();
   
-  const form = useForm<Step1Data>({
-    resolver: zodResolver(step1Schema),
+  const form = useForm<CombinedData>({
+    resolver: zodResolver(combinedSchema),
     defaultValues,
   });
 
@@ -213,7 +208,7 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
     }, 1000);
   };
 
-  const onSubmit: SubmitHandler<Step1Data> = (data) => {
+  const onSubmit: SubmitHandler<CombinedData> = (data) => {
      if (isOtpVerified) {
       onNext(data);
     } else {
@@ -309,31 +304,6 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
             </FormItem>
           )}
         />
-        <DialogFooter>
-            <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
-                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Next
-            </Button>
-        </DialogFooter>
-      </form>
-    </Form>
-  );
-}
-
-
-function Step2({ onNext, onBack, defaultValues }: { onNext: (data: Step2Data) => void; onBack: () => void; defaultValues: Partial<Step2Data> }) {
-  const form = useForm<Step2Data>({
-    resolver: zodResolver(step2Schema),
-    defaultValues,
-  });
-
-  const onSubmit: SubmitHandler<Step2Data> = (data) => {
-    onNext(data);
-  };
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="hostName"
@@ -390,21 +360,18 @@ function Step2({ onNext, onBack, defaultValues }: { onNext: (data: Step2Data) =>
             </FormItem>
           )}
         />
-        <DialogFooter className="flex-row gap-4 justify-end">
-          <Button variant="outline" onClick={onBack} className="w-full sm:w-auto">
-            Back
-          </Button>
-          <Button type="submit" disabled={form.formState.isSubmitting} className="w-full sm:w-auto">
-            {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Next
-          </Button>
+        <DialogFooter>
+            <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
+                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Next
+            </Button>
         </DialogFooter>
       </form>
     </Form>
   );
 }
 
-function Step3({ onNext, onBack }: { onNext: (data: { selfie: string }) => void; onBack: () => void; }) {
+function Step2({ onNext, onBack }: { onNext: (data: { selfie: string }) => void; onBack: () => void; }) {
   const [selfie, setSelfie] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -514,4 +481,5 @@ function Step3({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
   );
 }
 
+    
     

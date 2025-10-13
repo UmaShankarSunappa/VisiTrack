@@ -20,26 +20,22 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, LogOut } from "lucide-react";
 import type { Visitor } from "@/lib/types";
 
-const step1Schema = z.object({
+const combinedSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
+  hostName: z.string().min(2, "Host name is required."),
+  hostDepartment: z.enum(departments),
+  reasonForVisit: z.string().min(5, "Please provide a reason for your visit."),
 });
 
 const otpSchema = z.object({
   otp: z.string().length(6, "OTP must be 6 digits."),
 });
 
-const step2Schema = z.object({
-  hostName: z.string().min(2, "Host name is required."),
-  hostDepartment: z.enum(departments),
-  reasonForVisit: z.string().min(5, "Please provide a reason for your visit."),
-});
-
-type Step1Data = z.infer<typeof step1Schema>;
+type CombinedData = z.infer<typeof combinedSchema>;
 type OtpData = z.infer<typeof otpSchema>;
-type Step2Data = z.infer<typeof step2Schema>;
-type FormData = Step1Data & Step2Data & { selfie: string };
+type FormData = CombinedData & { selfie: string };
 
 function AnimatedCheckmark() {
     return (
@@ -70,7 +66,7 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const totalSteps = 4;
+  const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
 
   const handleNextStep = (data: Partial<FormData>) => {
@@ -92,13 +88,11 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
   const renderStep = () => {
     switch (step) {
       case 1:
-        return <Step1 onNext={handleNextStep} defaultValues={formData} />;
+        return <VisitorDetailsStep onNext={handleNextStep} defaultValues={formData} />;
       case 2:
-        return <Step2 onNext={handleNextStep} onBack={handlePrevStep} defaultValues={formData} />;
+        return <Step2 onNext={handleNextStep} onBack={handlePrevStep} />;
       case 3:
-        return <Step3 onNext={handleNextStep} onBack={handlePrevStep} />;
-      case 4:
-        return <Step4 formData={formData as FormData} locationName={locationName} onReset={resetFlow} />;
+        return <Step3 formData={formData as FormData} locationName={locationName} onReset={resetFlow} />;
       default:
         return null;
     }
@@ -115,14 +109,14 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
   );
 }
 
-function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; defaultValues: Partial<Step1Data> }) {
+function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: CombinedData) => void; defaultValues: Partial<CombinedData> }) {
   const [otpSent, setOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
-  const form = useForm<Step1Data>({
-    resolver: zodResolver(step1Schema),
+  const form = useForm<CombinedData>({
+    resolver: zodResolver(combinedSchema),
     defaultValues,
   });
 
@@ -157,7 +151,7 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
     }, 1000);
   };
 
-  const onSubmit: SubmitHandler<Step1Data> = (data) => {
+  const onSubmit: SubmitHandler<CombinedData> = (data) => {
     if (isOtpVerified) {
       onNext(data);
     } else {
@@ -254,29 +248,6 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
           )}
         />
 
-        <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
-          {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Next
-        </Button>
-      </form>
-    </Form>
-  );
-}
-
-
-function Step2({ onNext, onBack, defaultValues }: { onNext: (data: Step2Data) => void; onBack: () => void; defaultValues: Partial<Step2Data> }) {
-  const form = useForm<Step2Data>({
-    resolver: zodResolver(step2Schema),
-    defaultValues,
-  });
-
-  const onSubmit: SubmitHandler<Step2Data> = (data) => {
-    onNext(data);
-  };
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="hostName"
@@ -333,21 +304,17 @@ function Step2({ onNext, onBack, defaultValues }: { onNext: (data: Step2Data) =>
             </FormItem>
           )}
         />
-        <div className="flex gap-4">
-          <Button variant="outline" onClick={onBack} className="w-full">
-            Back
-          </Button>
-          <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
-            {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Next
-          </Button>
-        </div>
+
+        <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
+          {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Next
+        </Button>
       </form>
     </Form>
   );
 }
 
-function Step3({ onNext, onBack }: { onNext: (data: { selfie: string }) => void; onBack: () => void; }) {
+function Step2({ onNext, onBack }: { onNext: (data: { selfie: string }) => void; onBack: () => void; }) {
   const [selfie, setSelfie] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -445,7 +412,7 @@ function Step3({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
   );
 }
 
-function Step4({ formData, locationName, onReset }: { formData: FormData; locationName: string; onReset: () => void; }) {
+function Step3({ formData, locationName, onReset }: { formData: FormData; locationName: string; onReset: () => void; }) {
   const [checkedOut, setCheckedOut] = useState(false);
   const { toast } = useToast();
 
@@ -552,3 +519,4 @@ function Step4({ formData, locationName, onReset }: { formData: FormData; locati
   );
 }
 
+    

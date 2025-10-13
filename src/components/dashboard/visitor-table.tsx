@@ -172,6 +172,9 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                     Check-in Time
                   </TableHead>
+                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
+                    Check-out Time
+                  </TableHead>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -194,6 +197,9 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                     </TableCell>
                     <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                       {format(visitor.checkInTime, "PPpp")}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
+                      {visitor.checkOutTime ? format(visitor.checkOutTime, "PPpp") : 'N/A'}
                     </TableCell>
                     <TableCell className="py-2 px-4 whitespace-nowrap">
                         <TooltipProvider>

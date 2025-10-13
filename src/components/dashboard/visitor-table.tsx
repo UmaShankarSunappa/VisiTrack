@@ -2,12 +2,11 @@
 "use client"
 
 import * as React from "react"
-import { format, isSameDay } from "date-fns"
+import { format } from "date-fns"
 import {
   File,
   ListFilter,
   LogOut,
-  Calendar as CalendarIcon,
   Eye,
 } from "lucide-react"
 
@@ -24,7 +23,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -54,9 +52,6 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { cn } from "@/lib/utils"
 
 import type { Visitor } from "@/lib/types"
 import { AddVisitorDialog } from "./add-visitor-dialog"
@@ -68,16 +63,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
     const { toast } = useToast()
     const [visitorList, setVisitorList] = React.useState(visitors)
-    const [date, setDate] = React.useState<Date | undefined>()
     const [selectedVisitor, setSelectedVisitor] = React.useState<Visitor | null>(null);
 
     React.useEffect(() => {
-        let filteredVisitors = visitors;
-        if (date) {
-            filteredVisitors = visitors.filter(visitor => isSameDay(visitor.checkInTime, date));
-        }
-        setVisitorList(filteredVisitors);
-    }, [date, visitors]);
+        setVisitorList(visitors);
+    }, [visitors]);
 
 
     const handleCheckout = (visitorId: string) => {
@@ -118,32 +108,6 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-               <Popover>
-                <PopoverTrigger asChild>
-                   <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="h-auto">
-                     <Button
-                        variant={"outline"}
-                        className={cn(
-                            "w-full justify-start text-left font-normal h-8",
-                            !date && "text-muted-foreground"
-                        )}
-                        >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                   </DropdownMenuItem>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                    <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        initialFocus
-                    />
-                </PopoverContent>
-            </Popover>
-               <DropdownMenuItem onSelect={() => setDate(undefined)}>Clear Date Filter</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuCheckboxItem checked>
                 Status

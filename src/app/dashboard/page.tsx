@@ -2,8 +2,9 @@
 "use client"
 
 import * as React from "react"
-import { format, isSameDay } from "date-fns"
+import { format, isWithinInterval, startOfDay, endOfDay, addDays } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
+import { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,7 +21,10 @@ import type { Visitor } from "@/lib/types";
 
 
 export default function DashboardPage() {
-    const [date, setDate] = React.useState<Date | undefined>(new Date());
+    const [date, setDate] = React.useState<DateRange | undefined>({
+      from: new Date(),
+      to: new Date(),
+    })
     const [allVisitors, setAllVisitors] = React.useState<Visitor[]>([]);
     const [filteredVisitors, setFilteredVisitors] = React.useState<Visitor[]>([]);
     const [locationName, setLocationName] = React.useState<string | null>(null);
@@ -69,22 +73,32 @@ export default function DashboardPage() {
     }, []);
 
     React.useEffect(() => {
-        let visitors = allVisitors;
+        let visitorsToFilter = allVisitors;
         
         // Filter by location if user is not admin
         if (userRole !== 'admin' && locationName) {
-            visitors = visitors.filter(visitor => {
+            visitorsToFilter = visitorsToFilter.filter(visitor => {
                 if (!visitor.location) return false;
                 const visitorLocationString = `${visitor.location.main}${visitor.location.sub ? ` - ${visitor.location.sub}` : ''}`;
                 return visitorLocationString === locationName;
             });
         }
         
-        // Filter by date
-        const selectedDate = date || new Date();
-        visitors = visitors.filter(visitor => isSameDay(new Date(visitor.checkInTime), selectedDate));
+        // Filter by date range
+        if (date?.from) {
+          const range = {
+            start: startOfDay(date.from),
+            end: date.to ? endOfDay(date.to) : endOfDay(date.from),
+          }
+          visitorsToFilter = visitorsToFilter.filter(visitor => 
+            isWithinInterval(visitor.checkInTime, range)
+          );
+        } else {
+          // If no date is set, show nothing
+          visitorsToFilter = [];
+        }
 
-        setFilteredVisitors(visitors);
+        setFilteredVisitors(visitorsToFilter);
     }, [date, allVisitors, locationName, userRole]);
 
     return (
@@ -94,31 +108,56 @@ export default function DashboardPage() {
                  <Popover>
                     <PopoverTrigger asChild>
                     <Button
+                        id="date"
                         variant={"outline"}
                         className={cn(
-                        "w-[240px] justify-start text-left font-normal",
+                        "w-[300px] justify-start text-left font-normal",
                         !date && "text-muted-foreground"
                         )}
                     >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                        {date?.from ? (
+                        date.to ? (
+                            <>
+                            {format(date.from, "LLL dd, y")} -{" "}
+                            {format(date.to, "LLL dd, y")}
+                            </>
+                        ) : (
+                            format(date.from, "LLL dd, y")
+                        )
+                        ) : (
+                        <span>Pick a date</span>
+                        )}
                     </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
                         initialFocus
+                        mode="range"
+                        defaultMonth={date?.from}
+                        selected={date}
+                        onSelect={(range) => {
+                            if (range?.from && !range.to) {
+                                setDate({from: range.from, to: range.from});
+                            } else if (range?.from && range?.to) {
+                                if (addDays(range.from, 30) < range.to) {
+                                     setDate({from: range.from, to: addDays(range.from, 30)});
+                                } else {
+                                    setDate(range);
+                                }
+                            } else {
+                                setDate(range);
+                            }
+                        }}
+                        numberOfMonths={2}
+                        disabled={(day) => day > new Date() || day < new Date("2000-01-01")}
                     />
                     </PopoverContent>
                 </Popover>
-                {date && <Button variant="default" onClick={() => setDate(undefined)}>Clear</Button>}
+                {date && <Button variant="ghost" onClick={() => setDate(undefined)}>Reset</Button>}
             </div>
             <StatsCards visitors={filteredVisitors} />
             <VisitorTable visitors={filteredVisitors} />
         </>
     )
 }
-
-    

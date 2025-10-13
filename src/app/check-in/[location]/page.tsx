@@ -1,4 +1,5 @@
 
+'use client';
 import { CheckInFlow } from "@/components/check-in-flow";
 import { locations } from "@/lib/data";
 import { Building } from "lucide-react";
@@ -39,7 +40,7 @@ export default function CheckInPage({ params }: CheckInPageProps) {
         <div className="container mx-auto px-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
             <Building className="w-8 h-8 text-primary" />
-            <h1 className="text-xl font-bold">Smart Lobby</h1>
+            <h1 className="text-xl font-bold">VisiTrack Pro</h1>
           </Link>
         </div>
       </header>
@@ -56,17 +57,4 @@ export default function CheckInPage({ params }: CheckInPageProps) {
       </main>
     </div>
   );
-}
-
-export async function generateStaticParams() {
-    const paths = locations.flatMap(main => {
-        if (main.subLocations.length === 0) {
-            return [{ location: `${main.id}-none` }];
-        }
-        return main.subLocations.map(sub => ({
-            location: `${main.id}-${sub.id}`
-        }));
-    });
-
-    return paths;
 }

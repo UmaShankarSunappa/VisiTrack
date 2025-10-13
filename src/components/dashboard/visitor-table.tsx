@@ -199,39 +199,39 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="py-2 px-4">Visitor Name</TableHead>
-                  <TableHead className="py-2 px-4">Mobile</TableHead>
-                  <TableHead className="py-2 px-4">Status</TableHead>
-                  <TableHead className="hidden md:table-cell py-2 px-4">
+                  <TableHead className="py-2 px-4 whitespace-nowrap">Visitor Name</TableHead>
+                  <TableHead className="py-2 px-4 whitespace-nowrap">Mobile</TableHead>
+                  <TableHead className="py-2 px-4 whitespace-nowrap">Status</TableHead>
+                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                     Host
                   </TableHead>
-                  <TableHead className="hidden md:table-cell py-2 px-4">
+                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                     Check-in Time
                   </TableHead>
-                  <TableHead className="py-2 px-4">Actions</TableHead>
+                  <TableHead className="py-2 px-4 whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {visitors.map(visitor => (
                   <TableRow key={visitor.id}>
-                    <TableCell className="font-medium py-2 px-4">
+                    <TableCell className="font-medium py-2 px-4 whitespace-nowrap">
                         {visitor.name}
                     </TableCell>
-                    <TableCell className="py-2 px-4 text-muted-foreground">
+                    <TableCell className="py-2 px-4 text-muted-foreground whitespace-nowrap">
                         {visitor.mobile}
                     </TableCell>
-                    <TableCell className="py-2 px-4">
+                    <TableCell className="py-2 px-4 whitespace-nowrap">
                       <Badge variant={visitor.status === 'Checked-in' ? 'secondary' : 'outline'}>
                         {visitor.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell py-2 px-4">
+                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                       {visitor.hostName} ({visitor.hostDepartment})
                     </TableCell>
-                    <TableCell className="hidden md:table-cell py-2 px-4">
+                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                       {format(visitor.checkInTime, "PPpp")}
                     </TableCell>
-                    <TableCell className="py-2 px-4">
+                    <TableCell className="py-2 px-4 whitespace-nowrap">
                         <TooltipProvider>
                             <div className="flex items-center gap-2">
                                 <Tooltip>

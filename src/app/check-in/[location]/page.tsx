@@ -11,15 +11,13 @@ type CheckInPageProps = {
 };
 
 export default function CheckInPage({ params }: CheckInPageProps) {
-  const locationParts = params.location.split('-');
-  
   let locationName = 'Unknown Location';
 
-  // Find a main location whose ID is a prefix of the location param
+  // This logic is designed to handle location strings that might contain hyphens themselves.
+  // It iterates through known locations and checks if the URL parameter starts with a known location ID.
   const mainLocation = locations.find(l => params.location.startsWith(l.id));
 
   if (mainLocation) {
-    // The sub-location ID is whatever is left after the main location ID and the hyphen.
     const subLocId = params.location.substring(mainLocation.id.length + 1);
     
     if (subLocId && subLocId !== 'none') {
@@ -39,7 +37,7 @@ export default function CheckInPage({ params }: CheckInPageProps) {
         <div className="container mx-auto px-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
             <Building className="w-8 h-8 text-primary" />
-            <h1 className="text-xl font-bold">viitor tarck</h1>
+            <h1 className="text-xl font-bold">smart lobby</h1>
           </Link>
         </div>
       </header>

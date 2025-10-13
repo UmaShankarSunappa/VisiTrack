@@ -21,7 +21,7 @@ import { Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, R
 
 const step1Schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  mobile: z.string().min(10, "Please enter a valid 10-digit mobile number."),
+  mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
 });
 
@@ -81,7 +81,7 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
   };
 
   return (
-    <Card className="w-full shadow-xl">
+    <Card className="w-full shadow-xl sm:rounded-xl rounded-none border-x-0 sm:border-x">
       <CardHeader>
         <Progress value={progress} className="w-full" />
         <CardTitle className="text-center pt-4">Step {step} of {totalSteps}</CardTitle>
@@ -108,7 +108,9 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
 
   const { toast } = useToast();
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
+    const mobileValid = await form.trigger("mobile");
+    if (!mobileValid) return;
     setIsSendingOtp(true);
     setTimeout(() => {
       setOtpSent(true);
@@ -132,16 +134,13 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
   };
 
   const onSubmit: SubmitHandler<Step1Data> = (data) => {
-    onNext(data);
+    if (isOtpVerified) {
+      onNext(data);
+    } else {
+       form.trigger();
+    }
   };
   
-  const handleNextClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (isOtpVerified) {
-        e.preventDefault();
-        onNext(form.getValues());
-    }
-  }
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -179,7 +178,7 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
                     </FormItem>
                 )}
                 />
-                {!otpSent && <Button onClick={handleSendOtp} disabled={isSendingOtp}>
+                {!otpSent && <Button type="button" onClick={handleSendOtp} disabled={isSendingOtp}>
                     {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Send OTP
                 </Button>}
@@ -205,7 +204,7 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
                   </FormItem>
                 )}
               />
-              <Button onClick={otpForm.handleSubmit(handleVerifyOtp)} disabled={isVerifyingOtp}>
+              <Button type="button" onClick={otpForm.handleSubmit(handleVerifyOtp)} disabled={isVerifyingOtp}>
                 {isVerifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Verify OTP
               </Button>
@@ -230,7 +229,7 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
           )}
         />
 
-        <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full" onClick={handleNextClick}>
+        <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
           {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Next
         </Button>

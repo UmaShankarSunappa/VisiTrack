@@ -23,8 +23,8 @@ export default function Home() {
         </div>
       </header>
       <main className="flex-grow">
-        <div className="container px-4 py-8 mx-auto sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="container px-0 mx-auto sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
             <Logo />
             <h2 className="mt-6 text-3xl font-extrabold tracking-tight sm:text-4xl font-headline">
               Welcome to VisiTrack Pro
@@ -33,8 +33,8 @@ export default function Home() {
               The seamless visitor management solution. Please select your location to generate a check-in QR code.
             </p>
           </div>
-          <div className="max-w-2xl mx-auto">
-            <Card className="shadow-lg">
+          <div className="max-w-2xl mx-auto sm:px-0">
+            <Card className="shadow-lg sm:rounded-lg rounded-none border-x-0 sm:border-x">
               <CardHeader>
                 <CardTitle>Generate Check-in Code</CardTitle>
                 <CardDescription>Select your office and floor to create a unique QR code for visitor check-in.</CardDescription>

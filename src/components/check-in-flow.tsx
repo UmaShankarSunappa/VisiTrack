@@ -437,18 +437,33 @@ function Step4({ formData, locationName, onReset }: { formData: FormData; locati
       location: { main, sub },
     };
 
-    // Retrieve existing visitors from localStorage, or start with mock data
     let allVisitors: Visitor[] = [];
     const storedVisitors = localStorage.getItem('visitors');
+    
+    // Use mock data as the base
+    const baseVisitors = mockVisitors.map(v => ({
+        ...v,
+        checkInTime: new Date(v.checkInTime),
+        checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+    }));
+
     if (storedVisitors) {
-        // Must re-serialize dates
-        allVisitors = JSON.parse(storedVisitors).map((v: Visitor) => ({
-            ...v,
-            checkInTime: new Date(v.checkInTime),
-            checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
-        }));
+        try {
+            const parsedStoredVisitors = JSON.parse(storedVisitors).map((v: any) => ({
+                ...v,
+                checkInTime: new Date(v.checkInTime),
+                checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+            }));
+             // Combine mock data with stored data, avoiding duplicates
+            const visitorMap = new Map();
+            [...baseVisitors, ...parsedStoredVisitors].forEach(v => visitorMap.set(v.id, v));
+            allVisitors = Array.from(visitorMap.values());
+        } catch(e) {
+            console.error("Failed to parse visitors from localStorage on check-in", e);
+            allVisitors = baseVisitors;
+        }
     } else {
-       allVisitors = mockVisitors;
+       allVisitors = baseVisitors;
     }
 
     // Add the new visitor and save back to localStorage
@@ -512,5 +527,3 @@ function Step4({ formData, locationName, onReset }: { formData: FormData; locati
     </div>
   );
 }
-
-    

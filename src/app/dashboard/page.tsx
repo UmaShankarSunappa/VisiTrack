@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { format, isSameDay } from "date-fns"
-import { Calendar as CalendarIcon, Search } from "lucide-react"
+import { Calendar as CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Input } from "@/components/ui/input"
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { VisitorTable } from "@/components/dashboard/visitor-table";
 import { mockVisitors } from "@/lib/data";
@@ -27,24 +26,39 @@ export default function DashboardPage() {
     const [locationName, setLocationName] = React.useState<string | null>(null);
 
     React.useEffect(() => {
-        // On component mount, load visitors from localStorage or use initial mock data
         let visitors: Visitor[] = [];
         const storedVisitors = localStorage.getItem('visitors');
+        
+        // Use mock data as the base
+        const baseVisitors = mockVisitors.map(v => ({
+            ...v,
+            checkInTime: new Date(v.checkInTime),
+            checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+        }));
+
         if (storedVisitors) {
-            // Must re-serialize dates
-            visitors = JSON.parse(storedVisitors).map((v: Visitor) => ({
-                ...v,
-                checkInTime: new Date(v.checkInTime),
-                checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
-            }));
+            try {
+                const parsedStoredVisitors = JSON.parse(storedVisitors).map((v: any) => ({
+                    ...v,
+                    checkInTime: new Date(v.checkInTime),
+                    checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+                }));
+                // Combine mock data with stored data, avoiding duplicates
+                const visitorMap = new Map();
+                [...baseVisitors, ...parsedStoredVisitors].forEach(v => visitorMap.set(v.id, v));
+                visitors = Array.from(visitorMap.values());
+            } catch (e) {
+                console.error("Failed to parse visitors from localStorage", e);
+                visitors = baseVisitors;
+            }
         } else {
-           visitors = mockVisitors;
-           // And save it for the first time
-           localStorage.setItem('visitors', JSON.stringify(visitors));
+           visitors = baseVisitors;
         }
+
+        // Save the potentially combined list back to localStorage
+        localStorage.setItem('visitors', JSON.stringify(visitors));
         setAllVisitors(visitors);
         
-        // Also get receptionist location
         if (typeof window !== "undefined") {
             const storedLocation = localStorage.getItem('receptionistLocation');
             setLocationName(storedLocation);
@@ -102,5 +116,3 @@ export default function DashboardPage() {
         </>
     )
 }
-
-    

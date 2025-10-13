@@ -98,7 +98,7 @@ export default function DashboardLayout({
             <SidebarTrigger className="hidden md:flex" />
             
              {locationName && (
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-1 text-sm font-semibold text-foreground">
                 <MapPin className="h-4 w-4" />
                 <span>{isAdmin ? "All Locations" : locationName}</span>
               </div>

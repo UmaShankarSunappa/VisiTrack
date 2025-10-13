@@ -11,12 +11,15 @@ type CheckInPageProps = {
 };
 
 export default function CheckInPage({ params }: CheckInPageProps) {
-  const [mainLocId, subLocId] = params.location.split('-');
-  
-  const mainLocation = locations.find(l => l.id === mainLocId);
+  const locationParts = params.location.split('-');
   
   let locationName = 'Unknown Location';
+
+  // Find a main location whose ID is a prefix of the location param
+  const mainLocation = locations.find(l => params.location.startsWith(l.id));
+
   if (mainLocation) {
+    const subLocId = params.location.substring(mainLocation.id.length + 1);
     if (subLocId && subLocId !== 'none') {
       const subLocation = mainLocation.subLocations.find(s => s.id === subLocId);
       if (subLocation) {

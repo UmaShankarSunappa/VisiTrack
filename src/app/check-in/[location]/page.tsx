@@ -7,7 +7,6 @@ import Link from 'next/link';
 
 type CheckInPageProps = {
   params: { location: string };
-  searchParams: { [key: string]: string | string[] | undefined };
 };
 
 export default function CheckInPage({ params }: CheckInPageProps) {

@@ -112,7 +112,7 @@ export default function DashboardPage() {
                     />
                     </PopoverContent>
                 </Popover>
-                {date && <Button variant="ghost" onClick={() => setDate(undefined)}>Clear</Button>}
+                {date && <Button variant="secondary" onClick={() => setDate(undefined)}>Clear</Button>}
             </div>
             <StatsCards visitors={filteredVisitors} />
             <VisitorTable visitors={filteredVisitors} />

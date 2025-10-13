@@ -76,6 +76,8 @@ export default function LoginPage() {
                         const user = receptionists.find(r => r.locationId === value);
                         if(user) {
                             setEmail(user.email);
+                            // Clear password when role changes
+                            setPassword('');
                         }
                     }}>
                         <SelectTrigger className="pl-10">

@@ -39,7 +39,7 @@ export const receptionists = [
     locationId: 'admin',
     locationName: 'Admin (All Locations)',
     email: 'admin@example.com',
-    password: 'admin123',
+    password: 'password123',
   },
   {
     locationId: 'corporate-office-1st-floor',

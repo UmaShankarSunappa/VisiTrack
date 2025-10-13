@@ -6,9 +6,8 @@ import { Building } from "lucide-react";
 import Link from 'next/link';
 
 type CheckInPageProps = {
-  params: {
-    location: string;
-  };
+  params: { location: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 };
 
 export default function CheckInPage({ params }: CheckInPageProps) {

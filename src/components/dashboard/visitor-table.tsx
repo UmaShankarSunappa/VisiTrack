@@ -2,12 +2,13 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { format } from "date-fns"
+import { format, isSameDay } from "date-fns"
 import {
   File,
   ListFilter,
   MoreHorizontal,
   LogOut,
+  Calendar as CalendarIcon,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -53,6 +54,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils"
 
 import type { Visitor } from "@/lib/types"
 import { AddVisitorDialog } from "./add-visitor-dialog"
@@ -62,12 +66,24 @@ import { useToast } from "@/hooks/use-toast"
 export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
     const { toast } = useToast()
     const [visitorList, setVisitorList] = React.useState(visitors)
+    const [date, setDate] = React.useState<Date | undefined>()
+
+    React.useEffect(() => {
+        if (date) {
+            const filteredVisitors = visitors.filter(visitor => isSameDay(visitor.checkInTime, date));
+            setVisitorList(filteredVisitors);
+        } else {
+            setVisitorList(visitors);
+        }
+    }, [date, visitors]);
 
     const handleCheckout = (visitorId: string) => {
-        setVisitorList(prev => prev.map(v => 
+        const updatedList = visitorList.map(v => 
             v.id === visitorId ? { ...v, status: 'Checked-out', checkOutTime: new Date() } : v
-        ))
-        const visitor = visitorList.find(v => v.id === visitorId);
+        );
+        setVisitorList(updatedList);
+        
+        const visitor = visitors.find(v => v.id === visitorId);
         toast({
             title: "Visitor Checked Out",
             description: `${visitor?.name} has been successfully checked out.`
@@ -95,6 +111,30 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Filter by</DropdownMenuLabel>
               <DropdownMenuSeparator />
+               <Popover>
+                <PopoverTrigger asChild>
+                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                     <Button
+                        variant={"outline"}
+                        className={cn(
+                            "w-full justify-start text-left font-normal h-8",
+                            !date && "text-muted-foreground"
+                        )}
+                        >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                   </DropdownMenuItem>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                    <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        initialFocus
+                    />
+                </PopoverContent>
+            </Popover>
               <DropdownMenuCheckboxItem checked>
                 Status
               </DropdownMenuCheckboxItem>

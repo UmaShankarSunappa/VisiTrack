@@ -199,7 +199,8 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="py-2 px-4">Visitor</TableHead>
+                  <TableHead className="py-2 px-4">Visitor Name</TableHead>
+                  <TableHead className="py-2 px-4">Mobile</TableHead>
                   <TableHead className="py-2 px-4">Status</TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4">
                     Host
@@ -214,8 +215,10 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                 {visitors.map(visitor => (
                   <TableRow key={visitor.id}>
                     <TableCell className="font-medium py-2 px-4">
-                        <div>{visitor.name}</div>
-                        <div className="text-sm text-muted-foreground">{visitor.mobile}</div>
+                        {visitor.name}
+                    </TableCell>
+                    <TableCell className="py-2 px-4 text-muted-foreground">
+                        {visitor.mobile}
                     </TableCell>
                     <TableCell className="py-2 px-4">
                       <Badge variant={visitor.status === 'Checked-in' ? 'secondary' : 'outline'}>

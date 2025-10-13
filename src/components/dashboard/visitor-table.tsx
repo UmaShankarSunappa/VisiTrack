@@ -9,6 +9,7 @@ import {
   LogOut,
   Eye,
   Pencil,
+  Search,
 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
 import { utils, writeFile } from "xlsx";
@@ -63,6 +64,7 @@ import { VisitorDetailsDialog } from "./visitor-details-dialog"
 import { EditVisitorDialog } from "./edit-visitor-dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { departments } from "@/lib/data"
+import { Input } from "@/components/ui/input"
 
 
 export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
@@ -72,6 +74,7 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
     const [editingVisitor, setEditingVisitor] = React.useState<Visitor | null>(null);
     const [activeTab, setActiveTab] = React.useState("all");
     const [selectedDepartments, setSelectedDepartments] = React.useState<Department[]>([]);
+    const [searchQuery, setSearchQuery] = React.useState("");
 
     React.useEffect(() => {
         let filtered = visitors;
@@ -79,9 +82,13 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
         if (selectedDepartments.length > 0) {
             filtered = filtered.filter(v => selectedDepartments.includes(v.hostDepartment));
         }
+
+        if (searchQuery) {
+            filtered = filtered.filter(v => v.name.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
         
         setVisitorList(filtered.sort((a, b) => new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()));
-    }, [visitors, selectedDepartments]);
+    }, [visitors, selectedDepartments, searchQuery]);
 
 
     const handleCheckout = (visitorId: string) => {
@@ -160,7 +167,7 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
             "Name": v.name,
             "Mobile": v.mobile,
             "Email": v.email || 'N/A',
-            "Person To Meet": v.hostName,
+            "Person to Meet": v.hostName,
             "Host Department": v.hostDepartment,
             "Reason For Visit": v.reasonForVisit,
             "Location": `${v.location.main}${v.location.sub ? ` - ${v.location.sub}` : ''}`,
@@ -189,6 +196,16 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
           <TabsTrigger value="checked-out">Checked-out</TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
+            <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Search by name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-8 w-[150px] lg:w-[250px] pl-8"
+                />
+            </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 gap-1">
@@ -279,7 +296,7 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                   <TableHead className="py-2 px-4 whitespace-nowrap">Mobile</TableHead>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Status</TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
-                    Person To Meet
+                    Person to Meet
                   </TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                     Department
@@ -322,7 +339,7 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                     <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                       {visitor.hostDepartment}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
+                    <TableCell className="hidden md-table-cell py-2 px-4 whitespace-nowrap">
                       {format(new Date(visitor.checkInTime), "PPpp")}
                     </TableCell>
                     <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
@@ -405,5 +422,3 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
         </Card>
     )
 }
-
-    

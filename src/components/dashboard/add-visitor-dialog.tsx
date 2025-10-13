@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
+  DialogTrigger,
 } from "@/components/ui/dialog"
 import { CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input"
@@ -133,7 +134,7 @@ export function AddVisitorDialog() {
 
 function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; defaultValues: Partial<Step1Data> }) {
   const [otpSent, setOtpSent] = useState(false);
-  const [isOtpVerified, setIsOtpVerified] = useState(isOtpVerified);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
@@ -461,6 +462,8 @@ function Step3({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
   );
 }
 
+
+    
 
     
 

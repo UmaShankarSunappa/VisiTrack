@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "visitor-selfie",
+      "description": "A placeholder image for a visitor's selfie.",
+      "imageUrl": "https://picsum.photos/seed/VisiTrack1/200/200",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "qr-code-placeholder",
+      "description": "A placeholder for the QR code.",
+      "imageUrl": "https://picsum.photos/seed/VisiTrackQR/256/256",
+      "imageHint": "qr code"
+    }
+  ]
 }

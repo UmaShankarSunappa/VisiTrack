@@ -18,15 +18,17 @@ export default function CheckInPage({ params }: CheckInPageProps) {
   const mainLocation = locations.find(l => params.location.startsWith(l.id));
 
   if (mainLocation) {
-    const subLocId = params.location.substring(mainLocation.id.length + 1);
-    
-    if (subLocId && subLocId !== 'none') {
-      const subLocation = mainLocation.subLocations.find(s => s.id === subLocId);
-      if (subLocation) {
-        locationName = `${mainLocation.name} - ${subLocation.name}`;
-      }
-    } else {
+    if (mainLocation.subLocations.length === 0) {
       locationName = mainLocation.name;
+    } else {
+      const subLocId = params.location.substring(mainLocation.id.length + 1);
+      
+      if (subLocId && subLocId !== 'none') {
+        const subLocation = mainLocation.subLocations.find(s => s.id === subLocId);
+        if (subLocation) {
+          locationName = `${mainLocation.name} - ${subLocation.name}`;
+        }
+      }
     }
   }
 

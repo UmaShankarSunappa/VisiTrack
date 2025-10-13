@@ -19,16 +19,12 @@ export const locations: MainLocation[] = [
   {
     id: 'warehouse',
     name: 'Warehouse',
-    subLocations: [{ id: '1st-floor', name: '1st Floor' }],
+    subLocations: [],
   },
   {
     id: 'hostel',
     name: 'Hostel',
-    subLocations: [
-      { id: '1st-floor', name: '1st Floor' },
-      { id: '2nd-floor', name: '2nd Floor' },
-      { id: '3rd-floor', name: '3rd Floor' },
-    ],
+    subLocations: [],
   },
 ];
 

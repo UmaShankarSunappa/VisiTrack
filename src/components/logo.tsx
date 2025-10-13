@@ -23,7 +23,7 @@ export function Logo(props: SVGProps<SVGSVGElement>) {
         fontWeight="bold"
         fill="hsl(var(--foreground))"
       >
-        smart lobby
+        Smart Lobby
       </text>
     </svg>
   );

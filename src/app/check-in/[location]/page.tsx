@@ -37,7 +37,7 @@ export default function CheckInPage({ params }: CheckInPageProps) {
         <div className="container mx-auto px-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
             <Building className="w-8 h-8 text-primary" />
-            <h1 className="text-xl font-bold">smart lobby</h1>
+            <h1 className="text-xl font-bold">Smart Lobby</h1>
           </Link>
         </div>
       </header>

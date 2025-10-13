@@ -42,7 +42,7 @@ export const mockVisitors: Visitor[] = [
     hostName: 'Bob Williams',
     hostDepartment: 'HR',
     reasonForVisit: 'Interview for a new role',
-    selfieUrl: 'https://picsum.photos/seed/v1/100/100',
+    selfieUrl: 'https://picsum.photos/seed/human1/100/100',
     checkInTime: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
     status: 'Checked-in',
     location: { main: 'Corporate Office', sub: '2nd Floor' },
@@ -54,7 +54,7 @@ export const mockVisitors: Visitor[] = [
     hostName: 'David Clark',
     hostDepartment: 'Operations',
     reasonForVisit: 'Scheduled Maintenance',
-    selfieUrl: 'https://picsum.photos/seed/v2/100/100',
+    selfieUrl: 'https://picsum.photos/seed/human2/100/100',
     checkInTime: new Date(Date.now() - 1.5 * 60 * 60 * 1000), // 1.5 hours ago
     status: 'Checked-in',
     location: { main: 'Warehouse', sub: '1st Floor' },
@@ -67,7 +67,7 @@ export const mockVisitors: Visitor[] = [
     hostName: 'Eve Davis',
     hostDepartment: 'Supply Chain',
     reasonForVisit: 'Vendor Meeting',
-    selfieUrl: 'https://picsum.photos/seed/v3/100/100',
+    selfieUrl: 'https://picsum.photos/seed/human3/100/100',
     checkInTime: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
     status: 'Checked-in',
     location: { main: 'Corporate Office', sub: '1st Floor' },
@@ -79,7 +79,7 @@ export const mockVisitors: Visitor[] = [
     hostName: 'Grace Lee',
     hostDepartment: 'Accounts',
     reasonForVisit: 'Invoice clarification',
-    selfieUrl: 'https://picsum.photos/seed/v4/100/100',
+    selfieUrl: 'https://picsum.photos/seed/human4/100/100',
     checkInTime: new Date(Date.now() - 5 * 60 * 60 * 1000),
     checkOutTime: new Date(Date.now() - 4 * 60 * 60 * 1000),
     status: 'Checked-out',

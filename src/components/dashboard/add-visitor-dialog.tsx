@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus } from "lucide-react";
 
@@ -27,6 +28,7 @@ const addVisitorSchema = z.object({
   email: z.string().email().optional().or(z.literal("")),
   hostName: z.string().min(2, { message: "Host name is required." }),
   hostDepartment: z.enum(departments),
+  reasonForVisit: z.string().min(5, { message: "Please provide a reason for the visit." }),
 });
 
 export function AddVisitorDialog() {
@@ -37,6 +39,7 @@ export function AddVisitorDialog() {
       name: "",
       mobile: "",
       email: "",
+      reasonForVisit: "",
     },
   });
 
@@ -132,6 +135,19 @@ export function AddVisitorDialog() {
                     </FormItem>
                 )}
             />
+            <FormField
+                control={form.control}
+                name="reasonForVisit"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Reason for Visit</FormLabel>
+                    <FormControl>
+                        <Textarea placeholder="e.g. Scheduled meeting" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
             <DialogFooter>
                 <Button type="submit">Add and Check-in</Button>
             </DialogFooter>
@@ -141,5 +157,3 @@ export function AddVisitorDialog() {
     </Dialog>
   )
 }
-
-    

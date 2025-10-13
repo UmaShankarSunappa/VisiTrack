@@ -38,6 +38,10 @@ export default function LoginPage() {
                 title: "Login Successful",
                 description: `Welcome, ${receptionist.locationName} receptionist!`,
             });
+            // Store location info for dashboard
+            if (typeof window !== "undefined") {
+              localStorage.setItem('receptionistLocation', receptionist.locationName);
+            }
             router.push('/dashboard');
         } else {
              setError("Invalid credentials. Please try again.");

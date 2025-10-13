@@ -1,3 +1,6 @@
+
+"use client";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Bell,
@@ -5,7 +8,7 @@ import {
   Users,
   Settings,
   PanelLeft,
-  Search,
+  MapPin,
 } from "lucide-react";
 
 import {
@@ -29,7 +32,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
@@ -39,6 +41,16 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+
+  const [locationName, setLocationName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedLocation = localStorage.getItem('receptionistLocation');
+      setLocationName(storedLocation);
+    }
+  }, []);
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -109,6 +121,14 @@ export default function DashboardLayout({
         <div className="flex flex-col">
           <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
             <SidebarTrigger className="hidden md:flex" />
+            
+             {locationName && (
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                <span>{locationName}</span>
+              </div>
+            )}
+
             <div className="w-full flex-1">
              {/* Search has been moved to page */}
             </div>

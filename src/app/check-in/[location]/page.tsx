@@ -29,6 +29,8 @@ export default function CheckInPage({ params }: CheckInPageProps) {
         if (subLocation) {
           locationName = `${mainLocation.name} - ${subLocation.name}`;
         }
+      } else if (subLocId === 'none') {
+        locationName = mainLocation.name;
       }
     }
   }

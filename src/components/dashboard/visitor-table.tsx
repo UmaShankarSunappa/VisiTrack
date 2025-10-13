@@ -299,10 +299,10 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                   <motion.tr
                     key={visitor.id}
                     layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, height: 0, transition: { duration: 0.3 } }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
                     className="hover:bg-muted/50"
                   >
                     <TableCell className="font-medium py-2 px-4 whitespace-nowrap">

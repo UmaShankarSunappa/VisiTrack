@@ -92,11 +92,11 @@ export default {
         'fade-in-up': {
             '0%': {
                 opacity: '0',
-                transform: 'translateY(10px) scale(0.98)',
+                transform: 'translate3d(0, 10px, 0) scale(0.98)',
             },
             '100%': {
                 opacity: '1',
-                transform: 'translateY(0) scale(1)',
+                transform: 'translate3d(0, 0, 0) scale(1)',
             },
         },
         'fade-out-down': {
@@ -113,7 +113,7 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'fade-in-up': 'fade-in-up 0.4s ease-out forwards',
+        'fade-in-up': 'fade-in-up 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards',
         'fade-out-down': 'fade-out-down 0.3s ease-in forwards',
       },
     },

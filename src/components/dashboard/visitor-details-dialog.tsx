@@ -66,10 +66,10 @@ export function VisitorDetailsDialog({ visitor, open, onOpenChange }: VisitorDet
             <span>{visitor.location.main}{visitor.location.sub ? `, ${visitor.location.sub}`: ''}</span>
 
             <strong className="text-muted-foreground">Reason for Visit:</strong>
-            <span>{visitor.reasonForVisit}</span>
+            <span className="col-start-2">{visitor.reasonForVisit}</span>
 
             <strong className="text-muted-foreground">Status:</strong>
-            <Badge variant={visitor.status === 'Checked-in' ? 'secondary' : 'outline'}>
+            <Badge variant={visitor.status === 'Checked-in' ? 'default' : 'outline'}>
               {visitor.status}
             </Badge>
 
@@ -93,3 +93,5 @@ export function VisitorDetailsDialog({ visitor, open, onOpenChange }: VisitorDet
     </Dialog>
   )
 }
+
+    

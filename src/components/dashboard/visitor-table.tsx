@@ -312,7 +312,7 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                         {visitor.mobile}
                     </TableCell>
                     <TableCell className="py-2 px-4 whitespace-nowrap">
-                      <Badge variant={visitor.status === 'Checked-in' ? 'secondary' : 'outline'}>
+                      <Badge variant={visitor.status === 'Checked-in' ? 'default' : 'outline'}>
                         {visitor.status}
                       </Badge>
                     </TableCell>
@@ -406,4 +406,5 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
     )
 }
 
+    
     

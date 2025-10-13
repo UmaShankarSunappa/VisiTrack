@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import * as React from "react"
@@ -20,14 +21,13 @@ import type { Visitor } from "@/lib/types";
 
 
 export default function DashboardPage() {
-    const [date, setDate] = React.useState<Date | undefined>();
-    const [filteredVisitors, setFilteredVisitors] = React.useState<Visitor[]>(mockVisitors);
+    const [date, setDate] = React.useState<Date | undefined>(new Date());
+    const [filteredVisitors, setFilteredVisitors] = React.useState<Visitor[]>([]);
 
     React.useEffect(() => {
         let visitors = mockVisitors;
-        if (date) {
-            visitors = mockVisitors.filter(visitor => isSameDay(visitor.checkInTime, date));
-        }
+        const selectedDate = date || new Date();
+        visitors = mockVisitors.filter(visitor => isSameDay(visitor.checkInTime, selectedDate));
         setFilteredVisitors(visitors);
     }, [date]);
 
@@ -59,7 +59,7 @@ export default function DashboardPage() {
                 </Popover>
                 {date && <Button variant="ghost" onClick={() => setDate(undefined)}>Clear</Button>}
             </div>
-            <StatsCards />
+            <StatsCards visitors={filteredVisitors} />
             <VisitorTable visitors={filteredVisitors} />
         </>
     )

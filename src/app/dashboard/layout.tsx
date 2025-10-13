@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
   Home,
   Users,
   Settings,
@@ -92,41 +91,6 @@ export default function DashboardLayout({
             )}
           </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter>
-           <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative w-full justify-start h-12 gap-2 p-2">
-                   <Avatar className="w-8 h-8">
-                      <AvatarImage src={`https://picsum.photos/seed/${isAdmin ? 'admin' : 'receptionist'}/100/100`} />
-                      <AvatarFallback>{isAdmin ? 'AD' : 'RD'}</AvatarFallback>
-                    </Avatar>
-                    <div className="text-left">
-                        <p className="text-sm font-medium">{isAdmin ? 'Admin' : 'Reception Desk'}</p>
-                        <p className="text-xs text-muted-foreground">{isAdmin ? 'admin@example.com' : 'reception@example.com'}</p>
-                    </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{isAdmin ? 'Admin' : 'Reception'}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                       {isAdmin ? 'admin@example.com' : 'reception@example.com'}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                 <Link href="/login">
-                    <DropdownMenuItem>
-                        Log out
-                    </DropdownMenuItem>
-                </Link>
-              </DropdownMenuContent>
-            </DropdownMenu>
-        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col">
@@ -174,10 +138,34 @@ export default function DashboardLayout({
                     </nav>
                 </SheetContent>
             </Sheet>
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">Toggle notifications</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                   <Avatar className="h-8 w-8">
+                      <AvatarImage src={`https://picsum.photos/seed/${isAdmin ? 'admin' : 'receptionist'}/100/100`} />
+                      <AvatarFallback>{isAdmin ? 'AD' : 'RD'}</AvatarFallback>
+                    </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{isAdmin ? 'Admin' : 'Reception'}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                       {isAdmin ? 'admin@example.com' : 'reception@example.com'}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                 <Link href="/login">
+                    <DropdownMenuItem>
+                        Log out
+                    </DropdownMenuItem>
+                </Link>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </header>
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
             {children}

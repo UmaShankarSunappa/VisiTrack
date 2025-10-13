@@ -2,7 +2,6 @@
 "use client"
 
 import * as React from "react"
-import Image from "next/image"
 import { format, isSameDay } from "date-fns"
 import {
   File,
@@ -200,36 +199,36 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Visitor</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden md:table-cell">
+                  <TableHead className="py-2 px-4">Visitor</TableHead>
+                  <TableHead className="py-2 px-4">Status</TableHead>
+                  <TableHead className="hidden md:table-cell py-2 px-4">
                     Host
                   </TableHead>
-                  <TableHead className="hidden md:table-cell">
+                  <TableHead className="hidden md:table-cell py-2 px-4">
                     Check-in Time
                   </TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="py-2 px-4">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {visitors.map(visitor => (
                   <TableRow key={visitor.id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium py-2 px-4">
                         <div>{visitor.name}</div>
                         <div className="text-sm text-muted-foreground">{visitor.mobile}</div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-2 px-4">
                       <Badge variant={visitor.status === 'Checked-in' ? 'secondary' : 'outline'}>
                         {visitor.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">
+                    <TableCell className="hidden md:table-cell py-2 px-4">
                       {visitor.hostName} ({visitor.hostDepartment})
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">
+                    <TableCell className="hidden md:table-cell py-2 px-4">
                       {format(visitor.checkInTime, "PPpp")}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-2 px-4">
                         <TooltipProvider>
                             <div className="flex items-center gap-2">
                                 <Tooltip>
@@ -239,6 +238,7 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                                             size="icon"
                                             variant="outline"
                                             onClick={() => handleViewDetails(visitor)}
+                                            className="h-8 w-8"
                                         >
                                             <Eye className="h-4 w-4" />
                                         </Button>
@@ -252,7 +252,7 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <AlertDialogTrigger asChild>
-                                                    <Button aria-label="Check-out" size="icon" variant="destructive">
+                                                    <Button aria-label="Check-out" size="icon" variant="destructive" className="h-8 w-8">
                                                         <LogOut className="h-4 w-4" />
                                                     </Button>
                                                 </AlertDialogTrigger>

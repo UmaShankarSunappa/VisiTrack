@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -9,6 +10,7 @@ import {
   MoreHorizontal,
   LogOut,
   Calendar as CalendarIcon,
+  Eye,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -52,7 +54,6 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
@@ -61,21 +62,23 @@ import { cn } from "@/lib/utils"
 import type { Visitor } from "@/lib/types"
 import { AddVisitorDialog } from "./add-visitor-dialog"
 import { useToast } from "@/hooks/use-toast"
+import { VisitorDetailsDialog } from "./visitor-details-dialog"
 
 
 export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
     const { toast } = useToast()
     const [visitorList, setVisitorList] = React.useState(visitors)
     const [date, setDate] = React.useState<Date | undefined>()
+    const [selectedVisitor, setSelectedVisitor] = React.useState<Visitor | null>(null);
 
     React.useEffect(() => {
+        let filteredVisitors = visitors;
         if (date) {
-            const filteredVisitors = visitors.filter(visitor => isSameDay(visitor.checkInTime, date));
-            setVisitorList(filteredVisitors);
-        } else {
-            setVisitorList(visitors);
+            filteredVisitors = visitors.filter(visitor => isSameDay(visitor.checkInTime, date));
         }
+        setVisitorList(filteredVisitors);
     }, [date, visitors]);
+
 
     const handleCheckout = (visitorId: string) => {
         const updatedList = visitorList.map(v => 
@@ -90,7 +93,12 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
         });
     }
 
+    const handleViewDetails = (visitor: Visitor) => {
+        setSelectedVisitor(visitor);
+    }
+
   return (
+    <>
     <Tabs defaultValue="all">
       <div className="flex items-center">
         <TabsList>
@@ -113,7 +121,7 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
               <DropdownMenuSeparator />
                <Popover>
                 <PopoverTrigger asChild>
-                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                   <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="h-auto">
                      <Button
                         variant={"outline"}
                         className={cn(
@@ -135,6 +143,8 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
                     />
                 </PopoverContent>
             </Popover>
+               <DropdownMenuItem onSelect={() => setDate(undefined)}>Clear Date Filter</DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuCheckboxItem checked>
                 Status
               </DropdownMenuCheckboxItem>
@@ -151,20 +161,32 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
         </div>
       </div>
       <TabsContent value="all">
-        <VisitorListCard visitors={visitorList} handleCheckout={handleCheckout} />
+        <VisitorListCard visitors={visitorList} handleCheckout={handleCheckout} handleViewDetails={handleViewDetails} />
       </TabsContent>
       <TabsContent value="checked-in">
-        <VisitorListCard visitors={visitorList.filter(v => v.status === 'Checked-in')} handleCheckout={handleCheckout} />
+        <VisitorListCard visitors={visitorList.filter(v => v.status === 'Checked-in')} handleCheckout={handleCheckout} handleViewDetails={handleViewDetails} />
       </TabsContent>
        <TabsContent value="checked-out">
-        <VisitorListCard visitors={visitorList.filter(v => v.status === 'Checked-out')} handleCheckout={handleCheckout} />
+        <VisitorListCard visitors={visitorList.filter(v => v.status === 'Checked-out')} handleCheckout={handleCheckout} handleViewDetails={handleViewDetails} />
       </TabsContent>
     </Tabs>
+     {selectedVisitor && (
+        <VisitorDetailsDialog 
+            visitor={selectedVisitor} 
+            open={!!selectedVisitor} 
+            onOpenChange={(isOpen) => {
+                if (!isOpen) {
+                    setSelectedVisitor(null);
+                }
+            }}
+        />
+    )}
+    </>
   )
 }
 
 
-function VisitorListCard({ visitors, handleCheckout }: { visitors: Visitor[], handleCheckout: (id: string) => void }) {
+function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visitors: Visitor[], handleCheckout: (id: string) => void, handleViewDetails: (visitor: Visitor) => void }) {
     return (
         <Card>
           <CardHeader>
@@ -234,7 +256,10 @@ function VisitorListCard({ visitors, handleCheckout }: { visitors: Visitor[], ha
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>View Details</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewDetails(visitor)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
                           {visitor.status === 'Checked-in' && (
                              <AlertDialog>
                                 <AlertDialogTrigger asChild>

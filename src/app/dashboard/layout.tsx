@@ -75,12 +75,6 @@ export default function DashboardLayout({
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="/dashboard/visitors" isActive={pathname === '/dashboard/visitors'}>
-                <Users />
-                Visitors
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
               <SidebarMenuButton href="/dashboard/settings" isActive={pathname === '/dashboard/settings'}>
                 <Settings />
                 Settings
@@ -162,10 +156,6 @@ export default function DashboardLayout({
                         <Link href="/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname === '/dashboard'}>
                             <Home className="h-4 w-4" />
                             Dashboard
-                        </Link>
-                        <Link href="/dashboard/visitors" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname === '/dashboard/visitors'}>
-                            <Users className="h-4 w-4" />
-                            Visitors
                         </Link>
                         <Link href="/dashboard/settings" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname === '/dashboard/settings'}>
                             <Settings className="h-4 w-4" />

@@ -5,14 +5,7 @@ import { locations } from "@/lib/data";
 import { Building } from "lucide-react";
 import Link from 'next/link';
 
-// Define a type for the component's props
-type CheckInPageProps = {
-  params: {
-    location: string;
-  };
-};
-
-export default function CheckInPage({ params }: CheckInPageProps) {
+export default function CheckInPage({ params }: { params: { location: string } }) {
   let locationName = 'Unknown Location';
 
   // This logic is designed to handle location strings that might contain hyphens themselves.

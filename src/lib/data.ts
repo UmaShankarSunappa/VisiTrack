@@ -1,3 +1,4 @@
+
 import type { MainLocation, Visitor, Department } from './types';
 
 export const locations: MainLocation[] = [
@@ -59,9 +60,9 @@ export const mockVisitors: Visitor[] = [
   {
     id: '1',
     name: 'Priya Sharma',
-    mobile: '123-456-7890',
-    email: 'priya@example.com',
-    hostName: 'Bob Williams',
+    mobile: '9876543210',
+    email: 'priya.sharma@example.com',
+    hostName: 'Rajesh Gupta',
     hostDepartment: 'HR',
     reasonForVisit: 'Interview for a new role',
     selfieUrl: 'https://picsum.photos/seed/priya/100/100',
@@ -72,8 +73,8 @@ export const mockVisitors: Visitor[] = [
   {
     id: '2',
     name: 'Arjun Kumar',
-    mobile: '234-567-8901',
-    hostName: 'David Clark',
+    mobile: '9123456789',
+    hostName: 'Sanjay Verma',
     hostDepartment: 'Operations',
     reasonForVisit: 'Scheduled Maintenance',
     selfieUrl: 'https://picsum.photos/seed/arjun/100/100',
@@ -84,9 +85,9 @@ export const mockVisitors: Visitor[] = [
   {
     id: '3',
     name: 'Ananya Singh',
-    mobile: '345-678-9012',
-    email: 'ananya@example.com',
-    hostName: 'Eve Davis',
+    mobile: '9988776655',
+    email: 'ananya.singh@example.com',
+    hostName: 'Sunita Reddy',
     hostDepartment: 'Supply Chain',
     reasonForVisit: 'Vendor Meeting',
     selfieUrl: 'https://picsum.photos/seed/ananya/100/100',
@@ -97,8 +98,8 @@ export const mockVisitors: Visitor[] = [
     {
     id: '4',
     name: 'Vikram Patel',
-    mobile: '456-789-0123',
-    hostName: 'Grace Lee',
+    mobile: '9001234567',
+    hostName: 'Amit Desai',
     hostDepartment: 'Accounts',
     reasonForVisit: 'Invoice clarification',
     selfieUrl: 'https://picsum.photos/seed/vikram/100/100',
@@ -108,3 +109,4 @@ export const mockVisitors: Visitor[] = [
     location: { main: 'Corporate Office', sub: '3rd Floor' },
   },
 ];
+

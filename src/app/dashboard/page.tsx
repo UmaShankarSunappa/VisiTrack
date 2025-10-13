@@ -74,6 +74,7 @@ export default function DashboardPage() {
         // Filter by location if user is not admin
         if (userRole !== 'admin' && locationName) {
             visitors = visitors.filter(visitor => {
+                if (!visitor.location) return false;
                 const visitorLocationString = `${visitor.location.main}${visitor.location.sub ? ` - ${visitor.location.sub}` : ''}`;
                 return visitorLocationString === locationName;
             });
@@ -119,3 +120,5 @@ export default function DashboardPage() {
         </>
     )
 }
+
+    

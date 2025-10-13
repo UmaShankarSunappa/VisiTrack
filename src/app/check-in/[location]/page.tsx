@@ -29,7 +29,7 @@ export default function CheckInPage({ params }: CheckInPageProps) {
           </Link>
         </div>
       </header>
-      <main className="container mx-auto px-0 sm:px-4 py-8">
+      <main className="container mx-auto px-0 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8 px-4">
             <h2 className="text-3xl font-bold font-headline">Visitor Self Check-in</h2>

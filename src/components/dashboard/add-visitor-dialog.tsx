@@ -35,6 +35,10 @@ const step1Schema = z.object({
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
 });
 
+const otpSchema = z.object({
+  otp: z.string().length(6, "OTP must be 6 digits."),
+});
+
 const step2Schema = z.object({
   hostName: z.string().min(2, "Host name is required."),
   hostDepartment: z.enum(departments),
@@ -42,6 +46,7 @@ const step2Schema = z.object({
 });
 
 type Step1Data = z.infer<typeof step1Schema>;
+type OtpData = z.infer<typeof otpSchema>;
 type Step2Data = z.infer<typeof step2Schema>;
 type FormData = Step1Data & Step2Data & { selfie: string };
 
@@ -168,13 +173,53 @@ export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
 
 
 function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; defaultValues: Partial<Step1Data> }) {
+  const [otpSent, setOtpSent] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(isOtpVerified);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const { toast } = useToast();
+  
   const form = useForm<Step1Data>({
     resolver: zodResolver(step1Schema),
     defaultValues,
   });
 
+  const otpForm = useForm<OtpData>({
+    resolver: zodResolver(otpSchema),
+  });
+
+  const handleSendOtp = async () => {
+    const mobileValid = await form.trigger("mobile");
+    if (!mobileValid) return;
+    setIsSendingOtp(true);
+    setTimeout(() => {
+      setOtpSent(true);
+      setIsSendingOtp(false);
+      toast({ title: "OTP Sent", description: "An OTP has been sent to your mobile. (It's 123456)" });
+    }, 1000);
+  };
+
+  const handleVerifyOtp = (data: OtpData) => {
+    setIsVerifyingOtp(true);
+    setTimeout(() => {
+      if (data.otp === "123456") {
+        setIsOtpVerified(true);
+        toast({ title: "OTP Verified", description: "Mobile number is verified.", variant: "default" });
+      } else {
+        toast({ title: "Invalid OTP", description: "Please enter the correct OTP.", variant: "destructive" });
+        otpForm.setError("otp", { message: "Incorrect OTP" });
+      }
+      setIsVerifyingOtp(false);
+    }, 1000);
+  };
+
   const onSubmit: SubmitHandler<Step1Data> = (data) => {
-    onNext(data);
+     if (isOtpVerified) {
+      onNext(data);
+    } else {
+       toast({ title: "Verification Required", description: "Please verify the mobile number with OTP.", variant: "destructive" });
+       form.trigger();
+    }
   };
   
   return (
@@ -196,22 +241,57 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
             </FormItem>
           )}
         />
-        <FormField
-            control={form.control}
-            name="mobile"
-            render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Mobile Number</FormLabel>
+        <div className="space-y-2">
+            <FormLabel>Mobile Number</FormLabel>
+            <div className="flex items-start gap-2">
+            <FormField
+                control={form.control}
+                name="mobile"
+                render={({ field }) => (
+                    <FormItem className="flex-grow">
+                        <FormControl>
+                            <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="9876543210" {...field} className="pl-10" disabled={otpSent} />
+                            </div>
+                        </FormControl>
+                         <FormMessage />
+                    </FormItem>
+                )}
+                />
+                {!otpSent && <Button type="button" onClick={handleSendOtp} disabled={isSendingOtp}>
+                    {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Send OTP
+                </Button>}
+            </div>
+        </div>
+
+        {otpSent && !isOtpVerified && (
+          <Form {...otpForm}>
+            <div className="flex items-end gap-2 p-4 border rounded-lg bg-muted/30">
+              <FormField
+                control={otpForm.control}
+                name="otp"
+                render={({ field }) => (
+                  <FormItem className="flex-grow">
+                    <FormLabel>Enter OTP</FormLabel>
                     <FormControl>
                         <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="9876543210" {...field} className="pl-10" />
+                            <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="123456" {...field} className="pl-10" />
                         </div>
                     </FormControl>
-                      <FormMessage />
-                </FormItem>
-            )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="button" onClick={otpForm.handleSubmit(handleVerifyOtp)} disabled={isVerifyingOtp}>
+                {isVerifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Verify OTP
+              </Button>
+            </div>
+          </Form>
+        )}
 
         <FormField
           control={form.control}
@@ -230,7 +310,7 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
           )}
         />
         <DialogFooter>
-            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+            <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Next
             </Button>
@@ -434,3 +514,4 @@ function Step3({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
   );
 }
 
+    

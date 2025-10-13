@@ -33,6 +33,28 @@ export const locations: MainLocation[] = [
 
 export const departments: Department[] = ['Supply Chain', 'Accounts', 'HR', 'Operations'];
 
+export const receptionists = [
+  {
+    locationId: 'corporate-office-1st-floor',
+    locationName: 'Corporate Office - 1st Floor',
+    email: 'reception.cop.1f@example.com',
+    password: 'password123',
+  },
+  {
+    locationId: 'corporate-office-2nd-floor',
+    locationName: 'Corporate Office - 2nd Floor',
+    email: 'reception.cop.2f@example.com',
+    password: 'password123',
+  },
+  {
+    locationId: 'corporate-office-3rd-floor',
+    locationName: 'Corporate Office - 3rd Floor',
+    email: 'reception.cop.3f@example.com',
+    password: 'password123',
+  },
+];
+
+
 export const mockVisitors: Visitor[] = [
   {
     id: '1',

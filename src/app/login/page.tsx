@@ -1,22 +1,47 @@
+
 "use client"
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
-import { Mail, Key } from "lucide-react";
+import { Mail, Key, Building } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { receptionists } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
     const router = useRouter();
+    const { toast } = useToast();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [locationId, setLocationId] = useState<string | undefined>();
+    const [error, setError] = useState('');
 
     const handleLogin = (event: React.FormEvent) => {
         event.preventDefault();
-        // In a real app, you'd have authentication logic here.
-        // For this demo, we'll just redirect to the dashboard.
-        router.push('/dashboard');
+        setError('');
+
+        if (!locationId) {
+            setError("Please select a location.");
+            return;
+        }
+
+        const receptionist = receptionists.find(r => r.locationId === locationId);
+
+        if (receptionist && receptionist.email === email && receptionist.password === password) {
+            toast({
+                title: "Login Successful",
+                description: `Welcome, ${receptionist.locationName} receptionist!`,
+            });
+            router.push('/dashboard');
+        } else {
+             setError("Invalid credentials. Please try again.");
+        }
     }
 
   return (
@@ -34,10 +59,34 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <div className="relative">
+                    <Building className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
+                    <Select value={locationId} onValueChange={(value) => {
+                        setLocationId(value)
+                        const receptionist = receptionists.find(r => r.locationId === value);
+                        if(receptionist) {
+                            setEmail(receptionist.email);
+                        }
+                    }}>
+                        <SelectTrigger className="pl-10">
+                            <SelectValue placeholder="Select your location" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {receptionists.map((rec) => (
+                                <SelectItem key={rec.locationId} value={rec.locationId}>
+                                    {rec.locationName}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
-                <Input id="email" type="email" placeholder="reception@example.com" required className="pl-10"/>
+                <Input id="email" type="email" placeholder="reception@example.com" required className="pl-10" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
             </div>
             <div className="space-y-2">
@@ -49,9 +98,10 @@ export default function LoginPage() {
               </div>
               <div className="relative">
                 <Key className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
-                <Input id="password" type="password" required className="pl-10"/>
+                <Input id="password" type="password" required className="pl-10" value={password} onChange={e => setPassword(e.target.value)} placeholder="password123"/>
               </div>
             </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full">
               Login
             </Button>

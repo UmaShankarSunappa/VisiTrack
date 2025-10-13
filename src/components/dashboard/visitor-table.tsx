@@ -160,7 +160,7 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
             "Name": v.name,
             "Mobile": v.mobile,
             "Email": v.email || 'N/A',
-            "Host Name": v.hostName,
+            "Person To Meet": v.hostName,
             "Host Department": v.hostDepartment,
             "Reason For Visit": v.reasonForVisit,
             "Location": `${v.location.main}${v.location.sub ? ` - ${v.location.sub}` : ''}`,
@@ -279,7 +279,7 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                   <TableHead className="py-2 px-4 whitespace-nowrap">Mobile</TableHead>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Status</TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
-                    Host Name
+                    Person To Meet
                   </TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                     Department
@@ -406,5 +406,4 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
     )
 }
 
-    
     

@@ -56,7 +56,7 @@ export function VisitorDetailsDialog({ visitor, open, onOpenChange }: VisitorDet
               </>
             )}
 
-            <strong className="text-muted-foreground">Host:</strong>
+            <strong className="text-muted-foreground">Person to Meet:</strong>
             <span>{visitor.hostName}</span>
 
             <strong className="text-muted-foreground">Department:</strong>

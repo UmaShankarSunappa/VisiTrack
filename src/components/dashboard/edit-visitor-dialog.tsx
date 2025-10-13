@@ -27,7 +27,7 @@ const editVisitorSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   mobile: z.string().transform((val) => val.replace(/\D/g, '')).pipe(z.string().length(10, "Please enter a valid 10-digit mobile number.")),
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
-  hostName: z.string().min(2, "Host name is required."),
+  hostName: z.string().min(2, "Person to meet is required."),
   hostDepartment: z.enum(departments),
   reasonForVisit: z.string().min(5, "Please provide a reason for your visit."),
 });
@@ -148,7 +148,7 @@ export function EditVisitorDialog({ visitor, open, onOpenChange, onVisitorUpdate
                 name="hostName"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Host Name</FormLabel>
+                    <FormLabel>Person To Meet</FormLabel>
                     <FormControl>
                         <div className="relative">
                             <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

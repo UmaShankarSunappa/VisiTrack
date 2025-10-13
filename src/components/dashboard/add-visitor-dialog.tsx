@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useForm } from "react-hook-form";
@@ -22,7 +23,7 @@ import { UserPlus } from "lucide-react";
 
 const addVisitorSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  mobile: z.string().min(10, { message: "Mobile number must be at least 10 digits." }),
+  mobile: z.string().min(10, { message: "Mobile number must be at least 10 digits." }).max(15, { message: "Mobile number is too long." }),
   email: z.string().email().optional().or(z.literal("")),
   hostName: z.string().min(2, { message: "Host name is required." }),
   hostDepartment: z.enum(departments),
@@ -140,3 +141,5 @@ export function AddVisitorDialog() {
     </Dialog>
   )
 }
+
+    

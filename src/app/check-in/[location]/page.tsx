@@ -1,3 +1,4 @@
+
 import { CheckInFlow } from "@/components/check-in-flow";
 import { locations } from "@/lib/data";
 import { Building } from "lucide-react";
@@ -13,11 +14,18 @@ export default function CheckInPage({ params }: CheckInPageProps) {
   const [mainLocId, subLocId] = params.location.split('-');
   
   const mainLocation = locations.find(l => l.id === mainLocId);
-  const subLocation = mainLocation?.subLocations.find(s => s.id === subLocId);
-
-  const locationName = mainLocation
-    ? `${mainLocation.name}${subLocation ? `, ${subLocation.name}` : ''}`
-    : 'Unknown Location';
+  
+  let locationName = 'Unknown Location';
+  if (mainLocation) {
+    if (subLocId && subLocId !== 'none') {
+      const subLocation = mainLocation.subLocations.find(s => s.id === subLocId);
+      if (subLocation) {
+        locationName = `${mainLocation.name}-${subLocation.name}`;
+      }
+    } else {
+      locationName = mainLocation.name;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">

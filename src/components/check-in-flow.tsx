@@ -19,6 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, LogOut } from "lucide-react";
 import type { Visitor } from "@/lib/types";
+import { useRouter } from "next/navigation";
+
 
 const combinedSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -65,8 +67,9 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
   const [formData, setFormData] = useState<Partial<FormData>>({});
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const router = useRouter();
 
-  const totalSteps = 3;
+  const totalSteps = 2;
   const progress = (step / totalSteps) * 100;
 
   const handleNextStep = (data: Partial<FormData>) => {
@@ -79,10 +82,54 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
   const handlePrevStep = () => {
     setStep((prev) => prev - 1);
   };
+  
+  const handleFinalSubmit = (data: Partial<FormData>) => {
+    const finalData = { ...formData, ...data } as FormData;
+    const [main, sub] = locationName.split(' - ');
+    const newVisitor: Visitor = {
+      id: new Date().toISOString(), // Simple unique ID
+      ...finalData,
+      selfieUrl: finalData.selfie,
+      checkInTime: new Date(),
+      status: 'Checked-in',
+      location: { main, sub },
+    };
 
-  const resetFlow = () => {
-    setFormData({});
-    setStep(1);
+    let allVisitors: Visitor[] = [];
+    const storedVisitors = localStorage.getItem('visitors');
+    const baseVisitors = mockVisitors.map(v => ({
+        ...v,
+        checkInTime: new Date(v.checkInTime),
+        checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+    }));
+
+    if (storedVisitors) {
+        try {
+            const parsedStoredVisitors = JSON.parse(storedVisitors).map((v: any) => ({
+                ...v,
+                checkInTime: new Date(v.checkInTime),
+                checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+            }));
+            const visitorMap = new Map();
+            [...baseVisitors, ...parsedStoredVisitors].forEach(v => visitorMap.set(v.id, v));
+            allVisitors = Array.from(visitorMap.values());
+        } catch(e) {
+            console.error("Failed to parse visitors from localStorage on check-in", e);
+            allVisitors = baseVisitors;
+        }
+    } else {
+       allVisitors = baseVisitors;
+    }
+
+    const updatedVisitors = [...allVisitors, newVisitor];
+    localStorage.setItem('visitors', JSON.stringify(updatedVisitors));
+
+    toast({
+        title: "Check-in Successful!",
+        description: `Your host, ${finalData.hostName}, has been notified.`,
+    });
+
+    router.push('/');
   }
 
   const renderStep = () => {
@@ -90,9 +137,7 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
       case 1:
         return <VisitorDetailsStep onNext={handleNextStep} defaultValues={formData} />;
       case 2:
-        return <Step2 onNext={handleNextStep} onBack={handlePrevStep} />;
-      case 3:
-        return <Step3 formData={formData as FormData} locationName={locationName} onReset={resetFlow} />;
+        return <Step2 onNext={handleFinalSubmit} onBack={handlePrevStep} />;
       default:
         return null;
     }
@@ -398,7 +443,7 @@ function Step2({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
               Retake
             </Button>
             <Button onClick={handleContinue} className="w-full">
-              Continue
+              Finish Check-in
             </Button>
         </div>
       )}
@@ -408,113 +453,6 @@ function Step2({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
           Back
         </Button>
       </div>
-    </div>
-  );
-}
-
-function Step3({ formData, locationName, onReset }: { formData: FormData; locationName: string; onReset: () => void; }) {
-  const [checkedOut, setCheckedOut] = useState(false);
-  const { toast } = useToast();
-
-   useEffect(() => {
-    // This effect runs once when the component mounts.
-    const [main, sub] = locationName.split(' - ');
-    const newVisitor: Visitor = {
-      id: new Date().toISOString(), // Simple unique ID
-      ...formData,
-      selfieUrl: formData.selfie,
-      checkInTime: new Date(),
-      status: 'Checked-in',
-      location: { main, sub },
-    };
-
-    let allVisitors: Visitor[] = [];
-    const storedVisitors = localStorage.getItem('visitors');
-    
-    // Use mock data as the base
-    const baseVisitors = mockVisitors.map(v => ({
-        ...v,
-        checkInTime: new Date(v.checkInTime),
-        checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
-    }));
-
-    if (storedVisitors) {
-        try {
-            const parsedStoredVisitors = JSON.parse(storedVisitors).map((v: any) => ({
-                ...v,
-                checkInTime: new Date(v.checkInTime),
-                checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
-            }));
-             // Combine mock data with stored data, avoiding duplicates
-            const visitorMap = new Map();
-            [...baseVisitors, ...parsedStoredVisitors].forEach(v => visitorMap.set(v.id, v));
-            allVisitors = Array.from(visitorMap.values());
-        } catch(e) {
-            console.error("Failed to parse visitors from localStorage on check-in", e);
-            allVisitors = baseVisitors;
-        }
-    } else {
-       allVisitors = baseVisitors;
-    }
-
-    // Add the new visitor and save back to localStorage
-    const updatedVisitors = [...allVisitors, newVisitor];
-    localStorage.setItem('visitors', JSON.stringify(updatedVisitors));
-    
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array ensures this runs only once.
-
-
-  const handleSelfCheckout = () => {
-    // In a real app, this would be an API call
-    setCheckedOut(true);
-    toast({
-        title: "Checked Out",
-        description: "You have successfully checked out."
-    });
-  }
-
-  if (checkedOut) {
-    return (
-        <div className="text-center space-y-6 py-8 flex flex-col items-center">
-            <AnimatedCheckmark />
-            <h2 className="text-2xl font-bold">You have Checked Out</h2>
-            <p className="text-muted-foreground">Thank you for visiting. Have a great day!</p>
-            <Button onClick={onReset}>Start New Check-in</Button>
-        </div>
-    )
-  }
-
-  return (
-    <div className="text-center space-y-6 flex flex-col items-center">
-      <AnimatedCheckmark />
-      <h2 className="text-2xl font-bold">Check-in Successful!</h2>
-      <p className="text-muted-foreground">
-        Your host, <span className="font-semibold text-primary">{formData.hostName}</span>, has been notified of your arrival.
-      </p>
-
-      <Card className="text-left w-full">
-        <CardContent className="pt-6 space-y-4">
-          <div className="flex justify-center">
-            {formData.selfie && <Image src={formData.selfie} alt="Visitor selfie" width={100} height={100} className="rounded-full border-4 border-primary" />}
-          </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-            <strong className="text-muted-foreground">Visitor:</strong>
-            <span>{formData.name}</span>
-            <strong className="text-muted-foreground">Host:</strong>
-            <span>{formData.hostName}</span>
-            <strong className="text-muted-foreground">Department:</strong>
-            <span>{formData.hostDepartment}</span>
-            <strong className="text-muted-foreground">Location:</strong>
-            <span>{locationName}</span>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Button onClick={handleSelfCheckout} variant="destructive" className="w-full">
-          <LogOut className="mr-2 h-4 w-4" />
-          Self Check-out
-      </Button>
     </div>
   );
 }

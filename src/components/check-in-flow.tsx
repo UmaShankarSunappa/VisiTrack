@@ -11,7 +11,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -69,7 +69,7 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
   const { toast } = useToast();
   const router = useRouter();
 
-  const totalSteps = 2;
+  const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
 
   const handleNextStep = (data: Partial<FormData>) => {
@@ -123,21 +123,50 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
 
     const updatedVisitors = [...allVisitors, newVisitor];
     localStorage.setItem('visitors', JSON.stringify(updatedVisitors));
+    setFormData(newVisitor);
 
     toast({
         title: "Check-in Successful!",
         description: `Your host, ${finalData.hostName}, has been notified.`,
     });
-
-    router.push('/');
+    
+    setStep(3);
   }
+  
+  const handleSelfCheckout = () => {
+      const visitorId = (formData as Visitor).id;
+      const storedVisitors = localStorage.getItem('visitors');
+      if (storedVisitors) {
+          try {
+              let visitors: Visitor[] = JSON.parse(storedVisitors).map((v: any) => ({
+                  ...v,
+                  checkInTime: new Date(v.checkInTime),
+                  checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+              }));
+              const updatedVisitors = visitors.map(v => 
+                  v.id === visitorId ? { ...v, status: 'Checked-out', checkOutTime: new Date() } : v
+              );
+              localStorage.setItem('visitors', JSON.stringify(updatedVisitors));
+              toast({
+                  title: "Check-out Successful",
+                  description: "You have been successfully checked out. Thank you for your visit!",
+              });
+              router.push('/');
+          } catch (e) {
+              console.error("Failed to process checkout", e);
+          }
+      }
+  };
+
 
   const renderStep = () => {
     switch (step) {
       case 1:
         return <VisitorDetailsStep onNext={handleNextStep} defaultValues={formData} />;
       case 2:
-        return <Step2 onNext={handleFinalSubmit} onBack={handlePrevStep} />;
+        return <SelfieStep onNext={handleFinalSubmit} onBack={handlePrevStep} />;
+      case 3:
+        return <SuccessStep visitor={formData as Visitor} onSelfCheckout={handleSelfCheckout} />;
       default:
         return null;
     }
@@ -147,7 +176,7 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
     <Card className="w-full shadow-xl sm:rounded-xl rounded-none border-x-0 sm:border-x animate-fade-in-up">
       <CardHeader>
         <Progress value={progress} className="w-full" />
-        <CardTitle className="text-center pt-4">Step {step} of {totalSteps}</CardTitle>
+        <CardTitle className="text-center pt-4">{step === 3 ? "Complete" : `Step ${step} of ${totalSteps}`}</CardTitle>
       </CardHeader>
       <CardContent>{renderStep()}</CardContent>
     </Card>
@@ -359,7 +388,7 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: Combined
   );
 }
 
-function Step2({ onNext, onBack }: { onNext: (data: { selfie: string }) => void; onBack: () => void; }) {
+function SelfieStep({ onNext, onBack }: { onNext: (data: { selfie: string }) => void; onBack: () => void; }) {
   const [selfie, setSelfie] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -455,6 +484,39 @@ function Step2({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
       </div>
     </div>
   );
+}
+
+function SuccessStep({ visitor, onSelfCheckout }: { visitor: Visitor, onSelfCheckout: () => void }) {
+    const router = useRouter();
+
+    if (!visitor) {
+        return (
+            <div className="text-center space-y-4">
+                <p>Loading...</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="text-center space-y-4 flex flex-col items-center">
+            <AnimatedCheckmark />
+            <h2 className="text-2xl font-bold">Check-in Successful!</h2>
+            <p className="text-muted-foreground">
+                Welcome, <span className="font-semibold text-primary">{visitor.name}</span>. 
+                Your host, <span className="font-semibold text-primary">{visitor.hostName}</span>, has been notified.
+            </p>
+            
+            <div className="w-full space-y-2 pt-4">
+                 <Button onClick={onSelfCheckout} className="w-full" variant="destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Self Check-out
+                </Button>
+                <Button onClick={() => router.push('/')} className="w-full" variant="outline">
+                    Done
+                </Button>
+            </div>
+        </div>
+    )
 }
 
     

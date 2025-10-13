@@ -64,25 +64,26 @@ export function QrCodeGenerator() {
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Sub Location</label>
-          <Select
-            onValueChange={(id) => { setSubLocationId(id); setShowQr(false); }}
-            disabled={!selectedMainLocation || selectedMainLocation.subLocations.length === 0}
-            value={subLocationId ?? undefined}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select sub-location" />
-            </SelectTrigger>
-            <SelectContent>
-              {selectedMainLocation?.subLocations.map((sub) => (
-                <SelectItem key={sub.id} value={sub.id}>
-                  {sub.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {selectedMainLocation && selectedMainLocation.subLocations.length > 0 && (
+            <div className="space-y-2">
+            <label className="text-sm font-medium">Sub Location</label>
+            <Select
+                onValueChange={(id) => { setSubLocationId(id); setShowQr(false); }}
+                value={subLocationId ?? undefined}
+            >
+                <SelectTrigger>
+                <SelectValue placeholder="Select sub-location" />
+                </SelectTrigger>
+                <SelectContent>
+                {selectedMainLocation?.subLocations.map((sub) => (
+                    <SelectItem key={sub.id} value={sub.id}>
+                    {sub.name}
+                    </SelectItem>
+                ))}
+                </SelectContent>
+            </Select>
+            </div>
+        )}
       </div>
       
       <Button onClick={() => setShowQr(true)} disabled={!isReadyForQr} className="w-full">

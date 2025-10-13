@@ -2,6 +2,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Bell,
   Home,
@@ -42,7 +43,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-
+  const pathname = usePathname();
   const [locationName, setLocationName] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
 
@@ -68,19 +69,19 @@ export default function DashboardLayout({
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton href="/dashboard" isActive>
+              <SidebarMenuButton href="/dashboard" isActive={pathname === '/dashboard'}>
                 <Home />
                 Dashboard
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#">
+              <SidebarMenuButton href="/dashboard/visitors" isActive={pathname === '/dashboard/visitors'}>
                 <Users />
                 Visitors
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#">
+              <SidebarMenuButton href="/dashboard/settings" isActive={pathname === '/dashboard/settings'}>
                 <Settings />
                 Settings
               </SidebarMenuButton>
@@ -158,15 +159,15 @@ export default function DashboardLayout({
                         <Logo />
                     </div>
                      <nav className="grid gap-2 text-lg font-medium p-4">
-                        <Link href="/dashboard" className="flex items-center gap-3 rounded-lg bg-muted px-3 py-2 text-primary transition-all hover:text-primary">
+                        <Link href="/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname === '/dashboard'}>
                             <Home className="h-4 w-4" />
                             Dashboard
                         </Link>
-                        <Link href="#" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary">
+                        <Link href="/dashboard/visitors" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname === '/dashboard/visitors'}>
                             <Users className="h-4 w-4" />
                             Visitors
                         </Link>
-                        <Link href="#" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary">
+                        <Link href="/dashboard/settings" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname === '/dashboard/settings'}>
                             <Settings className="h-4 w-4" />
                             Settings
                         </Link>

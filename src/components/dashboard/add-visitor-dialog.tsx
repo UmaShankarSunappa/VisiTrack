@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import type { Visitor } from "@/lib/types";
 
 const step1Schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -49,12 +50,23 @@ type OtpData = z.infer<typeof otpSchema>;
 type Step2Data = z.infer<typeof step2Schema>;
 type FormData = Step1Data & Step2Data & { selfie: string };
 
+type AddVisitorDialogProps = {
+    onVisitorAdded: (visitor: Visitor) => void;
+};
 
-export function AddVisitorDialog() {
+export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<FormData>>({});
   const { toast } = useToast();
+  const [locationName, setLocationName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open && typeof window !== "undefined") {
+      const storedLocation = localStorage.getItem('receptionistLocation');
+      setLocationName(storedLocation);
+    }
+  }, [open]);
 
   const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
@@ -76,13 +88,41 @@ export function AddVisitorDialog() {
 
   const handleFinalSubmit = (data: Partial<FormData>) => {
      const finalData = { ...formData, ...data } as FormData;
-     console.log("Final visitor data:", finalData);
+     
+     if (!locationName) {
+        toast({
+            title: "Error",
+            description: "Could not determine receptionist location.",
+            variant: "destructive"
+        });
+        return;
+     }
+
+     const [main, sub] = locationName.split(' - ');
+     
+     const newVisitor: Visitor = {
+        id: new Date().toISOString(),
+        ...finalData,
+        selfieUrl: finalData.selfie,
+        checkInTime: new Date(),
+        status: 'Checked-in',
+        location: { main, sub }
+     };
+
+     // Update local state in dashboard
+     onVisitorAdded(newVisitor);
+
+     // Persist to localStorage
+    const storedVisitors = localStorage.getItem('visitors') || '[]';
+    const allVisitors = JSON.parse(storedVisitors);
+    allVisitors.push(newVisitor);
+    localStorage.setItem('visitors', JSON.stringify(allVisitors));
+
      toast({
          title: "Visitor Added",
          description: `${finalData.name} has been checked in.`
      });
-     // Here you would typically call an API to add the visitor
-     // and then maybe close the dialog and refresh the table
+
      resetFlow();
   }
   
@@ -133,53 +173,16 @@ export function AddVisitorDialog() {
 
 
 function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; defaultValues: Partial<Step1Data> }) {
-  const [otpSent, setOtpSent] = useState(false);
-  const [isOtpVerified, setIsOtpVerified] = useState(false);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  // Always mark OTP as verified for manual entry
+  const [isOtpVerified] = useState(true);
 
   const form = useForm<Step1Data>({
     resolver: zodResolver(step1Schema),
     defaultValues,
   });
 
-  const otpForm = useForm<OtpData>({
-    resolver: zodResolver(otpSchema),
-  });
-
-  const { toast } = useToast();
-
-  const handleSendOtp = async () => {
-    const mobileValid = await form.trigger("mobile");
-    if (!mobileValid) return;
-    setIsSendingOtp(true);
-    setTimeout(() => {
-      setOtpSent(true);
-      setIsSendingOtp(false);
-      toast({ title: "OTP Sent", description: "An OTP has been sent to the mobile. (It's 123456)" });
-    }, 1000);
-  };
-
-  const handleVerifyOtp = (data: OtpData) => {
-    setIsVerifyingOtp(true);
-    setTimeout(() => {
-      if (data.otp === "123456") {
-        setIsOtpVerified(true);
-        toast({ title: "OTP Verified", description: "Mobile number is verified.", variant: "default" });
-      } else {
-        toast({ title: "Invalid OTP", description: "Please enter the correct OTP.", variant: "destructive" });
-        otpForm.setError("otp", { message: "Incorrect OTP" });
-      }
-      setIsVerifyingOtp(false);
-    }, 1000);
-  };
-
   const onSubmit: SubmitHandler<Step1Data> = (data) => {
-    if (isOtpVerified) {
-      onNext(data);
-    } else {
-       form.trigger();
-    }
+    onNext(data);
   };
   
   return (
@@ -201,57 +204,22 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
             </FormItem>
           )}
         />
-        <div className="space-y-2">
-            <FormLabel>Mobile Number</FormLabel>
-            <div className="flex items-start gap-2">
-            <FormField
-                control={form.control}
-                name="mobile"
-                render={({ field }) => (
-                    <FormItem className="flex-grow">
-                        <FormControl>
-                            <div className="relative">
-                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="9876543210" {...field} className="pl-10" disabled={otpSent} />
-                            </div>
-                        </FormControl>
-                         <FormMessage />
-                    </FormItem>
-                )}
-                />
-                {!otpSent && <Button type="button" onClick={handleSendOtp} disabled={isSendingOtp}>
-                    {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Send OTP
-                </Button>}
-            </div>
-        </div>
-
-        {otpSent && !isOtpVerified && (
-          <Form {...otpForm}>
-            <div className="flex items-end gap-2 p-3 border rounded-lg bg-muted/30">
-              <FormField
-                control={otpForm.control}
-                name="otp"
-                render={({ field }) => (
-                  <FormItem className="flex-grow">
-                    <FormLabel>Enter OTP</FormLabel>
+        <FormField
+            control={form.control}
+            name="mobile"
+            render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Mobile Number</FormLabel>
                     <FormControl>
                         <div className="relative">
-                            <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="123456" {...field} className="pl-10" />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="9876543210" {...field} className="pl-10" />
                         </div>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="button" onClick={otpForm.handleSubmit(handleVerifyOtp)} disabled={isVerifyingOtp}>
-                {isVerifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Verify
-              </Button>
-            </div>
-          </Form>
-        )}
+                      <FormMessage />
+                </FormItem>
+            )}
+            />
 
         <FormField
           control={form.control}
@@ -402,6 +370,13 @@ function Step3({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
     }
   };
 
+  const skipPhoto = () => {
+      if(placeholder) {
+        setSelfie(placeholder.imageUrl);
+        stopCamera();
+      }
+  }
+
   const stopCamera = () => {
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
@@ -437,10 +412,15 @@ function Step3({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
       <canvas ref={canvasRef} className="hidden" />
       
       {!selfie ? (
-        <Button onClick={takePhoto} disabled={!stream} className="w-full">
-          <Camera className="mr-2 h-4 w-4" />
-          Capture Selfie
-        </Button>
+        <div className="flex gap-4">
+            <Button onClick={takePhoto} disabled={!stream} className="w-full">
+                <Camera className="mr-2 h-4 w-4" />
+                Capture Selfie
+            </Button>
+            <Button onClick={skipPhoto} variant="secondary" className="w-full">
+                Skip
+            </Button>
+        </div>
       ) : (
         <div className="flex gap-4">
             <Button variant="outline" onClick={handleRetake} className="w-full">
@@ -461,10 +441,5 @@ function Step3({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
     </div>
   );
 }
-
-
-    
-
-    
 
     

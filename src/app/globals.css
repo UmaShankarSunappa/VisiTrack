@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -22,7 +23,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 85%;
     --input: 0 0% 85%;
-    --ring: 270 50% 40%;
+    --ring: 277 100% 67.3%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -57,7 +58,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 270 20% 18%;
     --input: 270 20% 18%;
-    --ring: 270 50% 50%;
+    --ring: 277 100% 70%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -81,4 +82,35 @@
   body {
     @apply bg-background text-foreground;
   }
+  main {
+    @apply animate-fade-in-up;
+  }
+  
+  .checkmark-circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+    stroke: #7ac142;
+    fill: none;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  }
+
+  .checkmark-check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke: #7ac142;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+  }
+
+  @keyframes stroke {
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
 }
+
+    

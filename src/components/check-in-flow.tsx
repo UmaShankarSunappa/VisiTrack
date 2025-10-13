@@ -17,7 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, CheckCircle, LogOut } from "lucide-react";
+import { Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, LogOut } from "lucide-react";
 import type { Visitor } from "@/lib/types";
 
 const step1Schema = z.object({
@@ -40,6 +40,29 @@ type Step1Data = z.infer<typeof step1Schema>;
 type OtpData = z.infer<typeof otpSchema>;
 type Step2Data = z.infer<typeof step2Schema>;
 type FormData = Step1Data & Step2Data & { selfie: string };
+
+function AnimatedCheckmark() {
+    return (
+        <svg
+            className="h-16 w-16 text-green-500"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 52 52"
+        >
+            <circle
+                className="checkmark-circle"
+                cx="26"
+                cy="26"
+                r="25"
+                fill="none"
+            />
+            <path
+                className="checkmark-check"
+                fill="none"
+                d="M14.1 27.2l7.1 7.2 16.7-16.8"
+            />
+        </svg>
+    );
+}
 
 export function CheckInFlow({ locationName }: { locationName: string }) {
   const [step, setStep] = useState(1);
@@ -82,7 +105,7 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
   };
 
   return (
-    <Card className="w-full shadow-xl sm:rounded-xl rounded-none border-x-0 sm:border-x">
+    <Card className="w-full shadow-xl sm:rounded-xl rounded-none border-x-0 sm:border-x animate-fade-in-up">
       <CardHeader>
         <Progress value={progress} className="w-full" />
         <CardTitle className="text-center pt-4">Step {step} of {totalSteps}</CardTitle>
@@ -485,8 +508,8 @@ function Step4({ formData, locationName, onReset }: { formData: FormData; locati
 
   if (checkedOut) {
     return (
-        <div className="text-center space-y-6 py-8">
-            <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
+        <div className="text-center space-y-6 py-8 flex flex-col items-center">
+            <AnimatedCheckmark />
             <h2 className="text-2xl font-bold">You have Checked Out</h2>
             <p className="text-muted-foreground">Thank you for visiting. Have a great day!</p>
             <Button onClick={onReset}>Start New Check-in</Button>
@@ -495,14 +518,14 @@ function Step4({ formData, locationName, onReset }: { formData: FormData; locati
   }
 
   return (
-    <div className="text-center space-y-6">
-      <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
+    <div className="text-center space-y-6 flex flex-col items-center">
+      <AnimatedCheckmark />
       <h2 className="text-2xl font-bold">Check-in Successful!</h2>
       <p className="text-muted-foreground">
         Your host, <span className="font-semibold text-primary">{formData.hostName}</span>, has been notified of your arrival.
       </p>
 
-      <Card className="text-left">
+      <Card className="text-left w-full">
         <CardContent className="pt-6 space-y-4">
           <div className="flex justify-center">
             {formData.selfie && <Image src={formData.selfie} alt="Visitor selfie" width={100} height={100} className="rounded-full border-4 border-primary" />}
@@ -527,3 +550,5 @@ function Step4({ formData, locationName, onReset }: { formData: FormData; locati
     </div>
   );
 }
+
+    

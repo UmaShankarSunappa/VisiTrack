@@ -9,6 +9,7 @@ import {
   LogOut,
   Eye,
 } from "lucide-react"
+import { AnimatePresence, motion } from "framer-motion"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -74,6 +75,8 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
         const updatedList = visitorList.map(v => 
             v.id === visitorId ? { ...v, status: 'Checked-out', checkOutTime: new Date() } : v
         );
+        
+        // This will trigger the exit animation
         setVisitorList(updatedList);
         
         const visitor = visitors.find(v => v.id === visitorId);
@@ -81,10 +84,26 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
             title: "Visitor Checked Out",
             description: `${visitor?.name} has been successfully checked out.`
         });
+        
+        // Persist change
+        const storedVisitors = localStorage.getItem('visitors');
+        if(storedVisitors) {
+            const allVisitors = JSON.parse(storedVisitors).map((v:any) => ({
+                ...v,
+                checkInTime: new Date(v.checkInTime),
+                checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+            }));
+            const updatedAllVisitors = allVisitors.map((v: Visitor) => v.id === visitorId ? { ...v, status: 'Checked-out', checkOutTime: new Date() } : v);
+            localStorage.setItem('visitors', JSON.stringify(updatedAllVisitors));
+        }
     }
 
     const handleViewDetails = (visitor: Visitor) => {
         setSelectedVisitor(visitor);
+    }
+    
+    const onVisitorAdded = (newVisitor: Visitor) => {
+        setVisitorList(currentVisitors => [newVisitor, ...currentVisitors]);
     }
 
   return (
@@ -121,7 +140,7 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
               Export
             </span>
           </Button>
-          <AddVisitorDialog />
+          <AddVisitorDialog onVisitorAdded={onVisitorAdded} />
         </div>
       </div>
       <TabsContent value="all">
@@ -152,11 +171,11 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
 
 function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visitors: Visitor[], handleCheckout: (id: string) => void, handleViewDetails: (visitor: Visitor) => void }) {
     return (
-        <Card>
+        <Card className="animate-fade-in-up">
           <CardHeader>
             <CardTitle>Visitors</CardTitle>
             <CardDescription>
-              A list of all visitors.
+              A list of all visitors for the selected date and location.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -182,8 +201,17 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                 </TableRow>
               </TableHeader>
               <TableBody>
+                <AnimatePresence>
                 {visitors.map(visitor => (
-                  <TableRow key={visitor.id}>
+                  <motion.tr
+                    key={visitor.id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, height: 0, transition: { duration: 0.3 } }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="hover:bg-muted/50"
+                  >
                     <TableCell className="font-medium py-2 px-4 whitespace-nowrap">
                         {visitor.name}
                     </TableCell>
@@ -259,11 +287,14 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
                             </div>
                         </TooltipProvider>
                     </TableCell>
-                  </TableRow>
+                  </motion.tr>
                 ))}
+                </AnimatePresence>
               </TableBody>
             </Table>
           </CardContent>
         </Card>
     )
 }
+
+    

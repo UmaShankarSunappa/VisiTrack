@@ -21,7 +21,7 @@ import { Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, R
 
 const step1Schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
+  mobile: z.string().min(10, "Please enter a valid 10-digit mobile number."),
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
 });
 
@@ -134,6 +134,13 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
   const onSubmit: SubmitHandler<Step1Data> = (data) => {
     onNext(data);
   };
+  
+  const handleNextClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (isOtpVerified) {
+        e.preventDefault();
+        onNext(form.getValues());
+    }
+  }
 
   return (
     <Form {...form}>
@@ -223,7 +230,7 @@ function Step1({ onNext, defaultValues }: { onNext: (data: Step1Data) => void; d
           )}
         />
 
-        <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
+        <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full" onClick={handleNextClick}>
           {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Next
         </Button>

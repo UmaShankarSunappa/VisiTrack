@@ -24,6 +24,7 @@ export default function DashboardPage() {
     const [allVisitors, setAllVisitors] = React.useState<Visitor[]>([]);
     const [filteredVisitors, setFilteredVisitors] = React.useState<Visitor[]>([]);
     const [locationName, setLocationName] = React.useState<string | null>(null);
+    const [userRole, setUserRole] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         let visitors: Visitor[] = [];
@@ -61,15 +62,17 @@ export default function DashboardPage() {
         
         if (typeof window !== "undefined") {
             const storedLocation = localStorage.getItem('receptionistLocation');
+            const storedRole = localStorage.getItem('userRole');
             setLocationName(storedLocation);
+            setUserRole(storedRole);
         }
     }, []);
 
     React.useEffect(() => {
         let visitors = allVisitors;
         
-        // Filter by location
-        if (locationName) {
+        // Filter by location if user is not admin
+        if (userRole !== 'admin' && locationName) {
             visitors = visitors.filter(visitor => {
                 const visitorLocationString = `${visitor.location.main}${visitor.location.sub ? ` - ${visitor.location.sub}` : ''}`;
                 return visitorLocationString === locationName;
@@ -81,7 +84,7 @@ export default function DashboardPage() {
         visitors = visitors.filter(visitor => isSameDay(new Date(visitor.checkInTime), selectedDate));
 
         setFilteredVisitors(visitors);
-    }, [date, allVisitors, locationName]);
+    }, [date, allVisitors, locationName, userRole]);
 
     return (
         <>

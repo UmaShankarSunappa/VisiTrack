@@ -36,6 +36,12 @@ export const departments: Department[] = ['Supply Chain', 'Accounts', 'HR', 'Ope
 
 export const receptionists = [
   {
+    locationId: 'admin',
+    locationName: 'Admin (All Locations)',
+    email: 'admin@example.com',
+    password: 'admin123',
+  },
+  {
     locationId: 'corporate-office-1st-floor',
     locationName: 'Corporate Office - 1st Floor',
     email: 'reception.cop.1f@example.com',

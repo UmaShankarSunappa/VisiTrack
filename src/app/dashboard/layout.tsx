@@ -9,6 +9,7 @@ import {
   Settings,
   PanelLeft,
   MapPin,
+  Shield,
 } from "lucide-react";
 
 import {
@@ -43,13 +44,18 @@ export default function DashboardLayout({
 }) {
 
   const [locationName, setLocationName] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedLocation = localStorage.getItem('receptionistLocation');
+      const storedRole = localStorage.getItem('userRole');
       setLocationName(storedLocation);
+      setUserRole(storedRole);
     }
   }, []);
+
+  const isAdmin = userRole === 'admin';
 
   return (
     <SidebarProvider>
@@ -79,6 +85,14 @@ export default function DashboardLayout({
                 Settings
               </SidebarMenuButton>
             </SidebarMenuItem>
+             {isAdmin && (
+              <SidebarMenuItem>
+                <SidebarMenuButton href="#">
+                  <Shield />
+                  Admin Settings
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
@@ -86,21 +100,21 @@ export default function DashboardLayout({
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative w-full justify-start h-12 gap-2 p-2">
                    <Avatar className="w-8 h-8">
-                      <AvatarImage src="https://picsum.photos/seed/receptionist/100/100" />
-                      <AvatarFallback>RD</AvatarFallback>
+                      <AvatarImage src={`https://picsum.photos/seed/${isAdmin ? 'admin' : 'receptionist'}/100/100`} />
+                      <AvatarFallback>{isAdmin ? 'AD' : 'RD'}</AvatarFallback>
                     </Avatar>
                     <div className="text-left">
-                        <p className="text-sm font-medium">Reception Desk</p>
-                        <p className="text-xs text-muted-foreground">reception@example.com</p>
+                        <p className="text-sm font-medium">{isAdmin ? 'Admin' : 'Reception Desk'}</p>
+                        <p className="text-xs text-muted-foreground">{isAdmin ? 'admin@example.com' : 'reception@example.com'}</p>
                     </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">Reception</p>
+                    <p className="text-sm font-medium leading-none">{isAdmin ? 'Admin' : 'Reception'}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      reception@example.com
+                       {isAdmin ? 'admin@example.com' : 'reception@example.com'}
                     </p>
                   </div>
                 </DropdownMenuLabel>
@@ -125,7 +139,7 @@ export default function DashboardLayout({
              {locationName && (
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                <span>{locationName}</span>
+                <span>{isAdmin ? "All Locations" : locationName}</span>
               </div>
             )}
 
@@ -156,6 +170,12 @@ export default function DashboardLayout({
                             <Settings className="h-4 w-4" />
                             Settings
                         </Link>
+                         {isAdmin && (
+                            <Link href="#" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary">
+                                <Shield className="h-4 w-4" />
+                                Admin Settings
+                            </Link>
+                        )}
                     </nav>
                 </SheetContent>
             </Sheet>

@@ -31,16 +31,21 @@ export default function LoginPage() {
             return;
         }
 
-        const receptionist = receptionists.find(r => r.locationId === locationId);
+        const user = receptionists.find(r => r.locationId === locationId);
 
-        if (receptionist && receptionist.email === email && receptionist.password === password) {
+        if (user && user.email === email && user.password === password) {
             toast({
                 title: "Login Successful",
-                description: `Welcome, ${receptionist.locationName} receptionist!`,
+                description: `Welcome, ${user.locationName}!`,
             });
             // Store location info for dashboard
             if (typeof window !== "undefined") {
-              localStorage.setItem('receptionistLocation', receptionist.locationName);
+              localStorage.setItem('receptionistLocation', user.locationName);
+              if (user.locationId === 'admin') {
+                  localStorage.setItem('userRole', 'admin');
+              } else {
+                  localStorage.removeItem('userRole');
+              }
             }
             router.push('/dashboard');
         } else {
@@ -63,18 +68,18 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="location">Role / Location</Label>
                 <div className="relative">
                     <Building className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
                     <Select value={locationId} onValueChange={(value) => {
                         setLocationId(value)
-                        const receptionist = receptionists.find(r => r.locationId === value);
-                        if(receptionist) {
-                            setEmail(receptionist.email);
+                        const user = receptionists.find(r => r.locationId === value);
+                        if(user) {
+                            setEmail(user.email);
                         }
                     }}>
                         <SelectTrigger className="pl-10">
-                            <SelectValue placeholder="Select your location" />
+                            <SelectValue placeholder="Select your role or location" />
                         </SelectTrigger>
                         <SelectContent>
                             {receptionists.map((rec) => (

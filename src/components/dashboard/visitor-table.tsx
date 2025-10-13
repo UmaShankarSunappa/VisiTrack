@@ -55,11 +55,12 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-import type { Visitor } from "@/lib/types"
+import type { Visitor, Department } from "@/lib/types"
 import { AddVisitorDialog } from "./add-visitor-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { VisitorDetailsDialog } from "./visitor-details-dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { departments } from "@/lib/data"
 
 
 export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
@@ -67,10 +68,17 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
     const [visitorList, setVisitorList] = React.useState(visitors)
     const [selectedVisitor, setSelectedVisitor] = React.useState<Visitor | null>(null);
     const [activeTab, setActiveTab] = React.useState("all");
+    const [selectedDepartments, setSelectedDepartments] = React.useState<Department[]>([]);
 
     React.useEffect(() => {
-        setVisitorList(visitors);
-    }, [visitors]);
+        let filtered = visitors;
+
+        if (selectedDepartments.length > 0) {
+            filtered = filtered.filter(v => selectedDepartments.includes(v.hostDepartment));
+        }
+        
+        setVisitorList(filtered);
+    }, [visitors, selectedDepartments]);
 
 
     const handleCheckout = (visitorId: string) => {
@@ -78,7 +86,6 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
             v.id === visitorId ? { ...v, status: 'Checked-out', checkOutTime: new Date() } : v
         );
         
-        // This will trigger the exit animation
         setVisitorList(updatedList);
         
         const visitor = visitors.find(v => v.id === visitorId);
@@ -87,7 +94,6 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
             description: `${visitor?.name} has been successfully checked out.`
         });
         
-        // Persist change
         const storedVisitors = localStorage.getItem('visitors');
         if(storedVisitors) {
             const allVisitors = JSON.parse(storedVisitors).map((v:any) => ({
@@ -105,7 +111,21 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
     }
     
     const onVisitorAdded = (newVisitor: Visitor) => {
-        setVisitorList(currentVisitors => [newVisitor, ...currentVisitors]);
+        const updatedVisitors = [newVisitor, ...visitors];
+        
+        let filtered = updatedVisitors;
+        if (selectedDepartments.length > 0) {
+            filtered = filtered.filter(v => selectedDepartments.includes(v.hostDepartment));
+        }
+        setVisitorList(filtered);
+    }
+    
+    const handleDepartmentFilterChange = (department: Department) => {
+        setSelectedDepartments(prev => 
+            prev.includes(department)
+                ? prev.filter(d => d !== department)
+                : [...prev, department]
+        );
     }
 
     const handleExport = () => {
@@ -159,12 +179,20 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+              <DropdownMenuLabel>Filter by Department</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem checked>
-                Status
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>Department</DropdownMenuCheckboxItem>
+              {departments.map(dep => (
+                <DropdownMenuCheckboxItem
+                    key={dep}
+                    checked={selectedDepartments.includes(dep)}
+                    onSelect={(e) => {
+                        e.preventDefault();
+                        handleDepartmentFilterChange(dep);
+                    }}
+                >
+                    {dep}
+                </DropdownMenuCheckboxItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
           <Button size="sm" variant="outline" className="h-8 gap-1" onClick={handleExport}>
@@ -329,3 +357,5 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails }: { visi
         </Card>
     )
 }
+
+    

@@ -106,12 +106,16 @@ export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
         location: { main, sub }
      };
 
-     // Update local state in dashboard
      onVisitorAdded(newVisitor);
 
-     // Persist to localStorage
     const storedVisitors = localStorage.getItem('visitors') || '[]';
-    const allVisitors = JSON.parse(storedVisitors);
+    let allVisitors: Visitor[] = [];
+    try {
+        allVisitors = JSON.parse(storedVisitors);
+    } catch (e) {
+        // ignore
+    }
+    
     allVisitors.push(newVisitor);
     localStorage.setItem('visitors', JSON.stringify(allVisitors));
 
@@ -128,7 +132,7 @@ export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
       case 1:
         return <VisitorDetailsStep onNext={handleNextStep} defaultValues={formData} />;
       case 2:
-        return <Step2 onNext={handleFinalSubmit} onBack={handlePrevStep} />;
+        return <SelfieStep onNext={handleFinalSubmit} onBack={handlePrevStep} />;
       default:
         return null;
     }
@@ -371,7 +375,7 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: Combined
   );
 }
 
-function Step2({ onNext, onBack }: { onNext: (data: { selfie: string }) => void; onBack: () => void; }) {
+function SelfieStep({ onNext, onBack }: { onNext: (data: { selfie: string }) => void; onBack: () => void; }) {
   const [selfie, setSelfie] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -481,5 +485,6 @@ function Step2({ onNext, onBack }: { onNext: (data: { selfie: string }) => void;
   );
 }
 
+    
     
     

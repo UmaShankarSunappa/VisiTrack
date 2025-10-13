@@ -31,7 +31,7 @@ import type { Visitor } from "@/lib/types";
 
 const combinedSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
+  mobile: z.string().transform((val) => val.replace(/\D/g, '')).pipe(z.string().length(10, "Please enter a valid 10-digit mobile number.")),
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
   hostName: z.string().min(2, "Host name is required."),
   hostDepartment: z.enum(departments),
@@ -484,7 +484,3 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: { selfie: string }) => 
     </div>
   );
 }
-
-    
-    
-    

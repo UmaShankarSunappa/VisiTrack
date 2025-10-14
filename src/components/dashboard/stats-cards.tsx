@@ -23,40 +23,40 @@ export function StatsCards({ visitors }: StatsCardsProps) {
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
       <Card className="rounded-2xl shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Checked-in Visitors
           </CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{currentVisitors}</div>
-          <p className="text-xs text-muted-foreground">
-            Visitors currently on premises for the selected date.
+          <div className="text-4xl font-bold">{currentVisitors}</div>
+          <p className="text-xs text-muted-foreground pt-1">
+            Currently on premises
           </p>
         </CardContent>
       </Card>
       <Card className="rounded-2xl shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Total Check-ins
           </CardTitle>
           <LogIn className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalCheckins}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-4xl font-bold">{totalCheckins}</div>
+           <p className="text-xs text-muted-foreground pt-1">
             For the selected date
           </p>
         </CardContent>
       </Card>
       <Card className="rounded-2xl shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Check-outs</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">Total Check-outs</CardTitle>
           <LogOut className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalCheckouts}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-4xl font-bold">{totalCheckouts}</div>
+           <p className="text-xs text-muted-foreground pt-1">
             For the selected date
           </p>
         </CardContent>

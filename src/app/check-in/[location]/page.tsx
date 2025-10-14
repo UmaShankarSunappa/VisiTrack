@@ -4,27 +4,33 @@ import { CheckInFlow } from "@/components/check-in-flow";
 import { locations } from "@/lib/data";
 import { Building } from "lucide-react";
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
-export default function CheckInPage({ params }: { params: { location: string } }) {
+export default function CheckInPage() {
+  const params = useParams();
+  const locationParam = Array.isArray(params.location) ? params.location[0] : params.location;
+
   let locationName = 'Unknown Location';
 
   // This logic is designed to handle location strings that might contain hyphens themselves.
   // It iterates through known locations and checks if the URL parameter starts with a known location ID.
-  const mainLocation = locations.find(l => params.location.startsWith(l.id));
+  if (locationParam) {
+    const mainLocation = locations.find(l => locationParam.startsWith(l.id));
 
-  if (mainLocation) {
-    if (mainLocation.subLocations.length === 0) {
-      locationName = mainLocation.name;
-    } else {
-      const subLocId = params.location.substring(mainLocation.id.length + 1);
-      
-      if (subLocId && subLocId !== 'none') {
-        const subLocation = mainLocation.subLocations.find(s => s.id === subLocId);
-        if (subLocation) {
-          locationName = `${mainLocation.name} - ${subLocation.name}`;
-        }
-      } else if (subLocId === 'none') {
+    if (mainLocation) {
+      if (mainLocation.subLocations.length === 0) {
         locationName = mainLocation.name;
+      } else {
+        const subLocId = locationParam.substring(mainLocation.id.length + 1);
+        
+        if (subLocId && subLocId !== 'none') {
+          const subLocation = mainLocation.subLocations.find(s => s.id === subLocId);
+          if (subLocation) {
+            locationName = `${mainLocation.name} - ${subLocation.name}`;
+          }
+        } else if (subLocId === 'none') {
+          locationName = mainLocation.name;
+        }
       }
     }
   }

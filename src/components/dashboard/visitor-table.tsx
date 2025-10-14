@@ -293,21 +293,21 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
               <TableHeader>
                 <TableRow>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Visitor Name</TableHead>
-                  <TableHead className="py-2 px-4 whitespace-nowrap">Mobile</TableHead>
+                  <TableHead className="hidden sm:table-cell py-2 px-4 whitespace-nowrap">Mobile</TableHead>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Status</TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                     Person to Meet
                   </TableHead>
-                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
+                  <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
                     Department
                   </TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                     Check-in Time
                   </TableHead>
-                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
+                  <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
                     Check-out Time
                   </TableHead>
-                  <TableHead className="py-2 px-4 whitespace-nowrap">Actions</TableHead>
+                  <TableHead className="py-2 px-4 whitespace-nowrap text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -318,14 +318,14 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                     layout
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
                     className="hover:bg-muted/50"
                   >
                     <TableCell className="font-medium py-2 px-4 whitespace-nowrap">
                         {visitor.name}
                     </TableCell>
-                    <TableCell className="py-2 px-4 text-muted-foreground whitespace-nowrap">
+                    <TableCell className="hidden sm:table-cell py-2 px-4 text-muted-foreground whitespace-nowrap">
                         {visitor.mobile}
                     </TableCell>
                     <TableCell className="py-2 px-4 whitespace-nowrap">
@@ -336,18 +336,18 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                     <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
                       {visitor.hostName}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
+                    <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
                       {visitor.hostDepartment}
                     </TableCell>
-                    <TableCell className="hidden md-table-cell py-2 px-4 whitespace-nowrap">
-                      {format(new Date(visitor.checkInTime), "PPpp")}
-                    </TableCell>
                     <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
-                      {visitor.checkOutTime ? format(new Date(visitor.checkOutTime), "PPpp") : 'N/A'}
+                      {format(new Date(visitor.checkInTime), "PPp")}
                     </TableCell>
-                    <TableCell className="py-2 px-4 whitespace-nowrap">
+                    <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
+                      {visitor.checkOutTime ? format(new Date(visitor.checkOutTime), "PPp") : 'N/A'}
+                    </TableCell>
+                    <TableCell className="py-2 px-4 whitespace-nowrap text-right">
                         <TooltipProvider>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-end gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button

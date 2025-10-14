@@ -17,9 +17,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, LogOut } from "lucide-react";
+import { Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, LogOut, Pencil } from "lucide-react";
 import type { Visitor } from "@/lib/types";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 
 
 const combinedSchema = z.object({
@@ -81,6 +82,10 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
 
   const handlePrevStep = () => {
     setStep((prev) => prev - 1);
+  };
+
+  const handleEdit = () => {
+    setStep(1);
   };
   
   const handleFinalSubmit = (data: Partial<FormData>) => {
@@ -166,7 +171,7 @@ export function CheckInFlow({ locationName }: { locationName: string }) {
       case 2:
         return <SelfieStep onNext={handleFinalSubmit} onBack={handlePrevStep} />;
       case 3:
-        return <SuccessStep visitor={formData as Visitor} onSelfCheckout={handleSelfCheckout} />;
+        return <SuccessStep visitor={formData as Visitor} onSelfCheckout={handleSelfCheckout} onEdit={handleEdit} />;
       default:
         return null;
     }
@@ -486,7 +491,7 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: { selfie: string }) => 
   );
 }
 
-function SuccessStep({ visitor, onSelfCheckout }: { visitor: Visitor, onSelfCheckout: () => void }) {
+function SuccessStep({ visitor, onSelfCheckout, onEdit }: { visitor: Visitor, onSelfCheckout: () => void, onEdit: () => void }) {
     const router = useRouter();
 
     if (!visitor) {
@@ -498,13 +503,53 @@ function SuccessStep({ visitor, onSelfCheckout }: { visitor: Visitor, onSelfChec
     }
 
     return (
-        <div className="text-center space-y-4 flex flex-col items-center">
-            <AnimatedCheckmark />
-            <h2 className="text-2xl font-bold">Check-in Successful!</h2>
-            <p className="text-muted-foreground">
-                Welcome, <span className="font-semibold text-primary">{visitor.name}</span>. 
-                Your host, <span className="font-semibold text-primary">{visitor.hostName}</span>, has been notified.
-            </p>
+        <div className="space-y-6 text-center">
+             <div className="flex flex-col items-center space-y-2">
+                <AnimatedCheckmark />
+                <h2 className="text-2xl font-bold">Check-in Successful!</h2>
+                <p className="text-muted-foreground">
+                    Welcome, <span className="font-semibold text-primary">{visitor.name}</span>. 
+                    Your host has been notified.
+                </p>
+             </div>
+
+            <Card className="text-left">
+                <CardHeader className="flex flex-row items-start gap-4">
+                    <Image
+                        src={visitor.selfieUrl}
+                        alt={`Selfie of ${visitor.name}`}
+                        width={80}
+                        height={80}
+                        className="rounded-full border-4 border-primary aspect-square object-cover"
+                    />
+                    <div className="flex-grow space-y-1">
+                        <CardTitle className="text-xl">{visitor.name}</CardTitle>
+                        <CardDescription>{visitor.mobile}</CardDescription>
+                    </div>
+                     <Button variant="ghost" size="icon" onClick={onEdit}>
+                        <Pencil className="w-5 h-5" />
+                        <span className="sr-only">Edit Details</span>
+                    </Button>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                   <div className="grid grid-cols-3 gap-2">
+                       <dt className="font-semibold text-muted-foreground col-span-1">Person to Meet</dt>
+                       <dd className="col-span-2">{visitor.hostName}</dd>
+                   </div>
+                    <div className="grid grid-cols-3 gap-2">
+                       <dt className="font-semibold text-muted-foreground col-span-1">Department</dt>
+                       <dd className="col-span-2">{visitor.hostDepartment}</dd>
+                   </div>
+                   <div className="grid grid-cols-3 gap-2">
+                       <dt className="font-semibold text-muted-foreground col-span-1">Reason for Visit</dt>
+                       <dd className="col-span-2">{visitor.reasonForVisit}</dd>
+                   </div>
+                    <div className="grid grid-cols-3 gap-2">
+                       <dt className="font-semibold text-muted-foreground col-span-1">Check-in Time</dt>
+                       <dd className="col-span-2">{format(visitor.checkInTime, "PPpp")}</dd>
+                   </div>
+                </CardContent>
+            </Card>
             
             <div className="w-full space-y-2 pt-4">
                  <Button onClick={onSelfCheckout} className="w-full" variant="destructive">

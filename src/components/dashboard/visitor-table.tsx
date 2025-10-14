@@ -380,7 +380,7 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                                         <p>Edit Visitor</p>
                                     </TooltipContent>
                                 </Tooltip>
-                                {visitor.status === 'Checked-in' && (
+                                {visitor.status === 'Checked-in' ? (
                                     <AlertDialog>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
@@ -409,6 +409,8 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
+                                ) : (
+                                    <div className="h-8 w-8" />
                                 )}
                             </div>
                         </TooltipProvider>

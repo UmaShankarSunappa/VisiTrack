@@ -21,7 +21,7 @@ export function StatsCards({ visitors }: StatsCardsProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-      <Card>
+      <Card className="rounded-2xl shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
             Checked-in Visitors
@@ -35,7 +35,7 @@ export function StatsCards({ visitors }: StatsCardsProps) {
           </p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="rounded-2xl shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
             Total Check-ins
@@ -49,7 +49,7 @@ export function StatsCards({ visitors }: StatsCardsProps) {
           </p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="rounded-2xl shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Check-outs</CardTitle>
           <LogOut className="h-4 w-4 text-muted-foreground" />

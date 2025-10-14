@@ -307,7 +307,7 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                   <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
                     Check-out Time
                   </TableHead>
-                  <TableHead className="py-2 px-4 whitespace-nowrap text-right">Actions</TableHead>
+                  <TableHead className="py-2 px-4 whitespace-nowrap text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -345,9 +345,9 @@ function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEd
                     <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
                       {visitor.checkOutTime ? format(new Date(visitor.checkOutTime), "PPp") : 'N/A'}
                     </TableCell>
-                    <TableCell className="py-2 px-4 whitespace-nowrap text-right">
+                    <TableCell className="py-2 px-4 whitespace-nowrap text-center">
                         <TooltipProvider>
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button

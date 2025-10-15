@@ -125,7 +125,7 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                       <FormLabel>Verified Govt. ID</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Select ID Type" /></SelectTrigger>
+                            <SelectTrigger><SelectValue placeholder="Select ID Type" /></SelectTrigger>
                           </FormControl>
                           <SelectContent>
                               <SelectItem value="Aadhaar Card">Aadhaar Card</SelectItem>
@@ -270,5 +270,3 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
     </Dialog>
   )
 }
-
-    

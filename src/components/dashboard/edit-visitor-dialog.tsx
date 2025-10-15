@@ -20,8 +20,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, Phone, Mail, Building, UserCheck, CreditCard } from "lucide-react";
-import type { Entry, Visitor, Employee, GovtIdType } from "@/lib/types";
+import { Loader2, User, Phone, Mail, UserCheck, CreditCard } from "lucide-react";
+import type { Entry, Visitor, Employee } from "@/lib/types";
 
 const editVisitorSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -213,9 +213,7 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                           </FormControl>
                           <SelectContent>
                           {departments.map((dep) => (
-                              <SelectItem key={dep} value={dep}>
-                              {dep}
-                              </SelectItem>
+                              <SelectItem key={dep} value={dep}>{dep}</SelectItem>
                           ))}
                           </SelectContent>
                       </Select>

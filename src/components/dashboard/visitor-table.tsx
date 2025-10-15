@@ -65,10 +65,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { departments } from "@/lib/data"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { AddVisitorDialog } from "@/components/dashboard/add-visitor-dialog";
 
-
-export function VisitorTable({ entries, onEntryAdded, onEntryUpdated }: { entries: Entry[], onEntryAdded: (entry: Entry) => void; onEntryUpdated: (entry: Entry) => void }) {
+export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], onEntryUpdated: (entry: Entry) => void }) {
     const { toast } = useToast()
     const [entryList, setEntryList] = React.useState(entries)
     const [selectedEntry, setSelectedEntry] = React.useState<Entry | null>(null);
@@ -308,6 +306,7 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
                   <TableHead className="hidden sm:table-cell py-2 px-4 whitespace-nowrap">Mobile / Emp ID</TableHead>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Status</TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Person to Meet</TableHead>
+                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Department</TableHead>
                   <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">Card No.</TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Check-in</TableHead>
                   <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">Check-out</TableHead>
@@ -346,6 +345,7 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
                       <Badge variant={entry.status === 'Checked-in' ? 'default' : 'outline'}>{entry.status}</Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{entry.hostName}</TableCell>
+                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{entry.hostDepartment}</TableCell>
                     <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
                       {entry.type === 'Visitor' ? (
                         <div className="flex items-center gap-1">
@@ -395,3 +395,4 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
     )
 }
 
+    

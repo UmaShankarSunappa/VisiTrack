@@ -45,19 +45,19 @@ const editEmployeeSchema = z.object({
 type EditVisitorFormData = z.infer<typeof editVisitorSchema>;
 type EditEmployeeFormData = z.infer<typeof editEmployeeSchema>;
 
-interface EditVisitorDialogProps {
+interface EditEntryDialogProps {
   entry: Entry;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEntryUpdated: (entry: Entry) => void;
 }
 
-export function EditVisitorDialog({ entry, open, onOpenChange, onEntryUpdated }: EditVisitorDialogProps) {
-  return entry.type === 'Visitor' 
-    ? <EditVisitorForm entry={entry} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
-    : <EditEmployeeForm entry={entry} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
+export function EditVisitorDialog({ entry, open, onOpenChange, onEntryUpdated }: EditEntryDialogProps) {
+  if (entry.type === 'Visitor') {
+    return <EditVisitorForm entry={entry} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
+  }
+  return <EditEmployeeForm entry={entry as Employee} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
 }
-
 
 function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry: Visitor, open: boolean, onOpenChange: (open: boolean) => void, onEntryUpdated: (entry: Entry) => void }){
   const { toast } = useToast();
@@ -97,49 +97,53 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
         </DialogHeader>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[60vh] overflow-y-auto p-1">
+                
                 <FormField control={form.control} name="name" render={({ field }) => ( 
                   <FormItem> 
                     <FormLabel>Full Name</FormLabel>
                     <div className="relative flex items-center">
-                      <User className="absolute left-3 h-4 w-4 text-muted-foreground" />
-                      <FormControl>
-                        <Input placeholder="John Doe" {...field} className="pl-10" />
-                      </FormControl>
+                        <User className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                        <FormControl>
+                            <Input placeholder="John Doe" {...field} className="pl-10" />
+                        </FormControl>
                     </div>
                     <FormMessage />
                   </FormItem> 
                 )}/>
+
                 <FormField control={form.control} name="mobile" render={({ field }) => ( 
                   <FormItem> 
                     <FormLabel>Mobile</FormLabel>
                      <div className="relative flex items-center">
-                      <Phone className="absolute left-3 h-4 w-4 text-muted-foreground" />
-                      <FormControl>
-                        <Input placeholder="9876543210" {...field} className="pl-10"/>
-                      </FormControl>
+                        <Phone className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                        <FormControl>
+                            <Input placeholder="9876543210" {...field} className="pl-10"/>
+                        </FormControl>
                     </div>
                     <FormMessage />
                   </FormItem> 
                 )}/>
+
                 <FormField control={form.control} name="email" render={({ field }) => (
                   <FormItem> 
                     <FormLabel>Email (Optional)</FormLabel>
                     <div className="relative flex items-center">
-                      <Mail className="absolute left-3 h-4 w-4 text-muted-foreground" />
-                      <FormControl>
-                        <Input placeholder="john.doe@example.com" {...field} className="pl-10" />
-                      </FormControl>
+                        <Mail className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                        <FormControl>
+                            <Input placeholder="john.doe@example.com" {...field} className="pl-10" />
+                        </FormControl>
                     </div>
                     <FormMessage />
                   </FormItem> 
                 )}/>
+
                 <FormField
                     control={form.control}
                     name="govtIdType"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Verified Govt. ID</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select ID Type" />
@@ -158,30 +162,33 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                         </FormItem>
                     )}
                 />
+
                  <FormField control={form.control} name="visitorCardNumber" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Visitor Card Number</FormLabel>
                     <div className="relative flex items-center">
-                      <CreditCard className="absolute left-3 h-4 w-4 text-muted-foreground" />
-                      <FormControl>
-                        <Input placeholder="e.g. 123" {...field} className="pl-10" type="number" />
-                      </FormControl>
+                        <CreditCard className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                        <FormControl>
+                            <Input placeholder="e.g. 123" {...field} className="pl-10" type="number" />
+                        </FormControl>
                     </div>
                     <FormMessage />
                   </FormItem>
                 )} />
+
                 <FormField control={form.control} name="hostName" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Person To Meet</FormLabel>
                     <div className="relative flex items-center">
-                      <UserCheck className="absolute left-3 h-4 w-4 text-muted-foreground" />
-                      <FormControl>
-                        <Input placeholder="e.g. Jane Smith" {...field} className="pl-10"/>
-                      </FormControl>
+                        <UserCheck className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                        <FormControl>
+                            <Input placeholder="e.g. Jane Smith" {...field} className="pl-10"/>
+                        </FormControl>
                     </div>
                     <FormMessage />
                   </FormItem> 
                 )}/>
+
                 <FormField
                   control={form.control}
                   name="hostDepartment"
@@ -204,7 +211,17 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                     </FormItem>
                   )}
                 />
-                <FormField control={form.control} name="reasonForVisit" render={({ field }) => ( <FormItem> <FormLabel>Reason for Visit</FormLabel> <FormControl> <Textarea placeholder="e.g. Scheduled meeting" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+
+                <FormField control={form.control} name="reasonForVisit" render={({ field }) => ( 
+                    <FormItem> 
+                        <FormLabel>Reason for Visit</FormLabel> 
+                        <FormControl> 
+                            <Textarea placeholder="e.g. Scheduled meeting" {...field} /> 
+                        </FormControl> 
+                        <FormMessage /> 
+                    </FormItem> 
+                )}/>
+                
                 <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
                     <Button type="submit" disabled={form.formState.isSubmitting}>
@@ -257,7 +274,17 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
         </DialogHeader>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[60vh] overflow-y-auto p-1">
-                <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Full Name</FormLabel><FormControl> <Input {...field} readOnly className="bg-muted/50" /> </FormControl><FormMessage /></FormItem> )}/>
+                
+                <FormField control={form.control} name="name" render={({ field }) => ( 
+                    <FormItem> 
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl> 
+                            <Input {...field} readOnly className="bg-muted/50" /> 
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem> 
+                )}/>
+                
                 <FormField control={form.control} name="hostName" render={({ field }) => ( 
                   <FormItem>
                     <FormLabel>Person To Meet</FormLabel>
@@ -270,6 +297,7 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
                     <FormMessage />
                   </FormItem> 
                 )}/>
+
                  <FormField
                   control={form.control}
                   name="hostDepartment"
@@ -294,7 +322,17 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
                     </FormItem>
                   )}
                 />
-                <FormField control={form.control} name="reasonForVisit" render={({ field }) => ( <FormItem> <FormLabel>Reason for Visit</FormLabel> <FormControl> <Textarea placeholder="e.g. Project meeting" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+
+                <FormField control={form.control} name="reasonForVisit" render={({ field }) => ( 
+                    <FormItem> 
+                        <FormLabel>Reason for Visit</FormLabel> 
+                        <FormControl> 
+                            <Textarea placeholder="e.g. Project meeting" {...field} /> 
+                        </FormControl> 
+                        <FormMessage /> 
+                    </FormItem> 
+                )}/>
+
                 <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
                     <Button type="submit" disabled={form.formState.isSubmitting}>

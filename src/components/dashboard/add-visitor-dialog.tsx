@@ -266,7 +266,10 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: Entry
 }
 
 function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorFormData) => void; defaultValues: Partial<VisitorFormData> }) {
+  const [otpSent, setOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const { toast } = useToast();
   
   const form = useForm<VisitorFormData>({
@@ -274,10 +277,43 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
     defaultValues,
   });
 
+  const otpForm = useForm<{ otp: string }>({
+    resolver: zodResolver(otpSchema),
+  });
+
   const govtIdType = form.watch("govtIdType");
 
+  const handleSendOtp = async () => {
+    const mobileValid = await form.trigger("mobile");
+    if (!mobileValid) return;
+    setIsSendingOtp(true);
+    setTimeout(() => {
+      setOtpSent(true);
+      setIsSendingOtp(false);
+      toast({ title: "OTP Sent", description: "An OTP has been sent. (It's 123456)" });
+    }, 1000);
+  };
+
+  const handleVerifyOtp = (data: { otp: string }) => {
+    setIsVerifyingOtp(true);
+    setTimeout(() => {
+      if (data.otp === "123456") {
+        setIsOtpVerified(true);
+        toast({ title: "OTP Verified", description: "Mobile number has been verified." });
+      } else {
+        toast({ title: "Invalid OTP", variant: "destructive" });
+        otpForm.setError("otp", { message: "Incorrect OTP" });
+      }
+      setIsVerifyingOtp(false);
+    }, 1000);
+  };
+
   const onSubmit: SubmitHandler<VisitorFormData> = (data) => {
-      onNext(data);
+      if (isOtpVerified) {
+        onNext(data);
+      } else {
+        toast({ title: "Verification Required", description: "Please verify mobile with OTP.", variant: "destructive" });
+      }
   };
   
   return (
@@ -299,23 +335,55 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
             </FormItem>
           )}
         />
-        {/* Mobile + OTP can be added here as in the original component if needed */}
-        <FormField
-          control={form.control}
-          name="mobile"
-          render={({ field }) => (
-              <FormItem>
-                  <FormLabel>Mobile Number</FormLabel>
-                  <FormControl>
-                      <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="9876543210" {...field} className="pl-10" />
-                      </div>
-                  </FormControl>
-                  <FormMessage />
-              </FormItem>
-          )}
-        />
+        
+        <div className="space-y-2">
+            <FormLabel>Mobile Number</FormLabel>
+            <div className="flex items-start gap-2">
+                <FormField
+                    control={form.control}
+                    name="mobile"
+                    render={({ field }) => (
+                        <FormItem className="flex-grow">
+                            <FormControl>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input placeholder="9876543210" {...field} className="pl-10" disabled={otpSent} />
+                                </div>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                {!otpSent && <Button type="button" onClick={handleSendOtp} disabled={isSendingOtp}>
+                    {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Send OTP
+                </Button>}
+            </div>
+        </div>
+
+        {otpSent && !isOtpVerified && (
+          <Form {...otpForm}>
+            <div className="flex items-end gap-2 p-4 border rounded-lg bg-muted/30">
+              <FormField
+                control={otpForm.control}
+                name="otp"
+                render={({ field }) => (
+                  <FormItem className="flex-grow">
+                    <FormLabel>Enter OTP</FormLabel>
+                    <FormControl>
+                        <Input placeholder="123456" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="button" onClick={otpForm.handleSubmit(handleVerifyOtp)} disabled={isVerifyingOtp}>
+                {isVerifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Verify OTP
+              </Button>
+            </div>
+          </Form>
+        )}
 
         <FormField
           control={form.control}
@@ -438,7 +506,7 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
           )}
         />
         <DialogFooter>
-            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+            <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Next
             </Button>
@@ -682,3 +750,5 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: SelfieData) => void; on
   );
 }
 
+
+    

@@ -159,7 +159,7 @@ export default function DashboardLayout({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Profile</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                 <Link href="/login">
+                 <Link href="/">
                     <DropdownMenuItem>
                         Log out
                     </DropdownMenuItem>

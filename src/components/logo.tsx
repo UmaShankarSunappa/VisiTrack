@@ -23,7 +23,7 @@ export function Logo(props: SVGProps<SVGSVGElement>) {
         fontWeight="bold"
         fill="hsl(var(--foreground))"
       >
-        Smart Lobby
+        VisiTrack Pro
       </text>
     </svg>
   );

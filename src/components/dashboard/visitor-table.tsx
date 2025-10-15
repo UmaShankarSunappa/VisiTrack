@@ -65,9 +65,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { departments } from "@/lib/data"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { AddVisitorDialog } from "@/components/dashboard/add-visitor-dialog";
 
 
-export function VisitorTable({ entries }: { entries: Entry[] }) {
+export function VisitorTable({ entries, onEntryAdded, onEntryUpdated }: { entries: Entry[], onEntryAdded: (entry: Entry) => void; onEntryUpdated: (entry: Entry) => void }) {
     const { toast } = useToast()
     const [entryList, setEntryList] = React.useState(entries)
     const [selectedEntry, setSelectedEntry] = React.useState<Entry | null>(null);
@@ -93,44 +94,26 @@ export function VisitorTable({ entries }: { entries: Entry[] }) {
 
 
     const handleCheckout = (entryId: string, cardReturned: boolean = true) => {
-        const updatedList = entryList.map(v => {
-            if (v.id === entryId) {
-                const updatedEntry = { ...v, status: 'Checked-out' as const, checkOutTime: new Date() };
-                if (updatedEntry.type === 'Visitor') {
-                    updatedEntry.visitorCardReturned = cardReturned;
-                }
-                return updatedEntry;
-            }
-            return v;
-        });
+        const entry = entryList.find(v => v.id === entryId);
+        if (!entry) return;
+
+        const updatedEntry = {
+            ...entry,
+            status: 'Checked-out' as const,
+            checkOutTime: new Date(),
+        };
+
+        if (updatedEntry.type === 'Visitor') {
+            updatedEntry.visitorCardReturned = cardReturned;
+        }
+
+        onEntryUpdated(updatedEntry);
         
-        setEntryList(updatedList);
-        
-        const entry = entries.find(v => v.id === entryId);
         toast({
             title: "Entry Checked Out",
             description: `${entry?.name} has been successfully checked out.`
         });
         
-        const storedEntries = localStorage.getItem('entries');
-        if(storedEntries) {
-            const allEntries = JSON.parse(storedEntries).map((v:any) => ({
-                ...v,
-                checkInTime: new Date(v.checkInTime),
-                checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
-            }));
-            const updatedAllEntries = allEntries.map((v: Entry) => {
-                if (v.id === entryId) {
-                    const updatedEntry = { ...v, status: 'Checked-out' as const, checkOutTime: new Date() };
-                    if (updatedEntry.type === 'Visitor') {
-                        updatedEntry.visitorCardReturned = cardReturned;
-                    }
-                    return updatedEntry;
-                }
-                return v;
-            });
-            localStorage.setItem('entries', JSON.stringify(updatedAllEntries));
-        }
         setCheckoutEntry(null);
     }
 
@@ -140,24 +123,6 @@ export function VisitorTable({ entries }: { entries: Entry[] }) {
 
     const handleEdit = (entry: Entry) => {
         setEditingEntry(entry);
-    }
-    
-    const onEntryUpdated = (updatedEntry: Entry) => {
-        const updatedList = entryList.map(v => 
-            v.id === updatedEntry.id ? updatedEntry : v
-        );
-        setEntryList(updatedList);
-        
-        const storedEntries = localStorage.getItem('entries');
-        if(storedEntries) {
-            const allEntries = JSON.parse(storedEntries).map((v:any) => ({
-                ...v,
-                checkInTime: new Date(v.checkInTime),
-                checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
-            }));
-            const updatedAllEntries = allEntries.map((v: Entry) => v.id === updatedEntry.id ? updatedEntry : v);
-            localStorage.setItem('entries', JSON.stringify(updatedAllEntries));
-        }
     }
 
     const handleDepartmentFilterChange = (department: Department) => {
@@ -362,7 +327,16 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
                     className={cn("hover:bg-muted/50", entry.type === 'Employee' && 'bg-green-50/50')}
                   >
                     <TableCell className="py-2 px-4 whitespace-nowrap">
-                        <Badge variant={entry.type === 'Visitor' ? 'default' : 'secondary'} className={cn(entry.type === 'Employee' && 'bg-green-100 text-green-800')}>{entry.type}</Badge>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            'rounded-full px-3 py-1 text-xs font-medium',
+                            entry.type === 'Visitor' && 'border-gray-300 bg-background text-gray-700',
+                            entry.type === 'Employee' && 'border-transparent bg-green-100 text-green-800'
+                          )}
+                        >
+                          {entry.type}
+                        </Badge>
                     </TableCell>
                     <TableCell className="font-medium py-2 px-4 whitespace-nowrap">{entry.name}</TableCell>
                     <TableCell className="hidden sm:table-cell py-2 px-4 text-muted-foreground whitespace-nowrap">
@@ -407,7 +381,7 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
                                       <TooltipTrigger asChild><Button aria-label="Check-out" size="icon" variant="destructive" className="h-8 w-8" onClick={() => handleCheckout(entry)}><LogOut className="h-4 w-4" /></Button></TooltipTrigger>
                                       <TooltipContent><p>Check-out</p></TooltipContent>
                                   </Tooltip>
-                                ) : ( <div className="h-8 w-8" /> )}
+                                ) : ( <div className="w-8" /> )}
                             </div>
                         </TooltipProvider>
                     </TableCell>
@@ -420,3 +394,4 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
         </Card>
     )
 }
+

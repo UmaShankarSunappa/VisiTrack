@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useRef, useEffect, useCallback } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -25,13 +25,30 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw } from "lucide-react";
+import { UserPlus, Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, Briefcase, Fingerprint, CreditCard } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import type { Visitor } from "@/lib/types";
+import type { Visitor, Employee, Entry, EntryType, GovtIdType } from "@/lib/types";
 
-const combinedSchema = z.object({
+// Schemas
+const visitorSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   mobile: z.string().transform((val) => val.replace(/\D/g, '')).pipe(z.string().length(10, "Please enter a valid 10-digit mobile number.")),
+  email: z.string().email("Invalid email address.").optional().or(z.literal("")),
+  govtIdType: z.enum(["Aadhaar Card", "Driving Licence", "Voter ID", "Passport", "PAN Card", "Other"]),
+  govtIdOther: z.string().optional(),
+  visitorCardNumber: z.string().min(1, "Visitor card number is required."),
+  hostName: z.string().min(2, "Person to meet is required."),
+  hostDepartment: z.enum(departments),
+  reasonForVisit: z.string().min(5, "Please provide a reason for your visit."),
+}).refine(data => !(data.govtIdType === 'Other' && !data.govtIdOther), {
+  message: "Please specify the ID type",
+  path: ["govtIdOther"],
+});
+
+const employeeSchema = z.object({
+  employeeId: z.string().min(4, "Employee ID is required"),
+  name: z.string().optional(),
+  department: z.string().optional(),
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
   hostName: z.string().min(2, "Person to meet is required."),
   hostDepartment: z.enum(departments),
@@ -43,32 +60,101 @@ const otpSchema = z.object({
   otp: z.string().length(6, "OTP must be 6 digits."),
 });
 
-type CombinedData = z.infer<typeof combinedSchema>;
-type OtpData = z.infer<typeof otpSchema>;
-type FormData = CombinedData & { selfie: string };
+type VisitorFormData = z.infer<typeof visitorSchema>;
+type EmployeeFormData = z.infer<typeof employeeSchema>;
+type SelfieData = { selfie: string };
 
 type AddVisitorDialogProps = {
-    onVisitorAdded: (visitor: Visitor) => void;
+    onEntryAdded: (entry: Entry) => void;
 };
 
-export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
+// Mock HRMS Data
+const hrmsData: { [key: string]: { name: string; department: Department; email: string } } = {
+  'EMP1001': { name: 'Ravi Kumar', department: 'Operations', email: 'ravi.k@example.com' },
+  'EMP1002': { name: 'Sonia Patel', department: 'HR', email: 'sonia.p@example.com' },
+};
+
+
+export function AddVisitorDialog({ onEntryAdded }: AddVisitorDialogProps) {
   const [open, setOpen] = useState(false);
+  const [entryType, setEntryType] = useState<EntryType | null>(null);
+
+  const handleSelectEntryType = (type: EntryType) => {
+    setEntryType(type);
+  };
+
+  const resetFlow = useCallback(() => {
+    setEntryType(null);
+    setOpen(false);
+  }, []);
+  
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          resetFlow();
+        }
+        setOpen(isOpen)
+    }}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="h-8 gap-1">
+          <UserPlus className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+            Add Entry
+          </span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        {!entryType ? (
+          <TypeSelectionStep onSelect={handleSelectEntryType} />
+        ) : (
+          <AddEntryFlow entryType={entryType} onEntryAdded={onEntryAdded} resetFlow={resetFlow} />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function TypeSelectionStep({ onSelect }: { onSelect: (type: EntryType) => void }) {
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>Select Entry Type</DialogTitle>
+        <DialogDescription>
+          Are you adding a visitor or an employee?
+        </DialogDescription>
+      </DialogHeader>
+      <div className="grid grid-cols-2 gap-4 py-8">
+        <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => onSelect('Visitor')}>
+          <User className="h-8 w-8"/>
+          <span>Visitor</span>
+        </Button>
+        <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => onSelect('Employee')}>
+          <Briefcase className="h-8 w-8"/>
+          <span>Employee</span>
+        </Button>
+      </div>
+    </>
+  )
+}
+
+
+function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: EntryType, onEntryAdded: (entry: Entry) => void, resetFlow: () => void }) {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<Partial<FormData>>({});
+  const [formData, setFormData] = useState<Partial<VisitorFormData & EmployeeFormData>>({});
   const { toast } = useToast();
   const [locationName, setLocationName] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open && typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       const storedLocation = localStorage.getItem('receptionistLocation');
       setLocationName(storedLocation);
     }
-  }, [open]);
+  }, []);
 
   const totalSteps = 2;
   const progress = (step / totalSteps) * 100;
   
-  const handleNextStep = (data: Partial<FormData>) => {
+  const handleNextStep = (data: Partial<VisitorFormData | EmployeeFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
     setStep((prev) => prev + 1);
   };
@@ -77,51 +163,73 @@ export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
     setStep((prev) => prev - 1);
   };
 
-  const resetFlow = () => {
-    setFormData({});
-    setStep(1);
-    setOpen(false);
-  }
-
-  const handleFinalSubmit = (data: Partial<FormData>) => {
-     const finalData = { ...formData, ...data } as FormData;
+  const handleFinalSubmit = (selfieData: SelfieData) => {
+     const finalData = { ...formData, ...selfieData };
      
      if (!locationName) {
-        toast({
-            title: "Error",
-            description: "Could not determine receptionist location.",
-            variant: "destructive"
-        });
+        toast({ title: "Error", description: "Could not determine receptionist location.", variant: "destructive" });
         return;
      }
 
      const [main, sub] = locationName.split(' - ');
      
-     const newVisitor: Visitor = {
-        id: new Date().toISOString(),
-        ...finalData,
-        selfieUrl: finalData.selfie,
-        checkInTime: new Date(),
-        status: 'Checked-in',
-        location: { main, sub }
-     };
+     let newEntry: Entry;
 
-     onVisitorAdded(newVisitor);
+     if (entryType === 'Visitor') {
+        const visitorData = finalData as VisitorFormData & SelfieData;
+        newEntry = {
+            id: new Date().toISOString(),
+            type: 'Visitor',
+            name: visitorData.name,
+            mobile: visitorData.mobile,
+            email: visitorData.email,
+            hostName: visitorData.hostName,
+            hostDepartment: visitorData.hostDepartment,
+            reasonForVisit: visitorData.reasonForVisit,
+            selfieUrl: visitorData.selfie,
+            checkInTime: new Date(),
+            status: 'Checked-in',
+            location: { main, sub },
+            govtIdType: visitorData.govtIdType as GovtIdType,
+            govtIdOther: visitorData.govtIdOther,
+            visitorCardNumber: visitorData.visitorCardNumber,
+            visitorCardReturned: false,
+        };
+     } else { // Employee
+        const employeeData = finalData as EmployeeFormData & SelfieData;
+        newEntry = {
+            id: new Date().toISOString(),
+            type: 'Employee',
+            name: employeeData.name!,
+            employeeId: employeeData.employeeId,
+            department: employeeData.department!,
+            email: employeeData.email,
+            hostName: employeeData.hostName,
+            hostDepartment: employeeData.hostDepartment,
+            reasonForVisit: employeeData.reasonForVisit,
+            selfieUrl: employeeData.selfie,
+            checkInTime: new Date(),
+            status: 'Checked-in',
+            location: { main, sub },
+        };
+     }
 
-    const storedVisitors = localStorage.getItem('visitors') || '[]';
-    let allVisitors: Visitor[] = [];
+     onEntryAdded(newEntry);
+
+    const storedEntries = localStorage.getItem('entries') || '[]';
+    let allEntries: Entry[] = [];
     try {
-        allVisitors = JSON.parse(storedVisitors);
+        allEntries = JSON.parse(storedEntries);
     } catch (e) {
         // ignore
     }
     
-    allVisitors.push(newVisitor);
-    localStorage.setItem('visitors', JSON.stringify(allVisitors));
+    allEntries.push(newEntry);
+    localStorage.setItem('entries', JSON.stringify(allEntries));
 
      toast({
-         title: "Visitor Added",
-         description: `${finalData.name} has been checked in.`
+         title: "Entry Added",
+         description: `${newEntry.name} has been checked in.`
      });
 
      resetFlow();
@@ -130,7 +238,9 @@ export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
   const renderStep = () => {
     switch (step) {
       case 1:
-        return <VisitorDetailsStep onNext={handleNextStep} defaultValues={formData} />;
+        return entryType === 'Visitor' 
+            ? <VisitorDetailsStep onNext={handleNextStep} defaultValues={formData as Partial<VisitorFormData>} />
+            : <EmployeeDetailsStep onNext={handleNextStep} defaultValues={formData as Partial<EmployeeFormData>} />;
       case 2:
         return <SelfieStep onNext={handleFinalSubmit} onBack={handlePrevStep} />;
       default:
@@ -139,91 +249,40 @@ export function AddVisitorDialog({ onVisitorAdded }: AddVisitorDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-        if (!isOpen) {
-            resetFlow();
-        }
-        setOpen(isOpen)
-    }}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-8 gap-1">
-          <UserPlus className="h-3.5 w-3.5" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Add Visitor
-          </span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Add New Visitor</DialogTitle>
-          <DialogDescription>
-            Manually enter the details for a new visitor.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4 space-y-4">
-            <Progress value={progress} className="w-full" />
-            <CardTitle className="text-center pt-2 text-lg">Step {step} of {totalSteps}</CardTitle>
-            {renderStep()}
-        </div>
-      </DialogContent>
-    </Dialog>
+    <>
+      <DialogHeader>
+        <DialogTitle>Add New {entryType}</DialogTitle>
+        <DialogDescription>
+          Manually enter the details for a new {entryType.toLowerCase()}.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="py-4 space-y-4">
+          <Progress value={progress} className="w-full" />
+          <CardTitle className="text-center pt-2 text-lg">Step {step} of {totalSteps}</CardTitle>
+          {renderStep()}
+      </div>
+    </>
   )
 }
 
-
-function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: CombinedData) => void; defaultValues: Partial<CombinedData> }) {
-  const [otpSent, setOtpSent] = useState(false);
+function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorFormData) => void; defaultValues: Partial<VisitorFormData> }) {
   const [isOtpVerified, setIsOtpVerified] = useState(false);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const { toast } = useToast();
   
-  const form = useForm<CombinedData>({
-    resolver: zodResolver(combinedSchema),
+  const form = useForm<VisitorFormData>({
+    resolver: zodResolver(visitorSchema),
     defaultValues,
   });
 
-  const otpForm = useForm<OtpData>({
-    resolver: zodResolver(otpSchema),
-  });
+  const govtIdType = form.watch("govtIdType");
 
-  const handleSendOtp = async () => {
-    const mobileValid = await form.trigger("mobile");
-    if (!mobileValid) return;
-    setIsSendingOtp(true);
-    setTimeout(() => {
-      setOtpSent(true);
-      setIsSendingOtp(false);
-      toast({ title: "OTP Sent", description: "An OTP has been sent to your mobile. (It's 123456)" });
-    }, 1000);
-  };
-
-  const handleVerifyOtp = (data: OtpData) => {
-    setIsVerifyingOtp(true);
-    setTimeout(() => {
-      if (data.otp === "123456") {
-        setIsOtpVerified(true);
-        toast({ title: "OTP Verified", description: "Mobile number is verified.", variant: "default" });
-      } else {
-        toast({ title: "Invalid OTP", description: "Please enter the correct OTP.", variant: "destructive" });
-        otpForm.setError("otp", { message: "Incorrect OTP" });
-      }
-      setIsVerifyingOtp(false);
-    }, 1000);
-  };
-
-  const onSubmit: SubmitHandler<CombinedData> = (data) => {
-     if (isOtpVerified) {
+  const onSubmit: SubmitHandler<VisitorFormData> = (data) => {
       onNext(data);
-    } else {
-       toast({ title: "Verification Required", description: "Please verify the mobile number with OTP.", variant: "destructive" });
-       form.trigger();
-    }
   };
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[60vh] overflow-y-auto p-1">
         <FormField
           control={form.control}
           name="name"
@@ -240,57 +299,23 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: Combined
             </FormItem>
           )}
         />
-        <div className="space-y-2">
-            <FormLabel>Mobile Number</FormLabel>
-            <div className="flex items-start gap-2">
-            <FormField
-                control={form.control}
-                name="mobile"
-                render={({ field }) => (
-                    <FormItem className="flex-grow">
-                        <FormControl>
-                            <div className="relative">
-                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="9876543210" {...field} className="pl-10" disabled={otpSent} />
-                            </div>
-                        </FormControl>
-                         <FormMessage />
-                    </FormItem>
-                )}
-                />
-                {!otpSent && <Button type="button" onClick={handleSendOtp} disabled={isSendingOtp}>
-                    {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Send OTP
-                </Button>}
-            </div>
-        </div>
-
-        {otpSent && !isOtpVerified && (
-          <Form {...otpForm}>
-            <div className="flex items-end gap-2 p-4 border rounded-lg bg-muted/30">
-              <FormField
-                control={otpForm.control}
-                name="otp"
-                render={({ field }) => (
-                  <FormItem className="flex-grow">
-                    <FormLabel>Enter OTP</FormLabel>
-                    <FormControl>
-                        <div className="relative">
-                            <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="123456" {...field} className="pl-10" />
-                        </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="button" onClick={otpForm.handleSubmit(handleVerifyOtp)} disabled={isVerifyingOtp}>
-                {isVerifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Verify OTP
-              </Button>
-            </div>
-          </Form>
-        )}
+        {/* Mobile + OTP can be added here as in the original component if needed */}
+        <FormField
+          control={form.control}
+          name="mobile"
+          render={({ field }) => (
+              <FormItem>
+                  <FormLabel>Mobile Number</FormLabel>
+                  <FormControl>
+                      <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input placeholder="9876543210" {...field} className="pl-10" />
+                      </div>
+                  </FormControl>
+                  <FormMessage />
+              </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -308,6 +333,61 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: Combined
             </FormItem>
           )}
         />
+
+        <FormField
+            control={form.control}
+            name="govtIdType"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Govt. ID</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                    <SelectTrigger><SelectValue placeholder="Select ID Type" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        <SelectItem value="Aadhaar Card">Aadhaar Card</SelectItem>
+                        <SelectItem value="Driving Licence">Driving Licence</SelectItem>
+                        <SelectItem value="Voter ID">Voter ID</SelectItem>
+                        <SelectItem value="Passport">Passport</SelectItem>
+                        <SelectItem value="PAN Card">PAN Card</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                </Select>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
+        {govtIdType === 'Other' && (
+            <FormField
+                control={form.control}
+                name="govtIdOther"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Please Specify ID Type</FormLabel>
+                    <FormControl><Input placeholder="e.g. Student ID" {...field} /></FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+        )}
+
+        <FormField
+          control={form.control}
+          name="visitorCardNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Visitor Card Number</FormLabel>
+              <FormControl>
+                 <div className="relative">
+                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="e.g. 123" {...field} className="pl-10" type="number" />
+                 </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="hostName"
@@ -339,11 +419,7 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: Combined
                         </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                        {departments.map((dep) => (
-                            <SelectItem key={dep} value={dep}>
-                            {dep}
-                            </SelectItem>
-                        ))}
+                        {departments.map((dep) => (<SelectItem key={dep} value={dep}>{dep}</SelectItem>))}
                         </SelectContent>
                     </Select>
                 </div>
@@ -357,13 +433,143 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: Combined
           render={({ field }) => (
             <FormItem>
               <FormLabel>Reason for Visit</FormLabel>
-              <FormControl>
-                <Textarea placeholder="e.g. Scheduled meeting about project X" {...field} />
-              </FormControl>
+              <FormControl><Textarea placeholder="e.g. Scheduled meeting" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        <DialogFooter>
+            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Next
+            </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
+
+function EmployeeDetailsStep({ onNext, defaultValues }: { onNext: (data: EmployeeFormData) => void; defaultValues: Partial<EmployeeFormData> }) {
+  const [otpSent, setOtpSent] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const { toast } = useToast();
+  
+  const form = useForm<EmployeeFormData>({
+    resolver: zodResolver(employeeSchema),
+    defaultValues,
+  });
+
+  const otpForm = useForm<{ otp: string }>({
+    resolver: zodResolver(otpSchema),
+  });
+
+  const employeeId = form.watch("employeeId");
+
+  const handleSendOtp = async () => {
+    const idValid = await form.trigger("employeeId");
+    if (!idValid || !hrmsData[employeeId]) {
+      form.setError("employeeId", { message: "Invalid Employee ID" });
+      return;
+    }
+    setIsSendingOtp(true);
+    setTimeout(() => {
+      setOtpSent(true);
+      setIsSendingOtp(false);
+      toast({ title: "OTP Sent", description: "An OTP has been sent. (It's 123456)" });
+    }, 1000);
+  };
+
+  const handleVerifyOtp = (data: { otp: string }) => {
+    setIsVerifyingOtp(true);
+    setTimeout(() => {
+      if (data.otp === "123456") {
+        setIsOtpVerified(true);
+        const employeeData = hrmsData[employeeId];
+        form.setValue("name", employeeData.name);
+        form.setValue("department", employeeData.department);
+        form.setValue("email", employeeData.email);
+        form.setValue("hostDepartment", employeeData.department);
+        toast({ title: "OTP Verified", description: "Employee details auto-filled." });
+      } else {
+        toast({ title: "Invalid OTP", variant: "destructive" });
+        otpForm.setError("otp", { message: "Incorrect OTP" });
+      }
+      setIsVerifyingOtp(false);
+    }, 1000);
+  };
+
+  const onSubmit: SubmitHandler<EmployeeFormData> = (data) => {
+     if (isOtpVerified) {
+      onNext(data);
+    } else {
+       toast({ title: "Verification Required", description: "Please verify with OTP.", variant: "destructive" });
+    }
+  };
+  
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[60vh] overflow-y-auto p-1">
+        <div className="space-y-2">
+            <FormLabel>Employee ID</FormLabel>
+            <div className="flex items-start gap-2">
+                <FormField
+                    control={form.control}
+                    name="employeeId"
+                    render={({ field }) => (
+                        <FormItem className="flex-grow">
+                            <FormControl>
+                                <div className="relative">
+                                    <Fingerprint className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input placeholder="e.g. EMP1001" {...field} className="pl-10" disabled={otpSent} />
+                                </div>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                {!otpSent && <Button type="button" onClick={handleSendOtp} disabled={isSendingOtp}>
+                    {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Send OTP
+                </Button>}
+            </div>
+        </div>
+
+        {otpSent && !isOtpVerified && (
+          <Form {...otpForm}>
+            <div className="flex items-end gap-2 p-4 border rounded-lg bg-muted/30">
+              <FormField
+                control={otpForm.control}
+                name="otp"
+                render={({ field }) => (
+                  <FormItem className="flex-grow">
+                    <FormLabel>Enter OTP</FormLabel>
+                    <FormControl>
+                        <Input placeholder="123456" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="button" onClick={otpForm.handleSubmit(handleVerifyOtp)} disabled={isVerifyingOtp}>
+                {isVerifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Verify OTP
+              </Button>
+            </div>
+          </Form>
+        )}
+        
+        {isOtpVerified && (
+          <>
+            <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted/50" /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="department" render={({ field }) => (<FormItem><FormLabel>Department</FormLabel><FormControl><Input {...field} readOnly className="bg-muted/50" /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="hostName" render={({ field }) => (<FormItem><FormLabel>Person To Meet</FormLabel><FormControl><Input placeholder="e.g. Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="hostDepartment" render={({ field }) => (<FormItem><FormLabel>Host Department</FormLabel><FormControl><Input {...field} readOnly className="bg-muted/50" /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="reasonForVisit" render={({ field }) => (<FormItem><FormLabel>Reason for Visit</FormLabel><FormControl><Textarea placeholder="e.g. Project meeting" {...field} /></FormControl><FormMessage /></FormItem>)} />
+          </>
+        )}
+
         <DialogFooter>
             <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -375,7 +581,7 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: Combined
   );
 }
 
-function SelfieStep({ onNext, onBack }: { onNext: (data: { selfie: string }) => void; onBack: () => void; }) {
+function SelfieStep({ onNext, onBack }: { onNext: (data: SelfieData) => void; onBack: () => void; }) {
   const [selfie, setSelfie] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -392,11 +598,7 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: { selfie: string }) => 
       }
     } catch (err) {
       console.error("Error accessing camera:", err);
-      toast({
-        title: "Camera Error",
-        description: "Could not access camera. Please check permissions.",
-        variant: "destructive",
-      });
+      toast({ title: "Camera Error", description: "Could not access camera.", variant: "destructive" });
     }
   };
 
@@ -406,13 +608,12 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: { selfie: string }) => 
       const canvas = canvasRef.current;
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      const context = canvas.getContext("2d");
-      context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+      canvas.getContext("2d")?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
       setSelfie(canvas.toDataURL("image/jpeg"));
       stopCamera();
     }
   };
-
+  
   const skipPhoto = () => {
       if(placeholder) {
         setSelfie(placeholder.imageUrl);
@@ -449,8 +650,7 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: { selfie: string }) => 
       <div className="w-full aspect-square bg-muted rounded-lg overflow-hidden flex items-center justify-center relative">
         {!selfie && stream && <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />}
         {!selfie && !stream && <Camera className="w-16 h-16 text-muted-foreground" />}
-        {selfie && <Image src={selfie} alt="Visitor's selfie" layout="fill" objectFit="cover" />}
-        {!stream && !selfie && placeholder && <Image src={placeholder.imageUrl} alt="selfie placeholder" layout="fill" objectFit="cover" data-ai-hint={placeholder.imageHint} />}
+        {selfie && <Image src={selfie} alt="Entry selfie" layout="fill" objectFit="cover" />}
       </div>
       <canvas ref={canvasRef} className="hidden" />
       
@@ -465,12 +665,10 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: { selfie: string }) => 
             </Button>
         </div>
       ) : (
-        <div className="flex gap-4">
-            <Button variant="outline" onClick={handleRetake} className="w-full">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Retake
-            </Button>
-        </div>
+        <Button variant="outline" onClick={handleRetake} className="w-full">
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Retake
+        </Button>
       )}
 
       <DialogFooter className="flex-row gap-4 justify-end">
@@ -484,5 +682,3 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: { selfie: string }) => 
     </div>
   );
 }
-
-    

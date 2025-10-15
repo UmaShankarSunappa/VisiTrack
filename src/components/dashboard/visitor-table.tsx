@@ -10,6 +10,7 @@ import {
   Eye,
   Pencil,
   Search,
+  TriangleAlert,
 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
 import { utils, writeFile } from "xlsx";
@@ -54,10 +55,9 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-import type { Visitor, Department } from "@/lib/types"
+import type { Entry, Department } from "@/lib/types"
 import { AddVisitorDialog } from "./add-visitor-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { VisitorDetailsDialog } from "./visitor-details-dialog"
@@ -65,19 +65,21 @@ import { EditVisitorDialog } from "./edit-visitor-dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { departments } from "@/lib/data"
 import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 
 
-export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
+export function VisitorTable({ entries }: { entries: Entry[] }) {
     const { toast } = useToast()
-    const [visitorList, setVisitorList] = React.useState(visitors)
-    const [selectedVisitor, setSelectedVisitor] = React.useState<Visitor | null>(null);
-    const [editingVisitor, setEditingVisitor] = React.useState<Visitor | null>(null);
+    const [entryList, setEntryList] = React.useState(entries)
+    const [selectedEntry, setSelectedEntry] = React.useState<Entry | null>(null);
+    const [editingEntry, setEditingEntry] = React.useState<Entry | null>(null);
+    const [checkoutEntry, setCheckoutEntry] = React.useState<Entry | null>(null);
     const [activeTab, setActiveTab] = React.useState("all");
     const [selectedDepartments, setSelectedDepartments] = React.useState<Department[]>([]);
     const [searchQuery, setSearchQuery] = React.useState("");
 
     React.useEffect(() => {
-        let filtered = visitors;
+        let filtered = entries;
 
         if (selectedDepartments.length > 0) {
             filtered = filtered.filter(v => selectedDepartments.includes(v.hostDepartment));
@@ -87,63 +89,80 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
             filtered = filtered.filter(v => v.name.toLowerCase().includes(searchQuery.toLowerCase()));
         }
         
-        setVisitorList(filtered.sort((a, b) => new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()));
-    }, [visitors, selectedDepartments, searchQuery]);
+        setEntryList(filtered.sort((a, b) => new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()));
+    }, [entries, selectedDepartments, searchQuery]);
 
 
-    const handleCheckout = (visitorId: string) => {
-        const updatedList = visitorList.map(v => 
-            v.id === visitorId ? { ...v, status: 'Checked-out', checkOutTime: new Date() } : v
-        );
-        
-        setVisitorList(updatedList);
-        
-        const visitor = visitors.find(v => v.id === visitorId);
-        toast({
-            title: "Visitor Checked Out",
-            description: `${visitor?.name} has been successfully checked out.`
+    const handleCheckout = (entryId: string, cardReturned: boolean = true) => {
+        const updatedList = entryList.map(v => {
+            if (v.id === entryId) {
+                const updatedEntry = { ...v, status: 'Checked-out' as const, checkOutTime: new Date() };
+                if (updatedEntry.type === 'Visitor') {
+                    updatedEntry.visitorCardReturned = cardReturned;
+                }
+                return updatedEntry;
+            }
+            return v;
         });
         
-        const storedVisitors = localStorage.getItem('visitors');
-        if(storedVisitors) {
-            const allVisitors = JSON.parse(storedVisitors).map((v:any) => ({
-                ...v,
-                checkInTime: new Date(v.checkInTime),
-                checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
-            }));
-            const updatedAllVisitors = allVisitors.map((v: Visitor) => v.id === visitorId ? { ...v, status: 'Checked-out', checkOutTime: new Date() } : v);
-            localStorage.setItem('visitors', JSON.stringify(updatedAllVisitors));
-        }
-    }
-
-    const handleViewDetails = (visitor: Visitor) => {
-        setSelectedVisitor(visitor);
-    }
-
-    const handleEdit = (visitor: Visitor) => {
-        setEditingVisitor(visitor);
-    }
-    
-    const onVisitorAdded = (newVisitor: Visitor) => {
-        const updatedVisitors = [newVisitor, ...visitorList];
-        setVisitorList(updatedVisitors);
-    }
-    
-    const onVisitorUpdated = (updatedVisitor: Visitor) => {
-        const updatedList = visitorList.map(v => 
-            v.id === updatedVisitor.id ? updatedVisitor : v
-        );
-        setVisitorList(updatedList);
+        setEntryList(updatedList);
         
-        const storedVisitors = localStorage.getItem('visitors');
-        if(storedVisitors) {
-            const allVisitors = JSON.parse(storedVisitors).map((v:any) => ({
+        const entry = entries.find(v => v.id === entryId);
+        toast({
+            title: "Entry Checked Out",
+            description: `${entry?.name} has been successfully checked out.`
+        });
+        
+        const storedEntries = localStorage.getItem('entries');
+        if(storedEntries) {
+            const allEntries = JSON.parse(storedEntries).map((v:any) => ({
                 ...v,
                 checkInTime: new Date(v.checkInTime),
                 checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
             }));
-            const updatedAllVisitors = allVisitors.map((v: Visitor) => v.id === updatedVisitor.id ? updatedVisitor : v);
-            localStorage.setItem('visitors', JSON.stringify(updatedAllVisitors));
+            const updatedAllEntries = allEntries.map((v: Entry) => {
+                if (v.id === entryId) {
+                    const updatedEntry = { ...v, status: 'Checked-out' as const, checkOutTime: new Date() };
+                    if (updatedEntry.type === 'Visitor') {
+                        updatedEntry.visitorCardReturned = cardReturned;
+                    }
+                    return updatedEntry;
+                }
+                return v;
+            });
+            localStorage.setItem('entries', JSON.stringify(updatedAllEntries));
+        }
+        setCheckoutEntry(null);
+    }
+
+    const handleViewDetails = (entry: Entry) => {
+        setSelectedEntry(entry);
+    }
+
+    const handleEdit = (entry: Entry) => {
+        setEditingEntry(entry);
+    }
+    
+    const onEntryAdded = (newEntry: Entry) => {
+        const updatedEntries = [newEntry, ...entryList];
+        setEntryList(updatedEntries);
+    }
+    
+    const onEntryUpdated = (updatedEntry: Entry) => {
+        const updatedList = entryList.map(v => 
+            v.id === updatedEntry.id ? updatedEntry : v
+        );
+        setEntryList(updatedList);
+        
+        const storedEntries = localStorage.getItem('entries');
+        if(storedEntries) {
+            const allEntries = JSON.parse(storedEntries).map((v:any) => ({
+                ...v,
+                checkInTime: new Date(v.checkInTime),
+                checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
+            }));
+            const updatedAllEntries = allEntries.map((v: Entry) => v.id === updatedEntry.id ? updatedEntry : v);
+            localStorage.setItem('entries', JSON.stringify(updatedAllEntries));
         }
     }
 
@@ -156,33 +175,55 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
     }
 
     const handleExport = () => {
-        let dataToExport = visitorList;
+        let dataToExport = entryList;
         if (activeTab === "checked-in") {
-            dataToExport = visitorList.filter(v => v.status === "Checked-in");
+            dataToExport = entryList.filter(v => v.status === "Checked-in");
         } else if (activeTab === "checked-out") {
-            dataToExport = visitorList.filter(v => v.status === "Checked-out");
+            dataToExport = entryList.filter(v => v.status === "Checked-out");
         }
         
-        const formattedData = dataToExport.map(v => ({
-            "Name": v.name,
-            "Mobile": v.mobile,
-            "Email": v.email || 'N/A',
-            "Person to Meet": v.hostName,
-            "Host Department": v.hostDepartment,
-            "Reason For Visit": v.reasonForVisit,
-            "Location": `${v.location.main}${v.location.sub ? ` - ${v.location.sub}` : ''}`,
-            "Status": v.status,
-            "Check-in Time": format(new Date(v.checkInTime), "yyyy-MM-dd HH:mm:ss"),
-            "Check-out Time": v.checkOutTime ? format(new Date(v.checkOutTime), "yyyy-MM-dd HH:mm:ss") : 'N/A',
-        }));
+        const formattedData = dataToExport.map(v => {
+            if (v.type === 'Visitor') {
+                return {
+                    "Type": v.type,
+                    "Name": v.name,
+                    "Mobile": v.mobile,
+                    "Email": v.email || 'N/A',
+                    "Person to Meet": v.hostName,
+                    "Host Department": v.hostDepartment,
+                    "Reason For Visit": v.reasonForVisit,
+                    "Location": `${v.location.main}${v.location.sub ? ` - ${v.location.sub}` : ''}`,
+                    "Status": v.status,
+                    "Check-in Time": format(new Date(v.checkInTime), "yyyy-MM-dd HH:mm:ss"),
+                    "Check-out Time": v.checkOutTime ? format(new Date(v.checkOutTime), "yyyy-MM-dd HH:mm:ss") : 'N/A',
+                    "Visitor Card No.": v.visitorCardNumber,
+                    "Card Returned": v.visitorCardReturned ? 'Yes' : 'No'
+                }
+            } else {
+                 return {
+                    "Type": v.type,
+                    "Name": v.name,
+                    "Employee ID": v.employeeId,
+                    "Department": v.department,
+                    "Email": v.email || 'N/A',
+                    "Person to Meet": v.hostName,
+                    "Host Department": v.hostDepartment,
+                    "Reason For Visit": v.reasonForVisit,
+                    "Location": `${v.location.main}${v.location.sub ? ` - ${v.location.sub}` : ''}`,
+                    "Status": v.status,
+                    "Check-in Time": format(new Date(v.checkInTime), "yyyy-MM-dd HH:mm:ss"),
+                    "Check-out Time": v.checkOutTime ? format(new Date(v.checkOutTime), "yyyy-MM-dd HH:mm:ss") : 'N/A',
+                }
+            }
+        });
 
         const worksheet = utils.json_to_sheet(formattedData);
         const workbook = utils.book_new();
-        utils.book_append_sheet(workbook, worksheet, "Visitors");
-        writeFile(workbook, `Visitors_${activeTab}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+        utils.book_append_sheet(workbook, worksheet, "Entries");
+        writeFile(workbook, `Entries_${activeTab}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
         toast({
             title: "Export Successful",
-            description: "The visitor list has been exported to an Excel file."
+            description: "The list has been exported to an Excel file."
         });
     }
 
@@ -211,7 +252,7 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
               <Button variant="outline" size="sm" className="h-8 gap-1">
                 <ListFilter className="h-3.5 w-3.5" />
                 <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Filter
+                  Filter Dept
                 </span>
               </Button>
             </DropdownMenuTrigger>
@@ -222,10 +263,7 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
                 <DropdownMenuCheckboxItem
                     key={dep}
                     checked={selectedDepartments.includes(dep)}
-                    onSelect={(e) => {
-                        e.preventDefault();
-                        handleDepartmentFilterChange(dep);
-                    }}
+                    onSelect={(e) => { e.preventDefault(); handleDepartmentFilterChange(dep); }}
                 >
                     {dep}
                 </DropdownMenuCheckboxItem>
@@ -238,180 +276,145 @@ export function VisitorTable({ visitors }: { visitors: Visitor[] }) {
               Export
             </span>
           </Button>
-          <AddVisitorDialog onVisitorAdded={onVisitorAdded} />
+          <AddVisitorDialog onEntryAdded={onEntryAdded} />
         </div>
       </div>
       <TabsContent value="all">
-        <VisitorListCard visitors={visitorList} handleCheckout={handleCheckout} handleViewDetails={handleViewDetails} handleEdit={handleEdit} />
+        <VisitorListCard entries={entryList} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} />
       </TabsContent>
       <TabsContent value="checked-in">
-        <VisitorListCard visitors={visitorList.filter(v => v.status === 'Checked-in')} handleCheckout={handleCheckout} handleViewDetails={handleViewDetails} handleEdit={handleEdit}/>
+        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-in')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit}/>
       </TabsContent>
        <TabsContent value="checked-out">
-        <VisitorListCard visitors={visitorList.filter(v => v.status === 'Checked-out')} handleCheckout={handleCheckout} handleViewDetails={handleViewDetails} handleEdit={handleEdit}/>
+        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-out')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit}/>
       </TabsContent>
     </Tabs>
-     {selectedVisitor && (
+     {selectedEntry && (
         <VisitorDetailsDialog 
-            visitor={selectedVisitor} 
-            open={!!selectedVisitor} 
-            onOpenChange={(isOpen) => {
-                if (!isOpen) {
-                    setSelectedVisitor(null);
-                }
-            }}
+            entry={selectedEntry} 
+            open={!!selectedEntry} 
+            onOpenChange={(isOpen) => !isOpen && setSelectedEntry(null)}
         />
     )}
-    {editingVisitor && (
+    {editingEntry && (
         <EditVisitorDialog
-            visitor={editingVisitor}
-            open={!!editingVisitor}
-            onOpenChange={(isOpen) => {
-                if(!isOpen) {
-                    setEditingVisitor(null);
-                }
-            }}
-            onVisitorUpdated={onVisitorUpdated}
+            entry={editingEntry}
+            open={!!editingEntry}
+            onOpenChange={(isOpen) => !isOpen && setEditingEntry(null)}
+            onEntryUpdated={onEntryUpdated}
         />
+    )}
+    {checkoutEntry && (
+        <AlertDialog open={!!checkoutEntry} onOpenChange={(isOpen) => !isOpen && setCheckoutEntry(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm Checkout</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {checkoutEntry.type === 'Visitor' ? `Has visitor card #${checkoutEntry.visitorCardNumber} been returned?` : `Are you sure you want to check out ${checkoutEntry.name}?`}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    {checkoutEntry.type === 'Visitor' ? (
+                        <>
+                            <AlertDialogAction onClick={() => handleCheckout(checkoutEntry.id, false)} className="bg-destructive hover:bg-destructive/80">No, Not Returned</AlertDialogAction>
+                            <AlertDialogAction onClick={() => handleCheckout(checkoutEntry.id, true)}>Yes, Returned</AlertDialogAction>
+                        </>
+                    ) : (
+                        <AlertDialogAction onClick={() => handleCheckout(checkoutEntry.id)}>Confirm Check-out</AlertDialogAction>
+                    )}
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     )}
     </>
   )
 }
 
 
-function VisitorListCard({ visitors, handleCheckout, handleViewDetails, handleEdit }: { visitors: Visitor[], handleCheckout: (id: string) => void, handleViewDetails: (visitor: Visitor) => void, handleEdit: (visitor: Visitor) => void }) {
+function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdit }: { entries: Entry[], handleCheckout: (entry: Entry) => void, handleViewDetails: (entry: Entry) => void, handleEdit: (entry: Entry) => void }) {
     return (
         <Card className="animate-fade-in-up">
           <CardHeader>
-            <CardTitle>Visitors</CardTitle>
+            <CardTitle>Entries</CardTitle>
             <CardDescription>
-              A list of all visitors for the selected date and location.
+              A list of all visitors and employees for the selected date and location.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="py-2 px-4 whitespace-nowrap">Visitor Name</TableHead>
-                  <TableHead className="hidden sm:table-cell py-2 px-4 whitespace-nowrap">Mobile</TableHead>
+                  <TableHead className="py-2 px-4 whitespace-nowrap">Type</TableHead>
+                  <TableHead className="py-2 px-4 whitespace-nowrap">Name</TableHead>
+                  <TableHead className="hidden sm:table-cell py-2 px-4 whitespace-nowrap">Mobile / Emp ID</TableHead>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Status</TableHead>
-                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
-                    Person to Meet
-                  </TableHead>
-                  <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
-                    Department
-                  </TableHead>
-                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
-                    Check-in Time
-                  </TableHead>
-                  <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
-                    Check-out Time
-                  </TableHead>
+                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Person to Meet</TableHead>
+                  <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">Card No.</TableHead>
+                  <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Check-in</TableHead>
+                  <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">Check-out</TableHead>
                   <TableHead className="py-2 px-4 whitespace-nowrap text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <AnimatePresence>
-                {visitors.map(visitor => (
+                {entries.map(entry => (
                   <motion.tr
-                    key={visitor.id}
+                    key={entry.id}
                     layout
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, transition: { duration: 0.1 } }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="hover:bg-muted/50"
+                    className={cn("hover:bg-muted/50", entry.type === 'Employee' && 'bg-green-50/50')}
                   >
-                    <TableCell className="font-medium py-2 px-4 whitespace-nowrap">
-                        {visitor.name}
+                    <TableCell className="py-2 px-4 whitespace-nowrap">
+                        <Badge variant={entry.type === 'Visitor' ? 'default' : 'secondary'} className={cn(entry.type === 'Employee' && 'bg-green-100 text-green-800')}>{entry.type}</Badge>
                     </TableCell>
+                    <TableCell className="font-medium py-2 px-4 whitespace-nowrap">{entry.name}</TableCell>
                     <TableCell className="hidden sm:table-cell py-2 px-4 text-muted-foreground whitespace-nowrap">
-                        {visitor.mobile}
+                        {entry.type === 'Visitor' ? entry.mobile : entry.employeeId}
                     </TableCell>
                     <TableCell className="py-2 px-4 whitespace-nowrap">
-                      <Badge variant={visitor.status === 'Checked-in' ? 'default' : 'outline'}>
-                        {visitor.status}
-                      </Badge>
+                      <Badge variant={entry.status === 'Checked-in' ? 'default' : 'outline'}>{entry.status}</Badge>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
-                      {visitor.hostName}
-                    </TableCell>
+                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{entry.hostName}</TableCell>
                     <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
-                      {visitor.hostDepartment}
+                      {entry.type === 'Visitor' ? (
+                        <div className="flex items-center gap-1">
+                          <span>{entry.visitorCardNumber}</span>
+                          {entry.status === 'Checked-out' && !entry.visitorCardReturned && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <TriangleAlert className="h-4 w-4 text-destructive" />
+                                </TooltipTrigger>
+                                <TooltipContent><p>Card not returned</p></TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
+                      ) : 'N/A'}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">
-                      {format(new Date(visitor.checkInTime), "PPp")}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
-                      {visitor.checkOutTime ? format(new Date(visitor.checkOutTime), "PPp") : 'N/A'}
-                    </TableCell>
+                    <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{format(new Date(entry.checkInTime), "PPp")}</TableCell>
+                    <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">{entry.checkOutTime ? format(new Date(entry.checkOutTime), "PPp") : 'N/A'}</TableCell>
                     <TableCell className="py-2 px-4 whitespace-nowrap text-center">
                         <TooltipProvider>
                             <div className="flex items-center justify-center gap-2">
                                 <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            aria-label="View Details"
-                                            size="icon"
-                                            variant="outline"
-                                            onClick={() => handleViewDetails(visitor)}
-                                            className="h-8 w-8"
-                                        >
-                                            <Eye className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>View Details</p>
-                                    </TooltipContent>
+                                    <TooltipTrigger asChild><Button aria-label="View Details" size="icon" variant="outline" onClick={() => handleViewDetails(entry)} className="h-8 w-8"><Eye className="h-4 w-4" /></Button></TooltipTrigger>
+                                    <TooltipContent><p>View Details</p></TooltipContent>
                                 </Tooltip>
-                                 <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            aria-label="Edit Visitor"
-                                            size="icon"
-                                            variant="outline"
-                                            onClick={() => handleEdit(visitor)}
-                                            className="h-8 w-8"
-                                        >
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Edit Visitor</p>
-                                    </TooltipContent>
+                                <Tooltip>
+                                    <TooltipTrigger asChild><Button aria-label="Edit" size="icon" variant="outline" onClick={() => handleEdit(entry)} className="h-8 w-8"><Pencil className="h-4 w-4" /></Button></TooltipTrigger>
+                                    <TooltipContent><p>Edit</p></TooltipContent>
                                 </Tooltip>
-                                {visitor.status === 'Checked-in' ? (
-                                    <AlertDialog>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button aria-label="Check-out" size="icon" variant="destructive" className="h-8 w-8">
-                                                        <LogOut className="h-4 w-4" />
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>Check-out</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you sure you want to check-out this visitor?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This will mark {visitor.name} as checked-out. This action cannot be undone.
-                                            </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleCheckout(visitor.id)}>
-                                                Confirm Check-out
-                                            </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                ) : (
-                                    <div className="h-8 w-8" />
-                                )}
+                                {entry.status === 'Checked-in' ? (
+                                  <Tooltip>
+                                      <TooltipTrigger asChild><Button aria-label="Check-out" size="icon" variant="destructive" className="h-8 w-8" onClick={() => handleCheckout(entry)}><LogOut className="h-4 w-4" /></Button></TooltipTrigger>
+                                      <TooltipContent><p>Check-out</p></TooltipContent>
+                                  </Tooltip>
+                                ) : ( <div className="h-8 w-8" /> )}
                             </div>
                         </TooltipProvider>
                     </TableCell>

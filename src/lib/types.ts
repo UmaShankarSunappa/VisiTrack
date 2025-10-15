@@ -11,10 +11,14 @@ export type MainLocation = {
 
 export type Department = 'Supply Chain' | 'Accounts' | 'HR' | 'Operations';
 
-export type Visitor = {
+export type GovtIdType = "Aadhaar Card" | "Driving Licence" | "Voter ID" | "Passport" | "PAN Card" | "Other";
+
+export type EntryType = 'Visitor' | 'Employee';
+
+export interface BaseEntry {
   id: string;
+  type: EntryType;
   name: string;
-  mobile: string;
   email?: string;
   hostName: string;
   hostDepartment: Department;
@@ -27,6 +31,21 @@ export type Visitor = {
     main: string;
     sub?: string;
   }
-};
+}
 
-    
+export interface Visitor extends BaseEntry {
+  type: 'Visitor';
+  mobile: string;
+  govtIdType: GovtIdType;
+  govtIdOther?: string;
+  visitorCardNumber: string;
+  visitorCardReturned: boolean;
+}
+
+export interface Employee extends BaseEntry {
+  type: 'Employee';
+  employeeId: string;
+  department: string;
+}
+
+export type Entry = Visitor | Employee;

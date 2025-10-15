@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { format, isWithinInterval, startOfDay, endOfDay, addDays } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon, User, Briefcase, ListFilter } from "lucide-react"
 import { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
@@ -14,10 +14,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { VisitorTable } from "@/components/dashboard/visitor-table";
-import { mockVisitors } from "@/lib/data";
-import type { Visitor } from "@/lib/types";
+import { mockData } from "@/lib/data";
+import type { Entry, EntryType } from "@/lib/types";
 
 
 export default function DashboardPage() {
@@ -25,44 +33,43 @@ export default function DashboardPage() {
       from: new Date(),
       to: new Date(),
     })
-    const [allVisitors, setAllVisitors] = React.useState<Visitor[]>([]);
-    const [filteredVisitors, setFilteredVisitors] = React.useState<Visitor[]>([]);
+    const [allEntries, setAllEntries] = React.useState<Entry[]>([]);
+    const [filteredEntries, setFilteredEntries] = React.useState<Entry[]>([]);
     const [locationName, setLocationName] = React.useState<string | null>(null);
     const [userRole, setUserRole] = React.useState<string | null>(null);
+    const [typeFilter, setTypeFilter] = React.useState<EntryType | 'All'>('All');
 
     React.useEffect(() => {
-        let visitors: Visitor[] = [];
-        const storedVisitors = localStorage.getItem('visitors');
+        let entries: Entry[] = [];
+        const storedEntries = localStorage.getItem('entries');
         
         // Use mock data as the base
-        const baseVisitors = mockVisitors.map(v => ({
+        const baseEntries = mockData.map(v => ({
             ...v,
             checkInTime: new Date(v.checkInTime),
             checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
         }));
 
-        if (storedVisitors) {
+        if (storedEntries) {
             try {
-                const parsedStoredVisitors = JSON.parse(storedVisitors).map((v: any) => ({
+                const parsedStoredEntries = JSON.parse(storedEntries).map((v: any) => ({
                     ...v,
                     checkInTime: new Date(v.checkInTime),
                     checkOutTime: v.checkOutTime ? new Date(v.checkOutTime) : undefined,
                 }));
-                // Combine mock data with stored data, avoiding duplicates
-                const visitorMap = new Map();
-                [...baseVisitors, ...parsedStoredVisitors].forEach(v => visitorMap.set(v.id, v));
-                visitors = Array.from(visitorMap.values());
+                const entryMap = new Map();
+                [...baseEntries, ...parsedStoredEntries].forEach(v => entryMap.set(v.id, v));
+                entries = Array.from(entryMap.values());
             } catch (e) {
-                console.error("Failed to parse visitors from localStorage", e);
-                visitors = baseVisitors;
+                console.error("Failed to parse entries from localStorage", e);
+                entries = baseEntries;
             }
         } else {
-           visitors = baseVisitors;
+           entries = baseEntries;
         }
 
-        // Save the potentially combined list back to localStorage
-        localStorage.setItem('visitors', JSON.stringify(visitors));
-        setAllVisitors(visitors);
+        localStorage.setItem('entries', JSON.stringify(entries));
+        setAllEntries(entries);
         
         if (typeof window !== "undefined") {
             const storedLocation = localStorage.getItem('receptionistLocation');
@@ -73,33 +80,34 @@ export default function DashboardPage() {
     }, []);
 
     React.useEffect(() => {
-        let visitorsToFilter = allVisitors;
+        let entriesToFilter = allEntries;
         
-        // Filter by location if user is not admin
         if (userRole !== 'admin' && locationName) {
-            visitorsToFilter = visitorsToFilter.filter(visitor => {
-                if (!visitor.location) return false;
-                const visitorLocationString = `${visitor.location.main}${visitor.location.sub ? ` - ${visitor.location.sub}` : ''}`;
-                return visitorLocationString === locationName;
+            entriesToFilter = entriesToFilter.filter(entry => {
+                if (!entry.location) return false;
+                const entryLocationString = `${entry.location.main}${entry.location.sub ? ` - ${entry.location.sub}` : ''}`;
+                return entryLocationString === locationName;
             });
         }
         
-        // Filter by date range
         if (date?.from) {
           const range = {
             start: startOfDay(date.from),
             end: date.to ? endOfDay(date.to) : endOfDay(date.from),
           }
-          visitorsToFilter = visitorsToFilter.filter(visitor => 
-            isWithinInterval(visitor.checkInTime, range)
+          entriesToFilter = entriesToFilter.filter(entry => 
+            isWithinInterval(entry.checkInTime, range)
           );
         } else {
-          // If no date is set, show nothing
-          visitorsToFilter = [];
+          entriesToFilter = [];
         }
 
-        setFilteredVisitors(visitorsToFilter);
-    }, [date, allVisitors, locationName, userRole]);
+        if (typeFilter !== 'All') {
+            entriesToFilter = entriesToFilter.filter(entry => entry.type === typeFilter);
+        }
+
+        setFilteredEntries(entriesToFilter);
+    }, [date, allEntries, locationName, userRole, typeFilter]);
 
     return (
         <>
@@ -111,7 +119,7 @@ export default function DashboardPage() {
                         id="date"
                         variant={"outline"}
                         className={cn(
-                        "w-[300px] justify-start text-left font-normal",
+                        "w-[260px] justify-start text-left font-normal",
                         !date && "text-muted-foreground"
                         )}
                     >
@@ -154,10 +162,28 @@ export default function DashboardPage() {
                     />
                     </PopoverContent>
                 </Popover>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 gap-1">
+                        <ListFilter className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Filter by Type
+                        </span>
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem checked={typeFilter === 'All'} onSelect={() => setTypeFilter('All')}>All</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={typeFilter === 'Visitor'} onSelect={() => setTypeFilter('Visitor')}>Visitor</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={typeFilter === 'Employee'} onSelect={() => setTypeFilter('Employee')}>Employee</DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
                 {date && <Button variant="ghost" onClick={() => setDate(undefined)}>Reset</Button>}
             </div>
-            <StatsCards visitors={filteredVisitors} />
-            <VisitorTable visitors={filteredVisitors} />
+            <StatsCards entries={filteredEntries} />
+            <VisitorTable entries={filteredEntries} />
         </>
     )
 }

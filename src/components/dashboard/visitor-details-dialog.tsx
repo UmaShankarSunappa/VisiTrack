@@ -3,7 +3,7 @@
 
 import Image from "next/image"
 import { format } from "date-fns"
-import type { Visitor } from "@/lib/types"
+import type { Entry } from "@/lib/types"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,71 +15,103 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
 
 interface VisitorDetailsDialogProps {
-  visitor: Visitor;
+  entry: Entry;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function VisitorDetailsDialog({ visitor, open, onOpenChange }: VisitorDetailsDialogProps) {
+export function VisitorDetailsDialog({ entry, open, onOpenChange }: VisitorDetailsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Visitor Details</DialogTitle>
+          <DialogTitle>{entry.type} Details</DialogTitle>
           <DialogDescription>
-            Full details for {visitor.name}.
+            Full details for {entry.name}.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="flex justify-center">
             <Image
-              src={visitor.selfieUrl}
-              alt={`Selfie of ${visitor.name}`}
+              src={entry.selfieUrl}
+              alt={`Selfie of ${entry.name}`}
               width={128}
               height={128}
               className="rounded-full border-4 border-primary"
             />
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <strong className="text-muted-foreground">Type:</strong>
+            <Badge variant={entry.type === 'Visitor' ? 'default' : 'secondary'} className={cn(entry.type === 'Employee' && 'bg-green-100 text-green-800')}>{entry.type}</Badge>
+
             <strong className="text-muted-foreground">Name:</strong>
-            <span>{visitor.name}</span>
+            <span>{entry.name}</span>
 
-            <strong className="text-muted-foreground">Mobile:</strong>
-            <span>{visitor.mobile}</span>
+            {entry.type === 'Visitor' ? (
+                <>
+                    <strong className="text-muted-foreground">Mobile:</strong>
+                    <span>{entry.mobile}</span>
+                </>
+            ) : (
+                <>
+                    <strong className="text-muted-foreground">Employee ID:</strong>
+                    <span>{entry.employeeId}</span>
+                    <strong className="text-muted-foreground">Department:</strong>
+                    <span>{entry.department}</span>
+                </>
+            )}
 
-            {visitor.email && (
+            {entry.email && (
               <>
                 <strong className="text-muted-foreground">Email:</strong>
-                <span>{visitor.email}</span>
+                <span className="truncate">{entry.email}</span>
               </>
             )}
 
-            <strong className="text-muted-foreground">Person to Meet:</strong>
-            <span>{visitor.hostName}</span>
+            {entry.type === 'Visitor' && (
+                <>
+                    <strong className="text-muted-foreground">Govt ID:</strong>
+                    <span>{entry.govtIdType === 'Other' ? entry.govtIdOther : entry.govtIdType}</span>
+                    <strong className="text-muted-foreground">Card No:</strong>
+                    <span>{entry.visitorCardNumber}</span>
+                </>
+            )}
 
-            <strong className="text-muted-foreground">Department:</strong>
-            <span>{visitor.hostDepartment}</span>
+            <strong className="text-muted-foreground">Person to Meet:</strong>
+            <span>{entry.hostName}</span>
+
+            <strong className="text-muted-foreground">Host Department:</strong>
+            <span>{entry.hostDepartment}</span>
             
             <strong className="text-muted-foreground">Location:</strong>
-            <span>{visitor.location.main}{visitor.location.sub ? `, ${visitor.location.sub}`: ''}</span>
+            <span>{entry.location.main}{entry.location.sub ? `, ${entry.location.sub}`: ''}</span>
 
             <strong className="text-muted-foreground">Reason for Visit:</strong>
-            <span className="col-start-2">{visitor.reasonForVisit}</span>
+            <span className="col-span-2">{entry.reasonForVisit}</span>
 
             <strong className="text-muted-foreground">Status:</strong>
-            <Badge variant={visitor.status === 'Checked-in' ? 'default' : 'outline'}>
-              {visitor.status}
+            <Badge variant={entry.status === 'Checked-in' ? 'default' : 'outline'}>
+              {entry.status}
             </Badge>
 
             <strong className="text-muted-foreground">Check-in:</strong>
-            <span>{format(visitor.checkInTime, "PPpp")}</span>
+            <span>{format(entry.checkInTime, "PPpp")}</span>
 
-            {visitor.checkOutTime && (
+            {entry.checkOutTime && (
               <>
                 <strong className="text-muted-foreground">Check-out:</strong>
-                <span>{format(visitor.checkOutTime, "PPpp")}</span>
+                <span>{format(entry.checkOutTime, "PPpp")}</span>
+              </>
+            )}
+             {entry.type === 'Visitor' && entry.status === 'Checked-out' && (
+              <>
+                <strong className="text-muted-foreground">Card Returned:</strong>
+                <Badge variant={entry.visitorCardReturned ? 'secondary' : 'destructive'}>
+                  {entry.visitorCardReturned ? 'Yes' : 'No'}
+                </Badge>
               </>
             )}
           </div>
@@ -93,5 +125,3 @@ export function VisitorDetailsDialog({ visitor, open, onOpenChange }: VisitorDet
     </Dialog>
   )
 }
-
-    

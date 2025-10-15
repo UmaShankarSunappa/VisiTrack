@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { VisitorTable } from "@/components/dashboard/visitor-table";
+import { AddVisitorDialog } from "@/components/dashboard/add-visitor-dialog";
 import { mockData } from "@/lib/data";
 import type { Entry, EntryType } from "@/lib/types";
 
@@ -109,10 +110,16 @@ export default function DashboardPage() {
         setFilteredEntries(entriesToFilter);
     }, [date, allEntries, locationName, userRole, typeFilter]);
 
+    const onEntryAdded = (newEntry: Entry) => {
+        const updatedEntries = [newEntry, ...allEntries];
+        setAllEntries(updatedEntries);
+        localStorage.setItem('entries', JSON.stringify(updatedEntries));
+    }
+
     return (
         <>
             <div className="flex flex-wrap items-center gap-4">
-                <h1 className="text-lg font-semibold md:text-2xl font-headline">Dashboard</h1>
+                <h1 className="text-lg font-semibold md:text-2xl font-headline flex-1">Dashboard</h1>
                  <Popover>
                     <PopoverTrigger asChild>
                     <Button
@@ -181,6 +188,7 @@ export default function DashboardPage() {
                 </DropdownMenu>
 
                 {date && <Button variant="ghost" onClick={() => setDate(undefined)}>Reset</Button>}
+                <AddVisitorDialog onEntryAdded={onEntryAdded} />
             </div>
             <StatsCards entries={filteredEntries} />
             <VisitorTable entries={filteredEntries} />

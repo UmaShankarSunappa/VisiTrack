@@ -58,7 +58,6 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import type { Entry, Department } from "@/lib/types"
-import { AddVisitorDialog } from "./add-visitor-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { VisitorDetailsDialog } from "./visitor-details-dialog"
 import { EditVisitorDialog } from "./edit-visitor-dialog"
@@ -141,11 +140,6 @@ export function VisitorTable({ entries }: { entries: Entry[] }) {
 
     const handleEdit = (entry: Entry) => {
         setEditingEntry(entry);
-    }
-    
-    const onEntryAdded = (newEntry: Entry) => {
-        const updatedEntries = [newEntry, ...entryList];
-        setEntryList(updatedEntries);
     }
     
     const onEntryUpdated = (updatedEntry: Entry) => {
@@ -276,7 +270,6 @@ export function VisitorTable({ entries }: { entries: Entry[] }) {
               Export
             </span>
           </Button>
-          <AddVisitorDialog onEntryAdded={onEntryAdded} />
         </div>
       </div>
       <TabsContent value="all">

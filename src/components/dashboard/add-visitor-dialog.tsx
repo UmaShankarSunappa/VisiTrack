@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, Briefcase, Fingerprint, CreditCard } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import type { Visitor, Employee, Entry, EntryType, GovtIdType } from "@/lib/types";
+import type { Visitor, Employee, Entry, EntryType, GovtIdType, Department } from "@/lib/types";
 
 // Schemas
 const visitorSchema = z.object({
@@ -36,10 +36,10 @@ const visitorSchema = z.object({
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
   govtIdType: z.enum(["Aadhaar Card", "Driving Licence", "Voter ID", "Passport", "PAN Card", "Other"]),
   govtIdOther: z.string().optional(),
-  visitorCardNumber: z.string().min(1, "Visitor card number is required."),
   hostName: z.string().min(2, "Person to meet is required."),
   hostDepartment: z.enum(departments),
   reasonForVisit: z.string().min(5, "Please provide a reason for your visit."),
+  visitorCardNumber: z.string().min(1, "Visitor card number is required."),
 }).refine(data => !(data.govtIdType === 'Other' && !data.govtIdOther), {
   message: "Please specify the ID type",
   path: ["govtIdOther"],
@@ -373,23 +373,6 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
 
         <FormField
           control={form.control}
-          name="visitorCardNumber"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Visitor Card Number</FormLabel>
-              <FormControl>
-                 <div className="relative">
-                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="e.g. 123" {...field} className="pl-10" type="number" />
-                 </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="hostName"
           render={({ field }) => (
             <FormItem>
@@ -434,6 +417,22 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
             <FormItem>
               <FormLabel>Reason for Visit</FormLabel>
               <FormControl><Textarea placeholder="e.g. Scheduled meeting" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="visitorCardNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Visitor Card Number</FormLabel>
+              <FormControl>
+                 <div className="relative">
+                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="e.g. 123" {...field} className="pl-10" type="number" />
+                 </div>
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -682,3 +681,4 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: SelfieData) => void; on
     </div>
   );
 }
+

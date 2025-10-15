@@ -364,7 +364,7 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>Please Specify ID Type</FormLabel>
-                    <FormControl><Input placeholder="e.g. Student ID" {...field} /></FormControl>
+                    <FormControl><Input placeholder="e.g. Company ID" {...field} /></FormControl>
                     <FormMessage />
                     </FormItem>
                 )}

@@ -117,8 +117,8 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                 <FormField control={form.control} name="name" render={({ field }) => ( 
                   <FormItem> 
                     <FormLabel>Full Name</FormLabel>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <div className="relative flex items-center">
+                      <User className="absolute left-3 h-4 w-4 text-muted-foreground" />
                       <FormControl>
                         <Input placeholder="John Doe" {...field} className="pl-10" />
                       </FormControl>
@@ -129,8 +129,8 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                 <FormField control={form.control} name="mobile" render={({ field }) => ( 
                   <FormItem> 
                     <FormLabel>Mobile</FormLabel>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                     <div className="relative flex items-center">
+                      <Phone className="absolute left-3 h-4 w-4 text-muted-foreground" />
                       <FormControl>
                         <Input placeholder="9876543210" {...field} className="pl-10"/>
                       </FormControl>
@@ -141,8 +141,8 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                 <FormField control={form.control} name="email" render={({ field }) => (
                   <FormItem> 
                     <FormLabel>Email (Optional)</FormLabel>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <div className="relative flex items-center">
+                      <Mail className="absolute left-3 h-4 w-4 text-muted-foreground" />
                       <FormControl>
                         <Input placeholder="john.doe@example.com" {...field} className="pl-10" />
                       </FormControl>
@@ -178,8 +178,8 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                  <FormField control={form.control} name="visitorCardNumber" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Visitor Card Number</FormLabel>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <div className="relative flex items-center">
+                      <CreditCard className="absolute left-3 h-4 w-4 text-muted-foreground" />
                       <FormControl>
                         <Input placeholder="e.g. 123" {...field} className="pl-10" type="number" />
                       </FormControl>
@@ -190,8 +190,8 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                 <FormField control={form.control} name="hostName" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Person To Meet</FormLabel>
-                    <div className="relative">
-                      <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <div className="relative flex items-center">
+                      <UserCheck className="absolute left-3 h-4 w-4 text-muted-foreground" />
                       <FormControl>
                         <Input placeholder="e.g. Jane Smith" {...field} className="pl-10"/>
                       </FormControl>
@@ -290,8 +290,8 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
                 <FormField control={form.control} name="hostName" render={({ field }) => ( 
                   <FormItem>
                     <FormLabel>Person To Meet</FormLabel>
-                    <div className="relative">
-                      <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <div className="relative flex items-center">
+                      <UserCheck className="absolute left-3 h-4 w-4 text-muted-foreground" />
                       <FormControl>
                         <Input placeholder="e.g. Jane Smith" {...field} className="pl-10"/>
                       </FormControl>
@@ -337,5 +337,3 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
     </Dialog>
   )
 }
-
-    

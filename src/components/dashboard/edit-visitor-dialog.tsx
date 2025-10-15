@@ -118,27 +118,29 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                 <FormField control={form.control} name="mobile" render={({ field }) => ( <FormItem> <FormLabel>Mobile</FormLabel> <FormControl> <div className="relative"> <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /> <Input placeholder="9876543210" {...field} className="pl-10"/> </div> </FormControl> <FormMessage /> </FormItem> )}/>
                 <FormField control={form.control} name="email" render={({ field }) => ( <FormItem> <FormLabel>Email (Optional)</FormLabel> <FormControl> <div className="relative"> <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /> <Input placeholder="john.doe@example.com" {...field} className="pl-10" /> </div> </FormControl> <FormMessage /> </FormItem> )}/>
                 <FormField
-                  control={form.control}
-                  name="govtIdType"
-                  render={({ field }) => (
-                      <FormItem>
-                      <FormLabel>Verified Govt. ID</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger><SelectValue placeholder="Select ID Type" /></SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                              <SelectItem value="Aadhaar Card">Aadhaar Card</SelectItem>
-                              <SelectItem value="Driving Licence">Driving Licence</SelectItem>
-                              <SelectItem value="Voter ID">Voter ID</SelectItem>
-                              <SelectItem value="Passport">Passport</SelectItem>
-                              <SelectItem value="PAN Card">PAN Card</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
-                          </SelectContent>
-                      </Select>
-                      <FormMessage />
-                      </FormItem>
-                  )}
+                    control={form.control}
+                    name="govtIdType"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Verified Govt. ID</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select ID Type" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Aadhaar Card">Aadhaar Card</SelectItem>
+                                    <SelectItem value="Driving Licence">Driving Licence</SelectItem>
+                                    <SelectItem value="Voter ID">Voter ID</SelectItem>
+                                    <SelectItem value="Passport">Passport</SelectItem>
+                                    <SelectItem value="PAN Card">PAN Card</SelectItem>
+                                    <SelectItem value="Other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
                 />
                 <FormField control={form.control} name="hostName" render={({ field }) => ( <FormItem> <FormLabel>Person To Meet</FormLabel> <FormControl> <div className="relative"> <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /> <Input placeholder="e.g. Jane Smith" {...field} className="pl-10"/> </div> </FormControl> <FormMessage /> </FormItem> )}/>
                 <FormField
@@ -147,20 +149,20 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Host Department</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a department" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {departments.map((dep) => (
-                            <SelectItem key={dep} value={dep}>
-                              {dep}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a department" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {departments.map((dep) => (
+                                <SelectItem key={dep} value={dep}>
+                                {dep}
+                                </SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -270,3 +272,5 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
     </Dialog>
   )
 }
+
+    

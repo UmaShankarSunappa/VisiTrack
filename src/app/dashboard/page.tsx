@@ -187,7 +187,6 @@ export default function DashboardPage() {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                {date && <Button variant="ghost" onClick={() => setDate(undefined)}>Reset</Button>}
                 <AddVisitorDialog onEntryAdded={onEntryAdded} />
             </div>
             <StatsCards entries={filteredEntries} />

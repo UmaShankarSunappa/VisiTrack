@@ -407,7 +407,7 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
             name="govtIdType"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>Govt. ID</FormLabel>
+                <FormLabel>Verified Govt. ID</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                     <SelectTrigger><SelectValue placeholder="Select ID Type" /></SelectTrigger>
@@ -750,5 +750,7 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: SelfieData) => void; on
   );
 }
 
+
+    
 
     

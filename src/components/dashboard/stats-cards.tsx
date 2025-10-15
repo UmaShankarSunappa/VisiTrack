@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Users, LogIn, LogOut, Briefcase, CreditCard } from "lucide-react"
+import { Users, LogIn, LogOut, Briefcase } from "lucide-react"
 import type { Entry } from "@/lib/types"
 
 interface StatsCardsProps {
@@ -19,11 +19,10 @@ export function StatsCards({ entries }: StatsCardsProps) {
   const activeEmployees = entries.filter(e => e.type === 'Employee' && e.status === 'Checked-in').length;
   const totalCheckins = entries.length;
   const totalCheckouts = entries.filter(e => e.status === 'Checked-out').length;
-  const cardsIssued = entries.filter(e => e.type === 'Visitor' && e.status === 'Checked-in' && e.visitorCardNumber).length;
 
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-5">
+    <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
       <Card className="rounded-2xl shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -64,15 +63,6 @@ export function StatsCards({ entries }: StatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-4xl font-bold">{totalCheckouts}</div>
-        </CardContent>
-      </Card>
-      <Card className="rounded-2xl shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">Visitor Cards Issued</CardTitle>
-          <CreditCard className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-4xl font-bold">{cardsIssued}</div>
         </CardContent>
       </Card>
     </div>

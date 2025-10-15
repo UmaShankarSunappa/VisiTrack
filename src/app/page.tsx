@@ -60,7 +60,6 @@ export default function LoginPage() {
             <div className="flex justify-center mb-4">
                 <Logo />
             </div>
-          <CardTitle className="text-2xl font-bold font-headline">VisiTrack Pro</CardTitle>
           <CardDescription>
             Receptionist Login
           </CardDescription>

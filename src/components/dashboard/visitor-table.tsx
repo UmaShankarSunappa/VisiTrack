@@ -122,6 +122,12 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
     const handleEdit = (entry: Entry) => {
         setEditingEntry(entry);
     }
+    
+    const handleEntryUpdate = (updatedEntry: Entry) => {
+        onEntryUpdated(updatedEntry);
+        setEditingEntry(null);
+    };
+
 
     const handleDepartmentFilterChange = (department: Department) => {
         setSelectedDepartments(prev => 
@@ -254,10 +260,11 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
     )}
     {editingEntry && (
         <EditVisitorDialog
+            key={editingEntry.id}
             entry={editingEntry}
             open={!!editingEntry}
             onOpenChange={(isOpen) => !isOpen && setEditingEntry(null)}
-            onEntryUpdated={onEntryUpdated}
+            onEntryUpdated={handleEntryUpdate}
         />
     )}
     {checkoutEntry && (

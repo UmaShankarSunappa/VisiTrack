@@ -23,15 +23,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, User, Phone, Mail, UserCheck, CreditCard } from "lucide-react";
 import type { Entry, Visitor, Employee } from "@/lib/types";
 
+// Schemas
 const editVisitorSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   mobile: z.string().transform((val) => val.replace(/\D/g, '')).pipe(z.string().length(10, "Please enter a valid 10-digit mobile number.")),
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
+  govtIdType: z.enum(["Aadhaar Card", "Driving Licence", "Voter ID", "Passport", "PAN Card", "Other"]),
+  visitorCardNumber: z.string().min(1, "Visitor card number is required."),
   hostName: z.string().min(2, "Person to meet is required."),
   hostDepartment: z.enum(departments),
   reasonForVisit: z.string().min(5, "Please provide a reason for your visit."),
-  govtIdType: z.enum(["Aadhaar Card", "Driving Licence", "Voter ID", "Passport", "PAN Card", "Other"]),
-  visitorCardNumber: z.string().min(1, "Visitor card number is required."),
 });
 
 const editEmployeeSchema = z.object({
@@ -41,6 +42,8 @@ const editEmployeeSchema = z.object({
   reasonForVisit: z.string().min(5, "Please provide a reason for your visit."),
 });
 
+type EditVisitorFormData = z.infer<typeof editVisitorSchema>;
+type EditEmployeeFormData = z.infer<typeof editEmployeeSchema>;
 
 interface EditVisitorDialogProps {
   entry: Entry;
@@ -51,51 +54,31 @@ interface EditVisitorDialogProps {
 
 export function EditVisitorDialog({ entry, open, onOpenChange, onEntryUpdated }: EditVisitorDialogProps) {
   return entry.type === 'Visitor' 
-    ? <EditVisitorForm entry={entry as Visitor} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
-    : <EditEmployeeForm entry={entry as Employee} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
+    ? <EditVisitorForm entry={entry} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
+    : <EditEmployeeForm entry={entry} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
 }
 
 
 function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry: Visitor, open: boolean, onOpenChange: (open: boolean) => void, onEntryUpdated: (entry: Entry) => void }){
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof editVisitorSchema>>({
+  const form = useForm<EditVisitorFormData>({
     resolver: zodResolver(editVisitorSchema),
-    defaultValues: {
-        name: entry.name,
-        mobile: entry.mobile,
-        email: entry.email,
-        hostName: entry.hostName,
-        hostDepartment: entry.hostDepartment,
-        reasonForVisit: entry.reasonForVisit,
-        govtIdType: entry.govtIdType,
-        visitorCardNumber: entry.visitorCardNumber
-    },
+    defaultValues: { ...entry },
   });
   
   useEffect(() => {
-    form.reset({
-        name: entry.name,
-        mobile: entry.mobile,
-        email: entry.email,
-        hostName: entry.hostName,
-        hostDepartment: entry.hostDepartment,
-        reasonForVisit: entry.reasonForVisit,
-        govtIdType: entry.govtIdType,
-        visitorCardNumber: entry.visitorCardNumber
-    })
-  }, [entry, form])
+    form.reset({ ...entry });
+  }, [entry, form]);
 
-  const onSubmit: SubmitHandler<z.infer<typeof editVisitorSchema>> = (data) => {
-     const updatedEntry = {
+  const onSubmit: SubmitHandler<EditVisitorFormData> = (data) => {
+     const updatedEntry: Visitor = {
          ...entry,
          ...data,
          checkInTime: new Date(entry.checkInTime),
          checkOutTime: entry.checkOutTime ? new Date(entry.checkOutTime) : undefined,
      };
-
      onEntryUpdated(updatedEntry);
-
      toast({
          title: "Entry Updated",
          description: `${data.name}'s details have been updated.`
@@ -113,7 +96,7 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[60vh] overflow-y-auto p-1">
                 <FormField control={form.control} name="name" render={({ field }) => ( 
                   <FormItem> 
                     <FormLabel>Full Name</FormLabel>
@@ -239,35 +222,23 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
 function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry: Employee, open: boolean, onOpenChange: (open: boolean) => void, onEntryUpdated: (entry: Entry) => void }){
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof editEmployeeSchema>>({
+  const form = useForm<EditEmployeeFormData>({
     resolver: zodResolver(editEmployeeSchema),
-    defaultValues: {
-        name: entry.name,
-        hostName: entry.hostName,
-        hostDepartment: entry.hostDepartment,
-        reasonForVisit: entry.reasonForVisit,
-    },
+    defaultValues: { ...entry },
   });
   
   useEffect(() => {
-    form.reset({
-        name: entry.name,
-        hostName: entry.hostName,
-        hostDepartment: entry.hostDepartment,
-        reasonForVisit: entry.reasonForVisit,
-    })
-  }, [entry, form])
+    form.reset({ ...entry });
+  }, [entry, form]);
 
-  const onSubmit: SubmitHandler<z.infer<typeof editEmployeeSchema>> = (data) => {
-     const updatedEntry = {
+  const onSubmit: SubmitHandler<EditEmployeeFormData> = (data) => {
+     const updatedEntry: Employee = {
          ...entry,
          ...data,
          checkInTime: new Date(entry.checkInTime),
          checkOutTime: entry.checkOutTime ? new Date(entry.checkOutTime) : undefined,
      };
-
      onEntryUpdated(updatedEntry);
-
      toast({
          title: "Entry Updated",
          description: `${data.name}'s details have been updated.`
@@ -285,8 +256,8 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
-                <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Full Name</FormLabel> <FormControl> <Input {...field} readOnly className="bg-muted/50" /> </FormControl> <FormMessage /> </FormItem> )}/>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[60vh] overflow-y-auto p-1">
+                <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Full Name</FormLabel><FormControl> <Input {...field} readOnly className="bg-muted/50" /> </FormControl><FormMessage /></FormItem> )}/>
                 <FormField control={form.control} name="hostName" render={({ field }) => ( 
                   <FormItem>
                     <FormLabel>Person To Meet</FormLabel>
@@ -337,3 +308,5 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
     </Dialog>
   )
 }
+
+    

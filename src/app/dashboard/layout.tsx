@@ -71,7 +71,7 @@ function LocationFilter() {
   };
   
   const getDisplayLabel = () => {
-    if (selectedLocations.length === locations.length) return "All Locations";
+    if (locations.length > 0 && selectedLocations.length === locations.length) return "All Locations";
     if (selectedLocations.length === 1) return selectedLocations[0];
     if (selectedLocations.length > 1) return `${selectedLocations.length} locations selected`;
     return "No locations selected";
@@ -97,7 +97,7 @@ function LocationFilter() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64">
         <DropdownMenuCheckboxItem
-          checked={selectedLocations.length === locations.length}
+          checked={locations.length > 0 && selectedLocations.length === locations.length}
           onSelect={(e) => { e.preventDefault(); handleSelectAll(); }}
         >
           All Locations

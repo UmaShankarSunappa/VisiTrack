@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Edit, Trash2, Upload } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Upload, FileDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { MainLocation } from '@/lib/types';
 import { locations as defaultLocations } from '@/lib/data';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 function BulkUploadModal({ onLocationsUploaded }: { onLocationsUploaded: (newLocations: MainLocation[]) => void }) {
   const [open, setOpen] = useState(false);
@@ -363,6 +364,23 @@ export default function LocationMasterPage() {
   const isConfigured = (location: MainLocation) => {
     return !!location.macAddress && location.cardStart != null && location.cardEnd != null;
   }
+  
+  const handleDownloadTemplate = () => {
+    import('xlsx').then(({ utils, writeFile }) => {
+        const sampleData = [
+            { 'Location ID': 'CORP-HQ-NY', 'Descriptive Name': 'Corporate HQ New York' },
+            { 'Location ID': 'WAREHOUSE-NJ', 'Descriptive Name': 'New Jersey Warehouse' }
+        ];
+        const worksheet = utils.json_to_sheet(sampleData);
+        const workbook = utils.book_new();
+        utils.book_append_sheet(workbook, worksheet, 'Locations');
+        writeFile(workbook, 'location-template.xlsx');
+         toast({
+            title: "Template Downloaded",
+            description: "location-template.xlsx has been downloaded.",
+        });
+    });
+  };
 
   return (
     <div className="flex flex-1 flex-col w-full space-y-6">
@@ -376,6 +394,19 @@ export default function LocationMasterPage() {
         <div className="flex items-center gap-2">
           <BulkUploadModal onLocationsUploaded={handleLocationsUploaded} />
           <CreateLocationModal onLocationCreated={handleLocationCreated} />
+           <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" onClick={handleDownloadTemplate}>
+                    <FileDown className="h-4 w-4" />
+                    <span className="sr-only">Download Template</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Download Excel Template</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
         </div>
       </div>
       <Card className="flex-1">
@@ -454,5 +485,7 @@ export default function LocationMasterPage() {
     </div>
   );
 }
+
+    
 
     

@@ -11,6 +11,7 @@ import {
   Pencil,
   Search,
   TriangleAlert,
+  MapPin,
 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
 import { utils, writeFile } from "xlsx";
@@ -75,6 +76,14 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
     const [activeTab, setActiveTab] = React.useState("all");
     const [selectedDepartments, setSelectedDepartments] = React.useState<Department[]>([]);
     const [searchQuery, setSearchQuery] = React.useState("");
+    const [userRole, setUserRole] = React.useState<string | null>(null);
+
+     React.useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedRole = localStorage.getItem('userRole');
+            setUserRole(storedRole);
+        }
+    }, []);
 
     React.useEffect(() => {
         let filtered = entries;
@@ -189,6 +198,8 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
             description: "The list has been exported to an Excel file."
         });
     }
+  
+  const isAdmin = userRole === 'admin';
 
   return (
     <>
@@ -242,13 +253,13 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
         </div>
       </div>
       <TabsContent value="all">
-        <VisitorListCard entries={entryList} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} />
+        <VisitorListCard entries={entryList} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isAdmin}/>
       </TabsContent>
       <TabsContent value="checked-in">
-        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-in')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit}/>
+        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-in')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isAdmin}/>
       </TabsContent>
        <TabsContent value="checked-out">
-        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-out')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit}/>
+        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-out')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isAdmin}/>
       </TabsContent>
     </Tabs>
      {selectedEntry && (
@@ -273,7 +284,7 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
                 <AlertDialogHeader>
                     <AlertDialogTitle>Confirm Checkout</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {checkoutEntry.type === 'Visitor' ? `Has visitor card #${checkoutEntry.visitorCardNumber} been returned?` : `Are you sure you want to check out ${checkoutEntry.name}?`}
+                        {checkoutEntry.type === 'Visitor' ? `Has visitor card #${(checkoutEntry as any).visitorCardNumber} been returned?` : `Are you sure you want to check out ${checkoutEntry.name}?`}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -295,13 +306,13 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
 }
 
 
-function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdit }: { entries: Entry[], handleCheckout: (entry: Entry) => void, handleViewDetails: (entry: Entry) => void, handleEdit: (entry: Entry) => void }) {
+function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdit, isAdmin }: { entries: Entry[], handleCheckout: (entry: Entry) => void, handleViewDetails: (entry: Entry) => void, handleEdit: (entry: Entry) => void, isAdmin: boolean }) {
     return (
         <Card className="animate-fade-in-up">
           <CardHeader>
             <CardTitle>Entries</CardTitle>
             <CardDescription>
-              A list of all visitors and employees for the selected date and location.
+              A list of all visitors and employees for the selected date and filters.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -311,6 +322,7 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
                   <TableHead className="py-2 px-4 whitespace-nowrap">Type</TableHead>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Name</TableHead>
                   <TableHead className="hidden sm:table-cell py-2 px-4 whitespace-nowrap">Mobile / Emp ID</TableHead>
+                  {isAdmin && <TableHead className="hidden xl:table-cell py-2 px-4 whitespace-nowrap">Location</TableHead>}
                   <TableHead className="py-2 px-4 whitespace-nowrap">Status</TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Person to Meet</TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Department</TableHead>
@@ -348,6 +360,12 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
                     <TableCell className="hidden sm:table-cell py-2 px-4 text-muted-foreground whitespace-nowrap">
                         {entry.type === 'Visitor' ? entry.mobile : entry.employeeId}
                     </TableCell>
+                     {isAdmin && <TableCell className="hidden xl:table-cell py-2 px-4 text-muted-foreground whitespace-nowrap">
+                       <div className="flex items-center gap-2">
+                        <MapPin className="h-3 w-3" />
+                        <span>{entry.location.main}{entry.location.sub ? ` - ${entry.location.sub}` : ''}</span>
+                       </div>
+                        </TableCell>}
                     <TableCell className="py-2 px-4 whitespace-nowrap">
                       <Badge variant={entry.status === 'Checked-in' ? 'default' : 'outline'}>{entry.status}</Badge>
                     </TableCell>
@@ -401,5 +419,3 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
         </Card>
     )
 }
-
-    

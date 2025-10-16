@@ -27,9 +27,11 @@ import { VisitorTable } from "@/components/dashboard/visitor-table";
 import { AddVisitorDialog } from "@/components/dashboard/add-visitor-dialog";
 import { mockData } from "@/lib/data";
 import type { Entry, EntryType } from "@/lib/types";
+import { useLocation } from "@/context/LocationContext";
 
 
 export default function DashboardPage() {
+    const { selectedLocations } = useLocation();
     const [date, setDate] = React.useState<DateRange | undefined>({
       from: new Date(),
       to: new Date(),
@@ -83,7 +85,12 @@ export default function DashboardPage() {
     React.useEffect(() => {
         let entriesToFilter = allEntries;
         
-        if (userRole !== 'admin' && locationName) {
+        if (userRole === 'admin') {
+            entriesToFilter = entriesToFilter.filter(entry => {
+                const entryLocationString = `${entry.location.main}${entry.location.sub ? ` - ${entry.location.sub}` : ''}`;
+                return selectedLocations.includes(entryLocationString);
+            });
+        } else if (locationName) {
             entriesToFilter = entriesToFilter.filter(entry => {
                 if (!entry.location) return false;
                 const entryLocationString = `${entry.location.main}${entry.location.sub ? ` - ${entry.location.sub}` : ''}`;
@@ -108,13 +115,19 @@ export default function DashboardPage() {
         }
 
         setFilteredEntries(entriesToFilter);
-    }, [date, allEntries, locationName, userRole, typeFilter]);
+    }, [date, allEntries, locationName, userRole, typeFilter, selectedLocations]);
 
     const onEntryAdded = (newEntry: Entry) => {
         const updatedEntries = [newEntry, ...allEntries];
         setAllEntries(updatedEntries);
         localStorage.setItem('entries', JSON.stringify(updatedEntries));
     }
+
+    const handleEntryUpdated = (updatedEntry: Entry) => {
+        const updatedList = allEntries.map(e => e.id === updatedEntry.id ? updatedEntry : e);
+        setAllEntries(updatedList);
+        localStorage.setItem('entries', JSON.stringify(updatedList));
+    };
 
     return (
         <>
@@ -190,7 +203,7 @@ export default function DashboardPage() {
                 <AddVisitorDialog onEntryAdded={onEntryAdded} />
             </div>
             <StatsCards entries={filteredEntries} />
-            <VisitorTable entries={filteredEntries} />
+            <VisitorTable entries={filteredEntries} onEntryUpdated={handleEntryUpdated}/>
         </>
     )
 }

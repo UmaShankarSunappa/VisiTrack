@@ -26,27 +26,30 @@ import type { MainLocation } from "@/lib/types";
 import { locations as initialLocations } from "@/lib/data";
 
 export default function LocationMasterPage() {
-  const [locations, setLocations] = React.useState<MainLocation[]>([]);
+  const [locations, setLocations] = React.useState<MainLocation[]>(initialLocations);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   React.useEffect(() => {
-    const storedLocations = localStorage.getItem("locations");
-    let loadedLocations = initialLocations;
-    if (storedLocations) {
-      try {
+    try {
+      const storedLocations = localStorage.getItem("locations");
+      if (storedLocations) {
         const parsedLocations = JSON.parse(storedLocations);
-        // Basic validation
-        if (Array.isArray(parsedLocations) && parsedLocations.every(l => l.id)) {
-           loadedLocations = parsedLocations;
-        }
-      } catch (e) {
-        console.error("Failed to parse locations from localStorage", e);
-        // If parsing fails, we'll stick with the initial mock data
+         if (Array.isArray(parsedLocations) && parsedLocations.every(l => l.id)) {
+           setLocations(parsedLocations);
+         } else {
+           // If data is invalid, sync initial data to localStorage
+           localStorage.setItem("locations", JSON.stringify(initialLocations));
+         }
+      } else {
+        // If no data, sync initial data to localStorage
+        localStorage.setItem("locations", JSON.stringify(initialLocations));
       }
+    } catch (e) {
+      console.error("Failed to process locations from localStorage", e);
+      // On error, reset to initial and sync
+      setLocations(initialLocations);
+      localStorage.setItem("locations", JSON.stringify(initialLocations));
     }
-    setLocations(loadedLocations);
-    // Ensure localStorage is in sync with the state
-    localStorage.setItem("locations", JSON.stringify(loadedLocations));
   }, []);
 
   const handleLocationCreated = (newLocation: MainLocation) => {

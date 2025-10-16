@@ -28,8 +28,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import type { MainLocation } from '@/lib/types';
+import type { MainLocation, LocationType } from '@/lib/types';
 import { locations as defaultLocations } from '@/lib/data';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -130,6 +131,7 @@ function BulkUploadModal({ onLocationsUploaded }: { onLocationsUploaded: (newLoc
 function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLocation: MainLocation) => void }) {
   const [open, setOpen] = useState(false);
   const [descriptiveName, setDescriptiveName] = useState('');
+  const [locationType, setLocationType] = useState<LocationType | ''>('');
   const [coordinates, setCoordinates] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
@@ -140,6 +142,7 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
 
   const resetForm = () => {
     setDescriptiveName('');
+    setLocationType('');
     setCoordinates('');
     setAddress('');
     setCity('');
@@ -164,6 +167,7 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
       id: locationId.toLowerCase(),
       name: locationId,
       descriptiveName,
+      locationType: locationType || undefined,
       coordinates,
       address,
       city,
@@ -179,6 +183,8 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
     resetForm();
     setOpen(false);
   };
+  
+  const locationTypes: LocationType[] = ["Office", "Warehouse", "Factory", "Hostel"];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -192,7 +198,7 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
         <DialogHeader>
           <DialogTitle>Create New Location</DialogTitle>
           <DialogDescription>
-            Enter a unique ID and a descriptive name for the new master location.
+            Enter the details for the new master location.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="max-h-[60vh] overflow-y-auto p-1">
@@ -208,6 +214,21 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
                 className="col-span-3"
                 placeholder="e.g. Corporate Office"
               />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="location-type" className="text-right">
+                Type
+              </Label>
+                <Select value={locationType} onValueChange={(value) => setLocationType(value as LocationType)}>
+                    <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {locationTypes.map(type => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="coordinates" className="text-right">
@@ -487,6 +508,7 @@ export default function LocationMasterPage() {
               <TableRow>
                 <TableHead>Location ID</TableHead>
                 <TableHead>Descriptive Name</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Address</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -498,6 +520,7 @@ export default function LocationMasterPage() {
                   <TableRow key={location.id}>
                     <TableCell className="font-medium">{location.name}</TableCell>
                     <TableCell>{location.descriptiveName || '-'}</TableCell>
+                    <TableCell>{location.locationType || '-'}</TableCell>
                     <TableCell>{location.address ? `${location.address}, ${location.city}` : '-'}</TableCell>
                     <TableCell>
                        <Badge variant={isConfigured(location) ? 'secondary' : 'destructive'}>
@@ -518,7 +541,7 @@ export default function LocationMasterPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center h-24">
+                  <TableCell colSpan={6} className="text-center h-24">
                     No locations created yet.
                   </TableCell>
                 </TableRow>

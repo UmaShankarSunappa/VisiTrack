@@ -4,10 +4,13 @@ export type SubLocation = {
   name: string;
 };
 
+export type LocationType = "Office" | "Warehouse" | "Factory" | "Hostel";
+
 export type MainLocation = {
   id: string;
   name: string;
   descriptiveName?: string;
+  locationType?: LocationType;
   macAddress?: string;
   cardStart?: number;
   cardEnd?: number;

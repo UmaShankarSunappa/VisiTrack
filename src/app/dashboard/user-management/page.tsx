@@ -16,6 +16,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -202,6 +212,8 @@ function CreateUserModal({ onUserCreated }: { onUserCreated: (newUser: User) => 
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState<User[]>([]);
+    const [deletingUser, setDeletingUser] = useState<User | null>(null);
+    const { toast } = useToast();
 
     const generateReceptionists = (locations: MainLocation[]): User[] => {
       return locations.flatMap(loc => {
@@ -260,6 +272,19 @@ export default function UserManagementPage() {
         setUsers(updatedUsers);
         localStorage.setItem('users', JSON.stringify(updatedUsers));
     }
+    
+    const handleUserDeleted = () => {
+        if (!deletingUser) return;
+
+        const updatedUsers = users.filter(user => user.id !== deletingUser.id);
+        setUsers(updatedUsers);
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        toast({
+            title: "User Deleted",
+            description: `User with email "${deletingUser.email}" has been deleted.`,
+        });
+        setDeletingUser(null);
+    };
 
   return (
     <div className="flex flex-1 flex-col w-full space-y-6">
@@ -297,7 +322,7 @@ export default function UserManagementPage() {
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
                               </Button>
-                              <Button variant="destructive" size="sm" disabled={user.role === 'process-owner' && users.filter(u => u.role === 'process-owner').length === 1}>
+                              <Button variant="destructive" size="sm" onClick={() => setDeletingUser(user)} disabled={user.role === 'process-owner' && users.filter(u => u.role === 'process-owner').length === 1}>
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete
                               </Button>
@@ -308,6 +333,24 @@ export default function UserManagementPage() {
           </Table>
         </CardContent>
       </Card>
+      
+      <AlertDialog open={!!deletingUser} onOpenChange={(open) => !open && setDeletingUser(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the 
+                user with email "{deletingUser?.email}".
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUserDeleted} className="bg-destructive hover:bg-destructive/90">
+                Delete
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
     </div>
   );
 }

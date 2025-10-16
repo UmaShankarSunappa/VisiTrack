@@ -54,3 +54,14 @@ export interface Employee extends BaseEntry {
 }
 
 export type Entry = Visitor | Employee;
+
+export type UserRole = 'process-owner' | 'receptionist';
+
+export type User = {
+    id: string;
+    role: UserRole;
+    locationName: string;
+    email: string;
+    password?: string; // Optional for display, required for creation
+    locationId?: string;
+};

@@ -1,5 +1,5 @@
 
-import type { MainLocation, Entry, Department } from './types';
+import type { MainLocation, Entry, Department, User } from './types';
 
 export const locations: MainLocation[] = [
   {
@@ -46,30 +46,14 @@ export const locations: MainLocation[] = [
 
 export const departments: Department[] = ['Supply Chain', 'Accounts', 'HR', 'Operations'];
 
-export const receptionists = [
+export const defaultUsers: User[] = [
   {
-    locationId: 'process-owner',
+    id: 'process-owner',
+    role: 'process-owner',
     locationName: 'Process Owner',
     email: 'owner@example.com',
     password: 'password123',
-  },
-  {
-    locationId: 'ed-hyd-ro-1st-floor',
-    locationName: 'Corporate Office - 1st Floor',
-    email: 'reception.cop.1f@example.com',
-    password: 'password123',
-  },
-  {
-    locationId: 'ed-hyd-ro-2nd-floor',
-    locationName: 'Corporate Office - 2nd Floor',
-    email: 'reception.cop.2f@example.com',
-    password: 'password123',
-  },
-  {
-    locationId: 'ed-hyd-ro-3rd-floor',
-    locationName: 'Corporate Office - 3rd Floor',
-    email: 'reception.cop.3f@example.com',
-    password: 'password123',
+    locationId: 'process-owner'
   },
 ];
 

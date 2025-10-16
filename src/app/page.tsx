@@ -11,73 +11,92 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { Mail, Key, Building, UserCog } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { receptionists as defaultReceptionists, locations as defaultLocations } from "@/lib/data";
+import { defaultUsers, locations as defaultLocations } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { MainLocation } from "@/lib/types";
+import type { MainLocation, User } from "@/lib/types";
 
 export default function LoginPage() {
     const router = useRouter();
     const { toast } = useToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [locationId, setLocationId] = useState<string | undefined>();
+    const [selectedUserId, setSelectedUserId] = useState<string | undefined>();
     const [error, setError] = useState('');
-    const [receptionists, setReceptionists] = useState(defaultReceptionists);
+    const [users, setUsers] = useState<User[]>([]);
+
+    const generateReceptionists = (locations: MainLocation[]): User[] => {
+      return locations.flatMap(loc => {
+        if (loc.subLocations && loc.subLocations.length > 0) {
+          return loc.subLocations.map(sub => ({
+            id: `${loc.id}-${sub.id}`,
+            role: 'receptionist' as const,
+            locationId: `${loc.id}-${sub.id}`,
+            locationName: `${loc.descriptiveName || loc.name} - ${sub.name}`,
+            email: `reception.${loc.id.slice(0,3)}.${sub.id.slice(0,2)}@example.com`,
+            password: 'password123'
+          }));
+        }
+        return {
+          id: loc.id,
+          role: 'receptionist' as const,
+          locationId: loc.id,
+          locationName: loc.descriptiveName || loc.name,
+          email: `reception.${loc.id.slice(0,3)}@example.com`,
+          password: 'password123'
+        };
+      });
+    };
 
     useEffect(() => {
-      const storedLocations = localStorage.getItem('locations');
-      if (storedLocations) {
-        try {
-          const parsedLocations: MainLocation[] = JSON.parse(storedLocations);
-          const dynamicReceptionists = parsedLocations.flatMap(loc => {
-            if (loc.subLocations && loc.subLocations.length > 0) {
-              return loc.subLocations.map(sub => ({
-                locationId: `${loc.id}-${sub.id}`,
-                locationName: `${loc.descriptiveName || loc.name} - ${sub.name}`,
-                email: `reception.${loc.id.slice(0,3)}.${sub.id.slice(0,2)}@example.com`,
-                password: 'password123'
-              }));
-            }
-            return {
-              locationId: loc.id,
-              locationName: loc.descriptiveName || loc.name,
-              email: `reception.${loc.id.slice(0,3)}@example.com`,
-              password: 'password123'
-            };
-          });
-          
-          setReceptionists([defaultReceptionists[0], ...dynamicReceptionists]);
-        } catch (e) {
-          console.error("Failed to parse locations and generate receptionists", e);
-          setReceptionists(defaultReceptionists);
+        const storedUsers = localStorage.getItem('users');
+        const storedLocations = localStorage.getItem('locations');
+        
+        let allUsers: User[] = [];
+        let loadedLocations = storedLocations ? JSON.parse(storedLocations) : defaultLocations;
+        
+        const dynamicReceptionists = generateReceptionists(loadedLocations);
+        
+        if (storedUsers) {
+            allUsers = JSON.parse(storedUsers);
+        } else {
+            allUsers = [...defaultUsers, ...dynamicReceptionists];
+            localStorage.setItem('users', JSON.stringify(allUsers));
         }
-      }
+
+        const userMap = new Map<string, User>();
+        // Add default process owner first
+        defaultUsers.forEach(u => userMap.set(u.id, u));
+        
+        // Add dynamic receptionists
+        dynamicReceptionists.forEach(u => userMap.set(u.id, u));
+        
+        // Overwrite with any custom/stored users
+        allUsers.forEach(u => userMap.set(u.id, u));
+
+        setUsers(Array.from(userMap.values()));
+
     }, [])
 
     const handleLogin = (event: React.FormEvent) => {
         event.preventDefault();
         setError('');
 
-        if (!locationId) {
-            setError("Please select a location.");
+        if (!selectedUserId) {
+            setError("Please select a role/location.");
             return;
         }
 
-        const user = receptionists.find(r => r.locationId === locationId);
+        const user = users.find(r => r.id === selectedUserId);
 
         if (user && user.email === email && user.password === password) {
             toast({
                 title: "Login Successful",
                 description: `Welcome, ${user.locationName}!`,
             });
-            // Store location info for dashboard
+            
             if (typeof window !== "undefined") {
               localStorage.setItem('receptionistLocation', user.locationName);
-              if (user.locationId === 'process-owner') {
-                  localStorage.setItem('userRole', 'process-owner');
-              } else {
-                  localStorage.removeItem('userRole');
-              }
+              localStorage.setItem('userRole', user.role);
             }
             router.push('/dashboard');
         } else {
@@ -93,7 +112,7 @@ export default function LoginPage() {
                 <Logo />
             </div>
           <CardDescription>
-            Receptionist/Admin Login
+            Login to VisiTrack Pro
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -102,22 +121,21 @@ export default function LoginPage() {
                 <Label htmlFor="location">Role / Location</Label>
                 <div className="relative">
                     <UserCog className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
-                    <Select value={locationId} onValueChange={(value) => {
-                        setLocationId(value)
-                        const user = receptionists.find(r => r.locationId === value);
+                    <Select value={selectedUserId} onValueChange={(value) => {
+                        setSelectedUserId(value)
+                        const user = users.find(r => r.id === value);
                         if(user) {
                             setEmail(user.email);
-                            // Clear password when role changes
-                            setPassword('');
+                            setPassword(user.password || '');
                         }
                     }}>
                         <SelectTrigger className="pl-10">
                             <SelectValue placeholder="Select your role or location" />
                         </SelectTrigger>
                         <SelectContent>
-                            {receptionists.map((rec) => (
-                                <SelectItem key={rec.locationId} value={rec.locationId}>
-                                    {rec.locationName}
+                            {users.map((user) => (
+                                <SelectItem key={user.id} value={user.id}>
+                                    {user.locationName}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -128,7 +146,7 @@ export default function LoginPage() {
               <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
-                <Input id="email" type="email" placeholder="reception@example.com" required className="pl-10" value={email} onChange={e => setEmail(e.target.value)} />
+                <Input id="email" type="email" placeholder="user@example.com" required className="pl-10" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
             </div>
             <div className="space-y-2">

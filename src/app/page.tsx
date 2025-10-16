@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { Mail, Key, Building, UserCog } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { receptionists } from "@/lib/data";
+import { receptionists as defaultReceptionists, locations as defaultLocations } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import { MainLocation } from "@/lib/types";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -21,6 +22,37 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [locationId, setLocationId] = useState<string | undefined>();
     const [error, setError] = useState('');
+    const [receptionists, setReceptionists] = useState(defaultReceptionists);
+
+    useEffect(() => {
+      const storedLocations = localStorage.getItem('locations');
+      if (storedLocations) {
+        try {
+          const parsedLocations: MainLocation[] = JSON.parse(storedLocations);
+          const dynamicReceptionists = parsedLocations.flatMap(loc => {
+            if (loc.subLocations && loc.subLocations.length > 0) {
+              return loc.subLocations.map(sub => ({
+                locationId: `${loc.id}-${sub.id}`,
+                locationName: `${loc.descriptiveName || loc.name} - ${sub.name}`,
+                email: `reception.${loc.id.slice(0,3)}.${sub.id.slice(0,2)}@example.com`,
+                password: 'password123'
+              }));
+            }
+            return {
+              locationId: loc.id,
+              locationName: loc.descriptiveName || loc.name,
+              email: `reception.${loc.id.slice(0,3)}@example.com`,
+              password: 'password123'
+            };
+          });
+          
+          setReceptionists([defaultReceptionists[0], ...dynamicReceptionists]);
+        } catch (e) {
+          console.error("Failed to parse locations and generate receptionists", e);
+          setReceptionists(defaultReceptionists);
+        }
+      }
+    }, [])
 
     const handleLogin = (event: React.FormEvent) => {
         event.preventDefault();

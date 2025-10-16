@@ -25,6 +25,7 @@ import { locations as defaultLocations } from '@/lib/data';
 function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLocation: MainLocation) => void }) {
   const [open, setOpen] = useState(false);
   const [locationId, setLocationId] = useState('');
+  const [descriptiveName, setDescriptiveName] = useState('');
   const [error, setError] = useState('');
   const { toast } = useToast();
 
@@ -34,9 +35,14 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
       setError('Location ID cannot be empty.');
       return;
     }
+    if (!descriptiveName.trim()) {
+      setError('Descriptive name cannot be empty.');
+      return;
+    }
     const newLocation: MainLocation = {
       id: locationId.toLowerCase().replace(/\s+/g, '-'),
       name: locationId,
+      descriptiveName: descriptiveName,
       subLocations: [],
     };
     onLocationCreated(newLocation);
@@ -45,6 +51,7 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
       description: `Location "${locationId}" has been successfully created.`,
     });
     setLocationId('');
+    setDescriptiveName('');
     setError('');
     setOpen(false);
   };
@@ -61,7 +68,7 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
         <DialogHeader>
           <DialogTitle>Create New Location</DialogTitle>
           <DialogDescription>
-            Enter a unique ID for the new master location.
+            Enter a unique ID and a descriptive name for the new master location.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -75,7 +82,19 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
                 value={locationId}
                 onChange={(e) => setLocationId(e.target.value)}
                 className="col-span-3"
-                placeholder="e.g. Main Office"
+                placeholder="e.g. ED-HYD-RO"
+              />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="descriptive-name" className="text-right">
+                Descriptive Name
+              </Label>
+              <Input
+                id="descriptive-name"
+                value={descriptiveName}
+                onChange={(e) => setDescriptiveName(e.target.value)}
+                className="col-span-3"
+                placeholder="e.g. Corporate Office"
               />
             </div>
             {error && <p className="col-span-4 text-sm text-destructive text-center">{error}</p>}
@@ -112,7 +131,7 @@ export default function LocationMasterPage() {
   };
 
   const isConfigured = (location: MainLocation) => {
-    return !!location.descriptiveName && !!location.macAddress && location.cardStart != null && location.cardEnd != null;
+    return !!location.macAddress && location.cardStart != null && location.cardEnd != null;
   }
 
   return (
@@ -136,6 +155,7 @@ export default function LocationMasterPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Location ID</TableHead>
+                <TableHead>Descriptive Name</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -144,6 +164,7 @@ export default function LocationMasterPage() {
                 locations.map((location) => (
                   <TableRow key={location.id}>
                     <TableCell className="font-medium">{location.name}</TableCell>
+                    <TableCell>{location.descriptiveName || '-'}</TableCell>
                     <TableCell>
                        <Badge variant={isConfigured(location) ? 'default' : 'destructive'}>
                          {isConfigured(location) ? 'Configured' : 'Not Configured'}
@@ -153,7 +174,7 @@ export default function LocationMasterPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={2} className="text-center h-24">
+                  <TableCell colSpan={3} className="text-center h-24">
                     No locations created yet.
                   </TableCell>
                 </TableRow>

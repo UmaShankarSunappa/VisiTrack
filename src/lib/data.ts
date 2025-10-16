@@ -3,8 +3,8 @@ import type { MainLocation, Entry, Department } from './types';
 
 export const locations: MainLocation[] = [
   {
-    id: 'corporate-office',
-    name: 'Corporate Office',
+    id: 'ed-hyd-ro',
+    name: 'ED-HYD-RO',
     descriptiveName: 'Corporate Office',
     macAddress: '00:1A:2B:3C:4D:5E',
     cardStart: 101,
@@ -16,9 +16,9 @@ export const locations: MainLocation[] = [
     ],
   },
   {
-    id: 'software-office',
-    name: 'Software Office',
-    descriptiveName: 'Software Office - Pune',
+    id: 'hyd-so',
+    name: 'HYD-SO',
+    descriptiveName: 'Software Office',
     macAddress: '00:1A:2B:3C:4D:5F',
     cardStart: 201,
     cardEnd: 300,
@@ -54,19 +54,19 @@ export const receptionists = [
     password: 'password123',
   },
   {
-    locationId: 'corporate-office-1st-floor',
+    locationId: 'ed-hyd-ro-1st-floor',
     locationName: 'Corporate Office - 1st Floor',
     email: 'reception.cop.1f@example.com',
     password: 'password123',
   },
   {
-    locationId: 'corporate-office-2nd-floor',
+    locationId: 'ed-hyd-ro-2nd-floor',
     locationName: 'Corporate Office - 2nd Floor',
     email: 'reception.cop.2f@example.com',
     password: 'password123',
   },
   {
-    locationId: 'corporate-office-3rd-floor',
+    locationId: 'ed-hyd-ro-3rd-floor',
     locationName: 'Corporate Office - 3rd Floor',
     email: 'reception.cop.3f@example.com',
     password: 'password123',

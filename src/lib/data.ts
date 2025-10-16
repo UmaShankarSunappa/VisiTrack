@@ -26,7 +26,7 @@ export const locations: MainLocation[] = [
   },
   {
     id: 'warehouse',
-    name: 'Warehouse',
+    name: 'WAREHOUSE',
     descriptiveName: 'Main Warehouse',
      macAddress: '00:1A:2B:3C:4D:6A',
     cardStart: 301,
@@ -35,7 +35,7 @@ export const locations: MainLocation[] = [
   },
   {
     id: 'hostel',
-    name: 'Hostel',
+    name: 'HOSTEL',
     descriptiveName: 'Company Hostel',
     macAddress: '00:1A:2B:3C:4D:9C',
     cardStart: 401,

@@ -12,6 +12,7 @@ import {
   List,
   UserCog,
   Building2,
+  Settings,
 } from "lucide-react";
 
 import {
@@ -167,14 +168,24 @@ export default function DashboardLayout({
                   </Link>
                 </SidebarMenuItem>
                 {isProcessOwner && (
-                  <SidebarMenuItem>
-                    <Link href="/dashboard/location-master" legacyBehavior passHref>
-                       <SidebarMenuButton isActive={pathname === '/dashboard/location-master'}>
-                          <Building2 />
-                          Location Master
-                       </SidebarMenuButton>
-                    </Link>
-                  </SidebarMenuItem>
+                  <>
+                    <SidebarMenuItem>
+                      <Link href="/dashboard/location-master" legacyBehavior passHref>
+                        <SidebarMenuButton isActive={pathname === '/dashboard/location-master'}>
+                            <Building2 />
+                            Location Master
+                        </SidebarMenuButton>
+                      </Link>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <Link href="/dashboard/location-management" legacyBehavior passHref>
+                        <SidebarMenuButton isActive={pathname === '/dashboard/location-management'}>
+                            <Settings />
+                            Location Management
+                        </SidebarMenuButton>
+                      </Link>
+                    </SidebarMenuItem>
+                  </>
                 )}
               </SidebarMenu>
             </SidebarContent>
@@ -203,10 +214,16 @@ export default function DashboardLayout({
                               Dashboard
                           </Link>
                           {isProcessOwner && (
+                            <>
                               <Link href="/dashboard/location-master" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" data-active={pathname === '/dashboard/location-master'}>
                                   <Building2 className="h-4 w-4" />
                                   Location Master
                               </Link>
+                              <Link href="/dashboard/location-management" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" data-active={pathname === '/dashboard/location-management'}>
+                                  <Settings className="h-4 w-4" />
+                                  Location Management
+                              </Link>
+                            </>
                           )}
                       </nav>
                   </SheetContent>

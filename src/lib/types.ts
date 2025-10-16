@@ -8,6 +8,9 @@ export type MainLocation = {
   id: string;
   name: string;
   descriptiveName?: string;
+  macAddress?: string;
+  cardStart?: number;
+  cardEnd?: number;
   subLocations: SubLocation[];
 };
 

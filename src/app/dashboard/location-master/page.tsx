@@ -94,7 +94,6 @@ export default function LocationMasterPage() {
   const [locations, setLocations] = useState<MainLocation[]>([]);
   
   useEffect(() => {
-    // Ensure this runs only on the client
     if (typeof window !== "undefined") {
       const storedLocations = localStorage.getItem('locations');
       if (storedLocations) {
@@ -111,6 +110,10 @@ export default function LocationMasterPage() {
     setLocations(updatedLocations);
     localStorage.setItem('locations', JSON.stringify(updatedLocations));
   };
+
+  const isConfigured = (location: MainLocation) => {
+    return !!location.descriptiveName && !!location.macAddress && location.cardStart != null && location.cardEnd != null;
+  }
 
   return (
     <div className="space-y-6">
@@ -142,8 +145,8 @@ export default function LocationMasterPage() {
                   <TableRow key={location.id}>
                     <TableCell className="font-medium">{location.name}</TableCell>
                     <TableCell>
-                       <Badge variant={location.subLocations.length > 0 || location.descriptiveName ? 'default' : 'destructive'}>
-                         {location.subLocations.length > 0 || location.descriptiveName ? 'Configured' : 'Not Configured'}
+                       <Badge variant={isConfigured(location) ? 'default' : 'destructive'}>
+                         {isConfigured(location) ? 'Configured' : 'Not Configured'}
                        </Badge>
                     </TableCell>
                   </TableRow>

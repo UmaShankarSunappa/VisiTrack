@@ -1,30 +1,36 @@
 import type { SVGProps } from 'react';
+import { cn } from '@/lib/utils';
 
-export function Logo(props: SVGProps<SVGSVGElement>) {
+export function Logo({ collapsed, ...props }: SVGProps<SVGSVGElement> & { collapsed?: boolean }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 250 50"
-      width="200"
+      width={collapsed ? 40 : 200}
       height="40"
+      className={cn("transition-all duration-300", props.className)}
       {...props}
     >
       <rect width="250" height="50" fill="transparent" />
-      <path
-        d="M25 10 C15 10, 10 15, 10 25 C10 45, 25 50, 25 50 C25 50, 40 45, 40 25 C40 15, 35 10, 25 10 Z"
-        fill="hsl(var(--primary))"
-      />
-      <circle cx="25" cy="22" r="6" fill="hsl(var(--background))" />
-      <text
-        x="55"
-        y="35"
-        fontFamily="Inter, sans-serif"
-        fontSize="30"
-        fontWeight="bold"
-        fill="hsl(var(--foreground))"
-      >
-        VisiTrack Pro
-      </text>
+      <g transform={collapsed ? "translate(55, 0)" : "translate(0,0)"}>
+        <path
+            d="M25 10 C15 10, 10 15, 10 25 C10 45, 25 50, 25 50 C25 50, 40 45, 40 25 C40 15, 35 10, 25 10 Z"
+            fill="hsl(var(--primary))"
+        />
+        <circle cx="25" cy="22" r="6" fill="hsl(var(--background))" />
+      </g>
+      {!collapsed && (
+        <text
+            x="55"
+            y="35"
+            fontFamily="Inter, sans-serif"
+            fontSize="30"
+            fontWeight="bold"
+            fill="hsl(var(--foreground))"
+        >
+            VisiTrack Pro
+        </text>
+      )}
     </svg>
   );
 }

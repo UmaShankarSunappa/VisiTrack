@@ -15,15 +15,6 @@ import {
   Settings,
 } from "lucide-react";
 
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -38,6 +29,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
 import { LocationProvider, useLocation } from "@/context/LocationContext";
+import { cn } from "@/lib/utils";
 
 
 function LocationFilter() {
@@ -134,6 +126,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -142,6 +135,10 @@ export default function DashboardLayout({
       setIsLoading(false);
     }
   }, []);
+  
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  }
 
   if (isLoading) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
@@ -151,33 +148,33 @@ export default function DashboardLayout({
 
   return (
     <LocationProvider>
-      <div className="min-h-screen w-full lg:grid lg:grid-cols-[256px_1fr]">
-        <div className="hidden border-r bg-card lg:block">
+      <div className={cn("min-h-screen w-full lg:grid", isSidebarCollapsed ? "lg:grid-cols-[80px_1fr]" : "lg:grid-cols-[256px_1fr]")}>
+        <div className={cn("hidden border-r bg-card lg:block transition-all duration-300", isSidebarCollapsed && "w-[80px]")}>
           <div className="flex h-full max-h-screen flex-col gap-2">
             <div className="flex h-14 items-center border-b px-6">
               <Link href="#" className="flex items-center gap-2 font-semibold">
-                <Logo />
+                <Logo collapsed={isSidebarCollapsed} />
               </Link>
             </div>
             <div className="flex-1 overflow-auto py-2">
               <nav className="grid items-start px-4 text-sm font-medium">
-                 <Link href="/dashboard" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard' ? 'bg-muted text-primary' : ''}`}>
+                 <Link href="/dashboard" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
                       <Home className="h-4 w-4" />
-                      Dashboard
+                      {!isSidebarCollapsed && "Dashboard"}
                   </Link>
                 {isProcessOwner && (
                   <>
-                    <Link href="/dashboard/location-master" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-master' ? 'bg-muted text-primary' : ''}`}>
+                    <Link href="/dashboard/location-master" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-master' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
                         <Building2 className="h-4 w-4" />
-                        Location Master
+                        {!isSidebarCollapsed && "Location Master"}
                     </Link>
-                    <Link href="/dashboard/location-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-management' ? 'bg-muted text-primary' : ''}`}>
+                    <Link href="/dashboard/location-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-management' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
                         <Settings className="h-4 w-4" />
-                        Location Management
+                        {!isSidebarCollapsed && "Location Management"}
                     </Link>
-                    <Link href="/dashboard/user-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/user-management' ? 'bg-muted text-primary' : ''}`}>
+                    <Link href="/dashboard/user-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/user-management' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
                         <UserCog className="h-4 w-4" />
-                        User Management
+                        {!isSidebarCollapsed && "User Management"}
                     </Link>
                   </>
                 )}
@@ -187,43 +184,47 @@ export default function DashboardLayout({
         </div>
         <div className="flex flex-col">
           <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
-            <Sheet>
-                <SheetTrigger asChild>
-                    <Button variant="outline" size="icon" className="lg:hidden">
-                        <PanelLeft className="h-5 w-5" />
-                        <span className="sr-only">Toggle navigation menu</span>
-                    </Button>
+             <Button variant="outline" size="icon" className="lg:hidden" asChild>
+                <SheetTrigger>
+                    <PanelLeft className="h-5 w-5" />
+                    <span className="sr-only">Toggle navigation menu</span>
                 </SheetTrigger>
-                <SheetContent side="left" className="flex flex-col p-0 sm:max-w-xs">
-                    <div className="p-4 border-b">
-                      <Link href="#" className="flex items-center gap-2 font-semibold">
-                        <Logo />
-                      </Link>
-                    </div>
-                      <nav className="grid gap-2 text-lg font-medium p-4">
-                        <Link href="/dashboard" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard' ? 'bg-muted text-primary' : ''}`}>
-                            <Home className="h-4 w-4" />
-                            Dashboard
+            </Button>
+            <Button variant="outline" size="icon" className="hidden lg:inline-flex" onClick={toggleSidebar}>
+              <PanelLeft className="h-5 w-5" />
+              <span className="sr-only">Toggle sidebar</span>
+            </Button>
+            
+            <SheetContent side="left" className="flex flex-col p-0 sm:max-w-xs">
+                <div className="p-4 border-b">
+                  <Link href="#" className="flex items-center gap-2 font-semibold">
+                    <Logo />
+                  </Link>
+                </div>
+                  <nav className="grid gap-2 text-lg font-medium p-4">
+                    <Link href="/dashboard" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard' ? 'bg-muted text-primary' : ''}`}>
+                        <Home className="h-4 w-4" />
+                        Dashboard
+                    </Link>
+                    {isProcessOwner && (
+                      <>
+                        <Link href="/dashboard/location-master" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-master' ? 'bg-muted text-primary' : ''}`}>
+                            <Building2 className="h-4 w-4" />
+                            Location Master
                         </Link>
-                        {isProcessOwner && (
-                          <>
-                            <Link href="/dashboard/location-master" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-master' ? 'bg-muted text-primary' : ''}`}>
-                                <Building2 className="h-4 w-4" />
-                                Location Master
-                            </Link>
-                            <Link href="/dashboard/location-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-management' ? 'bg-muted text-primary' : ''}`}>
-                                <Settings className="h-4 w-4" />
-                                Location Management
-                            </Link>
-                             <Link href="/dashboard/user-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/user-management' ? 'bg-muted text-primary' : ''}`}>
-                                <UserCog className="h-4 w-4" />
-                                User Management
-                            </Link>
-                          </>
-                        )}
-                    </nav>
-                </SheetContent>
-            </Sheet>
+                        <Link href="/dashboard/location-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-management' ? 'bg-muted text-primary' : ''}`}>
+                            <Settings className="h-4 w-4" />
+                            Location Management
+                        </Link>
+                         <Link href="/dashboard/user-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/user-management' ? 'bg-muted text-primary' : ''}`}>
+                            <UserCog className="h-4 w-4" />
+                            User Management
+                        </Link>
+                      </>
+                    )}
+                </nav>
+            </SheetContent>
+            
             <LocationFilter />
             <div className="ml-auto flex items-center gap-4">
               <DropdownMenu>
@@ -264,5 +265,3 @@ export default function DashboardLayout({
     </LocationProvider>
   );
 }
-
-    

@@ -37,11 +37,12 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         
         const configuredLocations = loadedLocations.filter(isConfigured);
 
-        const locationNames = configuredLocations.flatMap(loc => 
-            loc.subLocations && loc.subLocations.length > 0 
-            ? loc.subLocations.map(sub => `${loc.descriptiveName || loc.name} - ${sub.name}`)
-            : `${loc.descriptiveName || loc.name}`
-        );
+        const locationNames = configuredLocations.flatMap(loc => {
+          if (loc.subLocations && loc.subLocations.length > 0) {
+            return loc.subLocations.map(sub => `${loc.descriptiveName || loc.name} - ${sub.name}`);
+          }
+          return `${loc.descriptiveName || loc.name}`;
+        });
         
         const uniqueLocationNames = [...new Set(locationNames)];
         setAllLocations(uniqueLocationNames);
@@ -49,7 +50,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         // Preserve selection if possible, otherwise reset
         setSelectedLocations(prevSelected => {
             const newSelection = prevSelected.filter(l => uniqueLocationNames.includes(l));
-            if (newSelection.length === 0) {
+            if (newSelection.length === 0 && uniqueLocationNames.length > 0) {
                 return uniqueLocationNames; // Reset if all previous selections are gone
             }
             return newSelection;

@@ -17,6 +17,10 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     const [allLocations, setAllLocations] = useState<string[]>([]);
     const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
+    const isConfigured = (location: MainLocation) => {
+        return !!location.macAddress && location.cardStart != null && location.cardEnd != null;
+    }
+
     const loadLocations = useCallback(() => {
         const storedLocations = localStorage.getItem("locations");
         let loadedLocations: MainLocation[] = mockLocations;
@@ -31,7 +35,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             }
         }
         
-        const locationNames = loadedLocations.flatMap(loc => 
+        const configuredLocations = loadedLocations.filter(isConfigured);
+
+        const locationNames = configuredLocations.flatMap(loc => 
             loc.subLocations && loc.subLocations.length > 0 
             ? loc.subLocations.map(sub => `${loc.descriptiveName || loc.name} - ${sub.name}`)
             : `${loc.descriptiveName || loc.name}`

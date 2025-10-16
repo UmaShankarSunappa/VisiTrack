@@ -11,6 +11,7 @@ import {
   ChevronDown,
   List,
   UserCog,
+  Building2,
 } from "lucide-react";
 
 import {
@@ -142,29 +143,43 @@ export default function DashboardLayout({
   if (isLoading) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
+  
+  const isProcessOwner = userRole === 'process-owner';
 
   return (
     <LocationProvider>
       <SidebarProvider defaultOpen={true}>
-        <Sidebar>
-          <SidebarHeader>
-            <div className="flex items-center gap-2 p-2">
-               <Logo />
-            </div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton href="/dashboard" isActive={pathname === '/dashboard'}>
-                  <Home />
-                  Dashboard
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarContent>
-        </Sidebar>
-        <SidebarInset>
-          <div className="flex flex-col">
+        <div className="flex min-h-screen">
+          <Sidebar className="w-64 border-r bg-sidebar text-sidebar-foreground">
+            <SidebarHeader>
+              <div className="flex items-center gap-2 p-2">
+                <Logo />
+              </div>
+            </SidebarHeader>
+            <SidebarContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <Link href="/dashboard" legacyBehavior passHref>
+                    <SidebarMenuButton isActive={pathname === '/dashboard'}>
+                      <Home />
+                      Dashboard
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+                {isProcessOwner && (
+                  <SidebarMenuItem>
+                    <Link href="/dashboard/location-master" legacyBehavior passHref>
+                       <SidebarMenuButton isActive={pathname === '/dashboard/location-master'}>
+                          <Building2 />
+                          Location Master
+                       </SidebarMenuButton>
+                    </Link>
+                  </SidebarMenuItem>
+                )}
+              </SidebarMenu>
+            </SidebarContent>
+          </Sidebar>
+          <div className="flex flex-1 flex-col">
             <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
               <LocationFilter />
 
@@ -183,10 +198,16 @@ export default function DashboardLayout({
                           <Logo />
                       </div>
                        <nav className="grid gap-2 text-lg font-medium p-4">
-                          <Link href="/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname === '/dashboard'}>
+                          <Link href="/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" data-active={pathname === '/dashboard'}>
                               <Home className="h-4 w-4" />
                               Dashboard
                           </Link>
+                          {isProcessOwner && (
+                              <Link href="/dashboard/location-master" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" data-active={pathname === '/dashboard/location-master'}>
+                                  <Building2 className="h-4 w-4" />
+                                  Location Master
+                              </Link>
+                          )}
                       </nav>
                   </SheetContent>
               </Sheet>
@@ -223,7 +244,7 @@ export default function DashboardLayout({
               {children}
             </main>
           </div>
-        </SidebarInset>
+        </div>
       </SidebarProvider>
     </LocationProvider>
   );

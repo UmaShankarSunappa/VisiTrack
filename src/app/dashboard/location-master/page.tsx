@@ -309,16 +309,22 @@ export default function LocationMasterPage() {
       if (storedLocations) {
         setLocations(JSON.parse(storedLocations));
       } else {
-        setLocations(defaultLocations);
         localStorage.setItem('locations', JSON.stringify(defaultLocations));
+        setLocations(defaultLocations);
       }
     }
   }, []);
+  
+  const updateLocalStorage = (updatedLocations: MainLocation[]) => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('locations', JSON.stringify(updatedLocations));
+      }
+  };
 
   const handleLocationCreated = (newLocation: MainLocation) => {
     const updatedLocations = [...locations, newLocation];
     setLocations(updatedLocations);
-    localStorage.setItem('locations', JSON.stringify(updatedLocations));
+    updateLocalStorage(updatedLocations);
   };
   
   const handleLocationsUploaded = (newLocations: MainLocation[]) => {
@@ -326,7 +332,7 @@ export default function LocationMasterPage() {
       const existingIds = new Set(prevLocations.map(l => l.id));
       const uniqueNewLocations = newLocations.filter(nl => !existingIds.has(nl.id));
       const updatedLocations = [...prevLocations, ...uniqueNewLocations];
-      localStorage.setItem('locations', JSON.stringify(updatedLocations));
+      updateLocalStorage(updatedLocations);
       return updatedLocations;
     });
   };
@@ -336,7 +342,7 @@ export default function LocationMasterPage() {
       loc.id === originalId ? updatedLocation : loc
     );
     setLocations(updatedLocations);
-    localStorage.setItem('locations', JSON.stringify(updatedLocations));
+    updateLocalStorage(updatedLocations);
     setEditingLocation(null);
   };
   
@@ -344,7 +350,7 @@ export default function LocationMasterPage() {
     if (!deletingLocation) return;
     const updatedLocations = locations.filter(loc => loc.id !== deletingLocation.id);
     setLocations(updatedLocations);
-    localStorage.setItem('locations', JSON.stringify(updatedLocations));
+    updateLocalStorage(updatedLocations);
     toast({
       title: "Location Deleted",
       description: `Location "${deletingLocation.name}" has been deleted.`,
@@ -447,5 +453,3 @@ export default function LocationMasterPage() {
     </div>
   );
 }
-
-    

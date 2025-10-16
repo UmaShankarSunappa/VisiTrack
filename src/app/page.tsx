@@ -55,6 +55,8 @@ export default function LoginPage() {
     };
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const storedUsers = localStorage.getItem('users');
         const storedLocations = localStorage.getItem('locations');
         
@@ -186,5 +188,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
-    

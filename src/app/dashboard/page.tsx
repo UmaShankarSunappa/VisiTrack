@@ -43,6 +43,8 @@ export default function DashboardPage() {
     const [typeFilter, setTypeFilter] = React.useState<EntryType | 'All'>('All');
 
     React.useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         let entries: Entry[] = [];
         const storedEntries = localStorage.getItem('entries');
         
@@ -74,12 +76,10 @@ export default function DashboardPage() {
         localStorage.setItem('entries', JSON.stringify(entries));
         setAllEntries(entries);
         
-        if (typeof window !== "undefined") {
-            const storedLocation = localStorage.getItem('receptionistLocation');
-            const storedRole = localStorage.getItem('userRole');
-            setLocationName(storedLocation);
-            setUserRole(storedRole);
-        }
+        const storedLocation = localStorage.getItem('receptionistLocation');
+        const storedRole = localStorage.getItem('userRole');
+        setLocationName(storedLocation);
+        setUserRole(storedRole);
     }, []);
 
     React.useEffect(() => {
@@ -120,13 +120,17 @@ export default function DashboardPage() {
     const onEntryAdded = (newEntry: Entry) => {
         const updatedEntries = [newEntry, ...allEntries];
         setAllEntries(updatedEntries);
-        localStorage.setItem('entries', JSON.stringify(updatedEntries));
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('entries', JSON.stringify(updatedEntries));
+        }
     }
 
     const handleEntryUpdated = (updatedEntry: Entry) => {
         const updatedList = allEntries.map(e => e.id === updatedEntry.id ? updatedEntry : e);
         setAllEntries(updatedList);
-        localStorage.setItem('entries', JSON.stringify(updatedList));
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('entries', JSON.stringify(updatedList));
+        }
     };
 
     return (

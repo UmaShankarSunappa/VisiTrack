@@ -148,18 +148,24 @@ export default function LocationManagementPage() {
       if (storedLocations) {
         setLocations(JSON.parse(storedLocations));
       } else {
-        setLocations(defaultLocations);
         localStorage.setItem('locations', JSON.stringify(defaultLocations));
+        setLocations(defaultLocations);
       }
     }
   }, []);
+  
+  const updateLocalStorage = (updatedLocations: MainLocation[]) => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('locations', JSON.stringify(updatedLocations));
+      }
+  };
 
   const handleLocationUpdated = (updatedLocation: MainLocation) => {
     const updatedLocations = locations.map(loc =>
       loc.id === updatedLocation.id ? updatedLocation : loc
     );
     setLocations(updatedLocations);
-    localStorage.setItem('locations', JSON.stringify(updatedLocations));
+    updateLocalStorage(updatedLocations);
     setSelectedLocation(null);
   };
   

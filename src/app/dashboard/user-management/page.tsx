@@ -44,7 +44,7 @@ function CreateUserModal({ onUserCreated }: { onUserCreated: (newUser: User) => 
   const { toast } = useToast();
 
   useEffect(() => {
-    if (open) {
+    if (open && typeof window !== 'undefined') {
       const storedLocations = localStorage.getItem('locations');
       setLocations(storedLocations ? JSON.parse(storedLocations) : defaultLocations);
     }
@@ -237,8 +237,16 @@ export default function UserManagementPage() {
         };
       });
     };
-
+    
+    const updateLocalStorage = (updatedUsers: User[]) => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
+        }
+    };
+    
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const storedUsers = localStorage.getItem('users');
         const storedLocations = localStorage.getItem('locations');
         
@@ -251,7 +259,7 @@ export default function UserManagementPage() {
             allUsers = JSON.parse(storedUsers);
         } else {
             allUsers = [...defaultUsers, ...dynamicReceptionists];
-            localStorage.setItem('users', JSON.stringify(allUsers));
+            updateLocalStorage(allUsers);
         }
 
         const userMap = new Map<string, User>();
@@ -262,15 +270,29 @@ export default function UserManagementPage() {
         dynamicReceptionists.forEach(u => userMap.set(u.id, u));
         
         // Overwrite with any custom/stored users
-        allUsers.forEach(u => userMap.set(u.id, u));
+        allUsers.forEach(u => {
+             // ensure we don't carry over deleted dynamic users if locations change
+            if (u.role === 'process-owner' || dynamicReceptionistIds.has(u.id)) {
+                userMap.set(u.id, u);
+            }
+        });
+        
+        const dynamicReceptionistIds = new Set(dynamicReceptionists.map(r => r.id));
+        const finalUsers = Array.from(userMap.values()).filter(u => {
+            if (u.role === 'receptionist') {
+                return dynamicReceptionistIds.has(u.id);
+            }
+            return true;
+        });
 
-        setUsers(Array.from(userMap.values()));
+        setUsers(finalUsers);
+        updateLocalStorage(finalUsers);
     }, [])
 
     const handleUserCreated = (newUser: User) => {
         const updatedUsers = [...users, newUser];
         setUsers(updatedUsers);
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        updateLocalStorage(updatedUsers);
     }
     
     const handleUserDeleted = () => {
@@ -278,7 +300,7 @@ export default function UserManagementPage() {
 
         const updatedUsers = users.filter(user => user.id !== deletingUser.id);
         setUsers(updatedUsers);
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        updateLocalStorage(updatedUsers);
         toast({
             title: "User Deleted",
             description: `User with email "${deletingUser.email}" has been deleted.`,

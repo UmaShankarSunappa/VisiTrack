@@ -151,7 +151,7 @@ export default function DashboardLayout({
     <LocationProvider>
       <SidebarProvider defaultOpen={true}>
         <div className="flex min-h-screen w-full flex-col bg-muted/40">
-          <Sidebar className="hidden w-64 border-r bg-sidebar text-sidebar-foreground lg:block">
+          <Sidebar className="hidden w-64 border-r bg-card lg:block">
             <SidebarHeader>
               <div className="flex h-14 items-center border-b px-6">
                 <Logo />
@@ -190,8 +190,8 @@ export default function DashboardLayout({
               </SidebarMenu>
             </SidebarContent>
           </Sidebar>
-          <div className="flex flex-1 flex-col sm:gap-4 sm:py-4 sm:pl-14">
-            <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+          <div className="flex flex-1 flex-col lg:pl-64">
+            <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
               <Sheet>
                   <SheetTrigger asChild>
                       <Button variant="outline" size="icon" className="lg:hidden">
@@ -255,7 +255,7 @@ export default function DashboardLayout({
                 </DropdownMenu>
               </div>
             </header>
-            <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 bg-background">
+            <main className="flex-1 p-4 sm:px-6 sm:py-6 space-y-4">
               {children}
             </main>
           </div>

@@ -124,7 +124,7 @@ function EditLocationModal({
   onOpenChange,
 }: {
   location: MainLocation | null;
-  onLocationUpdated: (updatedLocation: MainLocation) => void;
+  onLocationUpdated: (originalId: string, updatedLocation: MainLocation) => void;
   onOpenChange: (open: boolean) => void;
 }) {
   const [name, setName] = useState('');
@@ -148,7 +148,7 @@ function EditLocationModal({
       name,
       descriptiveName,
     };
-    onLocationUpdated(updatedLocation);
+    onLocationUpdated(location.id, updatedLocation);
     toast({
       title: "Location Updated",
       description: `Details for "${location.name}" have been updated.`,
@@ -228,9 +228,9 @@ export default function LocationMasterPage() {
     localStorage.setItem('locations', JSON.stringify(updatedLocations));
   };
 
-  const handleLocationUpdated = (updatedLocation: MainLocation) => {
+  const handleLocationUpdated = (originalId: string, updatedLocation: MainLocation) => {
     const updatedLocations = locations.map(loc => 
-      loc.id === updatedLocation.id ? updatedLocation : loc
+      loc.id === originalId ? updatedLocation : loc
     );
     setLocations(updatedLocations);
     localStorage.setItem('locations', JSON.stringify(updatedLocations));
@@ -341,5 +341,3 @@ export default function LocationMasterPage() {
     </div>
   );
 }
-
-    

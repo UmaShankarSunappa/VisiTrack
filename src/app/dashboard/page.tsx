@@ -130,7 +130,7 @@ export default function DashboardPage() {
     };
 
     return (
-        <>
+        <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-4">
                 <h1 className="text-lg font-semibold md:text-2xl font-headline flex-1">Dashboard</h1>
                  <Popover>
@@ -204,6 +204,6 @@ export default function DashboardPage() {
             </div>
             <StatsCards entries={filteredEntries} />
             <VisitorTable entries={filteredEntries} onEntryUpdated={handleEntryUpdated}/>
-        </>
+        </div>
     )
 }

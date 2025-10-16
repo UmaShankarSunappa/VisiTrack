@@ -150,10 +150,10 @@ export default function DashboardLayout({
   return (
     <LocationProvider>
       <SidebarProvider defaultOpen={true}>
-        <div className="flex min-h-screen">
-          <Sidebar className="w-64 border-r bg-sidebar text-sidebar-foreground">
+        <div className="flex min-h-screen w-full flex-col bg-muted/40">
+          <Sidebar className="hidden w-64 border-r bg-sidebar text-sidebar-foreground lg:block">
             <SidebarHeader>
-              <div className="flex items-center gap-2 p-2">
+              <div className="flex h-14 items-center border-b px-6">
                 <Logo />
               </div>
             </SidebarHeader>
@@ -190,19 +190,17 @@ export default function DashboardLayout({
               </SidebarMenu>
             </SidebarContent>
           </Sidebar>
-          <div className="flex flex-1 flex-col">
-            <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
-              <LocationFilter />
-              <div className="flex-1" />
-               <Sheet>
+          <div className="flex flex-1 flex-col sm:gap-4 sm:py-4 sm:pl-14">
+            <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+              <Sheet>
                   <SheetTrigger asChild>
-                      <Button variant="outline" size="icon" className="md:hidden">
+                      <Button variant="outline" size="icon" className="lg:hidden">
                           <PanelLeft className="h-5 w-5" />
                           <span className="sr-only">Toggle navigation menu</span>
                       </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="flex flex-col p-0">
-                      <div className="p-4">
+                  <SheetContent side="left" className="flex flex-col p-0 sm:max-w-xs">
+                      <div className="p-4 border-b">
                           <Logo />
                       </div>
                        <nav className="grid gap-2 text-lg font-medium p-4">
@@ -225,36 +223,39 @@ export default function DashboardLayout({
                       </nav>
                   </SheetContent>
               </Sheet>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                     <Avatar className="h-8 w-8">
-                        <AvatarImage src={`https://picsum.photos/seed/${userRole}/100/100`} />
-                        <AvatarFallback>{userRole ? userRole.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
-                      </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{userRole === 'process-owner' ? 'Process Owner' : 'Reception'}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                         {userRole === 'process-owner' ? 'owner@example.com' : 'reception@example.com'}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                   <Link href="/">
-                      <DropdownMenuItem>
-                          Log out
-                      </DropdownMenuItem>
-                  </Link>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <LocationFilter />
+              <div className="ml-auto flex items-center gap-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                          <AvatarImage src={`https://picsum.photos/seed/${userRole}/100/100`} />
+                          <AvatarFallback>{userRole ? userRole.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
+                        </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{userRole === 'process-owner' ? 'Process Owner' : 'Reception'}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {userRole === 'process-owner' ? 'owner@example.com' : 'reception@example.com'}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <Link href="/">
+                        <DropdownMenuItem>
+                            Log out
+                        </DropdownMenuItem>
+                    </Link>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </header>
-            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+            <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 bg-background">
               {children}
             </main>
           </div>

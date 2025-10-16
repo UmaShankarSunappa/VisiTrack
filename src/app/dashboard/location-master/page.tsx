@@ -127,11 +127,13 @@ function EditLocationModal({
   onLocationUpdated: (updatedLocation: MainLocation) => void;
   onOpenChange: (open: boolean) => void;
 }) {
+  const [name, setName] = useState('');
   const [descriptiveName, setDescriptiveName] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
     if (location) {
+      setName(location.name);
       setDescriptiveName(location.descriptiveName || '');
     }
   }, [location]);
@@ -142,6 +144,8 @@ function EditLocationModal({
 
     const updatedLocation: MainLocation = {
       ...location,
+      id: name.toLowerCase().replace(/\s+/g, '-'),
+      name,
       descriptiveName,
     };
     onLocationUpdated(updatedLocation);
@@ -160,7 +164,7 @@ function EditLocationModal({
         <DialogHeader>
           <DialogTitle>Edit Location: {location.name}</DialogTitle>
           <DialogDescription>
-            Update the descriptive name for this master location.
+            Update the details for this master location.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -171,9 +175,9 @@ function EditLocationModal({
               </Label>
               <Input
                 id="location-id"
-                value={location.name}
-                readOnly
-                className="col-span-3 bg-muted"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="col-span-3"
               />
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
@@ -337,3 +341,5 @@ export default function LocationMasterPage() {
     </div>
   );
 }
+
+    

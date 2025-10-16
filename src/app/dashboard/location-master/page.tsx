@@ -205,7 +205,7 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="descriptive-name" className="text-right">
-                Descriptive Name
+                Location name (Descriptive)
               </Label>
               <Input
                 id="descriptive-name"
@@ -365,7 +365,7 @@ function EditLocationModal({
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="descriptive-name" className="text-right">
-                Descriptive Name
+                Location name (Descriptive)
               </Label>
               <Input
                 id="descriptive-name"
@@ -582,4 +582,5 @@ export default function LocationMasterPage() {
   );
 }
 
+    
     

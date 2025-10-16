@@ -31,21 +31,22 @@ export default function LocationMasterPage() {
 
   React.useEffect(() => {
     const storedLocations = localStorage.getItem("locations");
+    let loadedLocations = initialLocations;
     if (storedLocations) {
       try {
-        const parsedLocations: MainLocation[] = JSON.parse(storedLocations);
+        const parsedLocations = JSON.parse(storedLocations);
         // Basic validation
-        if (Array.isArray(parsedLocations)) {
-           setLocations(parsedLocations);
-           return;
+        if (Array.isArray(parsedLocations) && parsedLocations.every(l => l.id)) {
+           loadedLocations = parsedLocations;
         }
       } catch (e) {
         console.error("Failed to parse locations from localStorage", e);
+        // If parsing fails, we'll stick with the initial mock data
       }
     }
-    // Fallback to initial mock data
-    setLocations(initialLocations);
-    localStorage.setItem("locations", JSON.stringify(initialLocations));
+    setLocations(loadedLocations);
+    // Ensure localStorage is in sync with the state
+    localStorage.setItem("locations", JSON.stringify(loadedLocations));
   }, []);
 
   const handleLocationCreated = (newLocation: MainLocation) => {

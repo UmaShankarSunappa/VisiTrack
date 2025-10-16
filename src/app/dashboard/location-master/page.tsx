@@ -400,7 +400,7 @@ export default function LocationMasterPage() {
                     <TableCell className="font-medium">{location.name}</TableCell>
                     <TableCell>{location.descriptiveName || '-'}</TableCell>
                     <TableCell>
-                       <Badge variant={isConfigured(location) ? 'default' : 'destructive'}>
+                       <Badge variant={isConfigured(location) ? 'secondary' : 'destructive'}>
                          {isConfigured(location) ? 'Configured' : 'Not Configured'}
                        </Badge>
                     </TableCell>

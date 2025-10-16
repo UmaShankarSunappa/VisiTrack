@@ -203,14 +203,56 @@ function CreateUserModal({ onUserCreated }: { onUserCreated: (newUser: User) => 
 export default function UserManagementPage() {
     const [users, setUsers] = useState<User[]>([]);
 
+    const generateReceptionists = (locations: MainLocation[]): User[] => {
+      return locations.flatMap(loc => {
+        if (loc.subLocations && loc.subLocations.length > 0) {
+          return loc.subLocations.map(sub => ({
+            id: `${loc.id}-${sub.id}`,
+            role: 'receptionist' as const,
+            locationId: `${loc.id}-${sub.id}`,
+            locationName: `${loc.descriptiveName || loc.name} - ${sub.name}`,
+            email: `reception.${loc.id.slice(0,3)}.${sub.id.slice(0,2)}@example.com`,
+            password: 'password123'
+          }));
+        }
+        return {
+          id: loc.id,
+          role: 'receptionist' as const,
+          locationId: loc.id,
+          locationName: loc.descriptiveName || loc.name,
+          email: `reception.${loc.id.slice(0,3)}@example.com`,
+          password: 'password123'
+        };
+      });
+    };
+
     useEffect(() => {
         const storedUsers = localStorage.getItem('users');
-        if(storedUsers) {
-            setUsers(JSON.parse(storedUsers));
+        const storedLocations = localStorage.getItem('locations');
+        
+        let allUsers: User[] = [];
+        let loadedLocations = storedLocations ? JSON.parse(storedLocations) : defaultLocations;
+        
+        const dynamicReceptionists = generateReceptionists(loadedLocations);
+        
+        if (storedUsers) {
+            allUsers = JSON.parse(storedUsers);
         } else {
-            setUsers(defaultUsers);
-            localStorage.setItem('users', JSON.stringify(defaultUsers));
+            allUsers = [...defaultUsers, ...dynamicReceptionists];
+            localStorage.setItem('users', JSON.stringify(allUsers));
         }
+
+        const userMap = new Map<string, User>();
+        // Add default process owner first
+        defaultUsers.forEach(u => userMap.set(u.id, u));
+        
+        // Add dynamic receptionists
+        dynamicReceptionists.forEach(u => userMap.set(u.id, u));
+        
+        // Overwrite with any custom/stored users
+        allUsers.forEach(u => userMap.set(u.id, u));
+
+        setUsers(Array.from(userMap.values()));
     }, [])
 
     const handleUserCreated = (newUser: User) => {

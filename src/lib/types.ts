@@ -1,3 +1,4 @@
+
 export type SubLocation = {
   id: string;
   name: string;
@@ -6,6 +7,7 @@ export type SubLocation = {
 export type MainLocation = {
   id: string;
   name: string;
+  descriptiveName?: string;
   subLocations: SubLocation[];
 };
 

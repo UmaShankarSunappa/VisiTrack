@@ -10,6 +10,7 @@ import {
   MapPin,
   Shield,
   ChevronDown,
+  List,
 } from "lucide-react";
 
 import {
@@ -37,12 +38,11 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
-import { LocationProvider } from "@/context/LocationContext";
-import { receptionists } from "@/lib/data";
+import { LocationProvider, useLocation } from "@/context/LocationContext";
+
 
 function LocationFilter() {
-  // This will be replaced by a real implementation if needed
-  // For now, it derives its state from the user role
+  const { locations, selectedLocations, setSelectedLocations } = useLocation();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [locationName, setLocationName] = useState<string | null>(null);
 
@@ -56,15 +56,12 @@ function LocationFilter() {
   }, []);
 
   const isAdmin = userRole === 'admin';
-  const allLocations = receptionists.filter(r => r.locationId !== 'admin').map(r => r.locationName);
   
-  const [selectedLocations, setSelectedLocations] = useState<string[]>(allLocations);
-
   const handleSelectAll = () => {
-    if (selectedLocations.length === allLocations.length) {
+    if (selectedLocations.length === locations.length) {
       setSelectedLocations([]);
     } else {
-      setSelectedLocations(allLocations);
+      setSelectedLocations(locations);
     }
   };
 
@@ -75,7 +72,7 @@ function LocationFilter() {
   };
   
   const getDisplayLabel = () => {
-    if (selectedLocations.length === allLocations.length) return "All Locations";
+    if (selectedLocations.length === locations.length) return "All Locations";
     if (selectedLocations.length === 1) return selectedLocations[0];
     if (selectedLocations.length > 1) return `${selectedLocations.length} locations selected`;
     return "No locations selected";
@@ -101,17 +98,17 @@ function LocationFilter() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64">
         <DropdownMenuCheckboxItem
-          checked={selectedLocations.length === allLocations.length}
-          onSelect={handleSelectAll}
+          checked={selectedLocations.length === locations.length}
+          onSelect={(e) => { e.preventDefault(); handleSelectAll(); }}
         >
           All Locations
         </DropdownMenuCheckboxItem>
         <DropdownMenuSeparator />
-        {allLocations.map(loc => (
+        {locations.map(loc => (
           <DropdownMenuCheckboxItem
             key={loc}
             checked={selectedLocations.includes(loc)}
-            onSelect={() => handleLocationSelect(loc)}
+            onSelect={(e) => { e.preventDefault(); handleLocationSelect(loc); }}
           >
             {loc}
           </DropdownMenuCheckboxItem>
@@ -142,6 +139,11 @@ export default function DashboardLayout({
 
   const isAdmin = userRole === 'admin';
 
+  const adminLinks = [
+    { href: "/dashboard/location-master", label: "Location Master", icon: MapPin },
+    { href: "/dashboard/location-management", label: "Location Management", icon: List },
+  ];
+
   return (
     <LocationProvider>
       <SidebarProvider>
@@ -159,6 +161,14 @@ export default function DashboardLayout({
                   Dashboard
                 </SidebarMenuButton>
               </SidebarMenuItem>
+               {isAdmin && adminLinks.map(link => (
+                  <SidebarMenuItem key={link.href}>
+                    <SidebarMenuButton href={link.href} isActive={pathname === link.href}>
+                      <link.icon />
+                      {link.label}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
             </SidebarMenu>
           </SidebarContent>
         </Sidebar>
@@ -188,6 +198,12 @@ export default function DashboardLayout({
                               <Home className="h-4 w-4" />
                               Dashboard
                           </Link>
+                           {isAdmin && adminLinks.map(link => (
+                            <Link key={link.href} href={link.href} className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname === link.href}>
+                                <link.icon className="h-4 w-4" />
+                                {link.label}
+                            </Link>
+                          ))}
                       </nav>
                   </SheetContent>
               </Sheet>

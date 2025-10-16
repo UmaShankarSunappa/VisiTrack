@@ -167,6 +167,10 @@ export default function DashboardLayout({
                         <Settings className="h-4 w-4" />
                         Location Management
                     </Link>
+                    <Link href="/dashboard/user-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/user-management' ? 'bg-muted text-primary' : ''}`}>
+                        <UserCog className="h-4 w-4" />
+                        User Management
+                    </Link>
                   </>
                 )}
               </nav>
@@ -202,6 +206,10 @@ export default function DashboardLayout({
                             <Link href="/dashboard/location-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-management' ? 'bg-muted text-primary' : ''}`}>
                                 <Settings className="h-4 w-4" />
                                 Location Management
+                            </Link>
+                             <Link href="/dashboard/user-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/user-management' ? 'bg-muted text-primary' : ''}`}>
+                                <UserCog className="h-4 w-4" />
+                                User Management
                             </Link>
                           </>
                         )}

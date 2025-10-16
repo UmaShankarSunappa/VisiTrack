@@ -55,7 +55,7 @@ export default function LoginPage() {
         let loadedLocations = storedLocations ? JSON.parse(storedLocations) : defaultLocations;
         
         const dynamicReceptionists = generateReceptionists(loadedLocations);
-        
+
         if (storedUsers) {
             allUsers = JSON.parse(storedUsers);
         } else {
@@ -67,14 +67,19 @@ export default function LoginPage() {
         // Add default process owner first
         defaultUsers.forEach(u => userMap.set(u.id, u));
         
-        // Add dynamic receptionists
+        // Add/update dynamic receptionists
         dynamicReceptionists.forEach(u => userMap.set(u.id, u));
         
-        // Overwrite with any custom/stored users
+        // Overwrite with any custom/stored users, this makes sure deletions are respected
         allUsers.forEach(u => userMap.set(u.id, u));
+        
+        // Filter out users whose location might have been deleted
+        const validLocationIds = new Set(loadedLocations.flatMap(l => [l.id, ...(l.subLocations?.map(sl => `${l.id}-${sl.id}`) ?? [])]));
+        validLocationIds.add('process-owner'); // Keep process owner
+        
+        const finalUsers = Array.from(userMap.values()).filter(u => validLocationIds.has(u.locationId || u.id));
 
-        setUsers(Array.from(userMap.values()));
-
+        setUsers(finalUsers);
     }, [])
 
     const handleLogin = (event: React.FormEvent) => {

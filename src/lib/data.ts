@@ -9,11 +9,7 @@ export const locations: MainLocation[] = [
     macAddress: '00:1A:2B:3C:4D:5E',
     cardStart: 101,
     cardEnd: 200,
-    subLocations: [
-      { id: '1st-floor', name: '1st Floor' },
-      { id: '2nd-floor', name: '2nd Floor' },
-      { id: '3rd-floor', name: '3rd Floor' },
-    ],
+    subLocations: [],
   },
   {
     id: 'hyd-so',

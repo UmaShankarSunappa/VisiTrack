@@ -193,10 +193,7 @@ export default function DashboardLayout({
           <div className="flex flex-1 flex-col">
             <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
               <LocationFilter />
-
-              <div className="w-full flex-1">
-               {/* Search has been moved to page */}
-              </div>
+              <div className="flex-1" />
                <Sheet>
                   <SheetTrigger asChild>
                       <Button variant="outline" size="icon" className="md:hidden">

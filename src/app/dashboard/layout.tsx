@@ -8,9 +8,9 @@ import {
   Users,
   PanelLeft,
   MapPin,
-  Shield,
   ChevronDown,
   List,
+  UserCog,
 } from "lucide-react";
 
 import {
@@ -55,7 +55,7 @@ function LocationFilter() {
     }
   }, []);
 
-  const isAdmin = userRole === 'admin';
+  const isProcessOwner = userRole === 'process-owner';
   
   const handleSelectAll = () => {
     if (selectedLocations.length === locations.length) {
@@ -78,7 +78,7 @@ function LocationFilter() {
     return "No locations selected";
   }
 
-  if (!isAdmin) {
+  if (!isProcessOwner) {
     return (
       <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-1 text-sm font-semibold text-foreground">
         <MapPin className="h-4 w-4" />
@@ -127,6 +127,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [locationName, setLocationName] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -134,12 +135,17 @@ export default function DashboardLayout({
       const storedRole = localStorage.getItem('userRole');
       setLocationName(storedLocation);
       setUserRole(storedRole);
+      setIsLoading(false);
     }
   }, []);
 
-  const isAdmin = userRole === 'admin';
+  if (isLoading) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
-  const adminLinks = [
+  const isProcessOwner = userRole === 'process-owner';
+
+  const processOwnerLinks = [
     { href: "/dashboard/location-master", label: "Location Master", icon: MapPin },
     { href: "/dashboard/location-management", label: "Location Management", icon: List },
   ];
@@ -161,9 +167,9 @@ export default function DashboardLayout({
                   Dashboard
                 </SidebarMenuButton>
               </SidebarMenuItem>
-               {isAdmin && adminLinks.map(link => (
+               {isProcessOwner && processOwnerLinks.map(link => (
                   <SidebarMenuItem key={link.href}>
-                    <SidebarMenuButton href={link.href} isActive={pathname === link.href}>
+                    <SidebarMenuButton href={link.href} isActive={pathname.startsWith(link.href)}>
                       <link.icon />
                       {link.label}
                     </SidebarMenuButton>
@@ -175,7 +181,7 @@ export default function DashboardLayout({
         <SidebarInset>
           <div className="flex flex-col">
             <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
-              
+              <SidebarTrigger className="hidden md:flex" />
               <LocationFilter />
 
               <div className="w-full flex-1">
@@ -197,8 +203,8 @@ export default function DashboardLayout({
                               <Home className="h-4 w-4" />
                               Dashboard
                           </Link>
-                           {isAdmin && adminLinks.map(link => (
-                            <Link key={link.href} href={link.href} className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname === link.href}>
+                           {isProcessOwner && processOwnerLinks.map(link => (
+                            <Link key={link.href} href={link.href} className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname.startsWith(link.href)}>
                                 <link.icon className="h-4 w-4" />
                                 {link.label}
                             </Link>
@@ -210,17 +216,17 @@ export default function DashboardLayout({
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={`https://picsum.photos/seed/${isAdmin ? 'admin' : 'receptionist'}/100/100`} />
-                        <AvatarFallback>{isAdmin ? 'AD' : 'RD'}</AvatarFallback>
+                        <AvatarImage src={`https://picsum.photos/seed/${userRole}/100/100`} />
+                        <AvatarFallback>{userRole ? userRole.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
                       </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{isAdmin ? 'Admin' : 'Reception'}</p>
+                      <p className="text-sm font-medium leading-none">{userRole === 'process-owner' ? 'Process Owner' : 'Reception'}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                         {isAdmin ? 'admin@example.com' : 'reception@example.com'}
+                         {userRole === 'process-owner' ? 'owner@example.com' : 'reception@example.com'}
                       </p>
                     </div>
                   </DropdownMenuLabel>

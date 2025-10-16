@@ -1,12 +1,12 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Upload } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,99 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { MainLocation } from '@/lib/types';
 import { locations as defaultLocations } from '@/lib/data';
+import { read, utils } from 'xlsx';
+
+function BulkUploadModal({ onLocationsUploaded }: { onLocationsUploaded: (newLocations: MainLocation[]) => void }) {
+  const [open, setOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = utils.sheet_to_json(worksheet) as { 'Location ID': string; 'Descriptive Name': string }[];
+
+      if (!jsonData[0] || !('Location ID' in jsonData[0] && 'Descriptive Name' in jsonData[0])) {
+          throw new Error("Invalid Excel format. Make sure you have 'Location ID' and 'Descriptive Name' columns.");
+      }
+
+      const newLocations: MainLocation[] = jsonData.map(row => ({
+        id: (row['Location ID'] || '').toLowerCase().replace(/\s+/g, '-'),
+        name: row['Location ID'] || '',
+        descriptiveName: row['Descriptive Name'] || '',
+        subLocations: [],
+      })).filter(loc => loc.id && loc.name);
+
+      if (newLocations.length > 0) {
+        onLocationsUploaded(newLocations);
+        toast({
+          title: "Upload Successful",
+          description: `${newLocations.length} locations have been imported.`,
+        });
+        setOpen(false);
+      } else {
+        throw new Error("No valid locations found in the file.");
+      }
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: "Upload Failed",
+        description: error.message || "There was a problem processing your file.",
+      });
+    } finally {
+      setIsProcessing(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <Upload className="mr-2 h-4 w-4" />
+          Bulk Upload
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Bulk Upload Locations</DialogTitle>
+          <DialogDescription>
+            Upload an Excel file (.xlsx) with columns "Location ID" and "Descriptive Name".
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
+          <Label htmlFor="file-upload" className="sr-only">Choose file</Label>
+          <Input 
+            id="file-upload" 
+            type="file" 
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".xlsx, .xls"
+            disabled={isProcessing} 
+            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+          />
+        </div>
+        {isProcessing && <div className="flex items-center justify-center"><p>Processing file...</p></div>}
+        <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+            Close
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 
 function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLocation: MainLocation) => void }) {
   const [open, setOpen] = useState(false);
@@ -227,6 +320,16 @@ export default function LocationMasterPage() {
     setLocations(updatedLocations);
     localStorage.setItem('locations', JSON.stringify(updatedLocations));
   };
+  
+  const handleLocationsUploaded = (newLocations: MainLocation[]) => {
+    setLocations(prevLocations => {
+      const existingIds = new Set(prevLocations.map(l => l.id));
+      const uniqueNewLocations = newLocations.filter(nl => !existingIds.has(nl.id));
+      const updatedLocations = [...prevLocations, ...uniqueNewLocations];
+      localStorage.setItem('locations', JSON.stringify(updatedLocations));
+      return updatedLocations;
+    });
+  };
 
   const handleLocationUpdated = (originalId: string, updatedLocation: MainLocation) => {
     const updatedLocations = locations.map(loc => 
@@ -263,7 +366,10 @@ export default function LocationMasterPage() {
             Manage your master locations here.
           </p>
         </div>
-        <CreateLocationModal onLocationCreated={handleLocationCreated} />
+        <div className="flex items-center gap-2">
+          <BulkUploadModal onLocationsUploaded={handleLocationsUploaded} />
+          <CreateLocationModal onLocationCreated={handleLocationCreated} />
+        </div>
       </div>
       <Card className="flex-1">
         <CardHeader>
@@ -341,3 +447,5 @@ export default function LocationMasterPage() {
     </div>
   );
 }
+
+    

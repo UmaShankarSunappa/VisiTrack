@@ -12,6 +12,11 @@ export type MainLocation = {
   cardStart?: number;
   cardEnd?: number;
   subLocations: SubLocation[];
+  coordinates?: string;
+  address?: string;
+  state?: string;
+  city?: string;
+  pincode?: string;
 };
 
 export type Department = 'Supply Chain' | 'Accounts' | 'HR' | 'Operations';

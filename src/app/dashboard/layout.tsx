@@ -143,13 +143,6 @@ export default function DashboardLayout({
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
 
-  const isProcessOwner = userRole === 'process-owner';
-
-  const processOwnerLinks = [
-    { href: "/dashboard/location-master", label: "Location Master", icon: MapPin },
-    { href: "/dashboard/location-management", label: "Location Management", icon: List },
-  ];
-
   return (
     <LocationProvider>
       <SidebarProvider defaultOpen={true}>
@@ -167,14 +160,6 @@ export default function DashboardLayout({
                   Dashboard
                 </SidebarMenuButton>
               </SidebarMenuItem>
-               {isProcessOwner && processOwnerLinks.map(link => (
-                  <SidebarMenuItem key={link.href}>
-                    <SidebarMenuButton href={link.href} isActive={pathname.startsWith(link.href)}>
-                      <link.icon />
-                      {link.label}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
             </SidebarMenu>
           </SidebarContent>
         </Sidebar>
@@ -202,12 +187,6 @@ export default function DashboardLayout({
                               <Home className="h-4 w-4" />
                               Dashboard
                           </Link>
-                           {isProcessOwner && processOwnerLinks.map(link => (
-                            <Link key={link.href} href={link.href} className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary data-[active=true]:bg-muted data-[active=true]:text-primary" data-active={pathname.startsWith(link.href)}>
-                                <link.icon className="h-4 w-4" />
-                                {link.label}
-                            </Link>
-                          ))}
                       </nav>
                   </SheetContent>
               </Sheet>

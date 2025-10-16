@@ -145,7 +145,7 @@ export default function DashboardLayout({
     <LocationProvider>
       <SidebarProvider>
         <div className="min-h-screen w-full lg:grid lg:grid-cols-[256px_1fr]">
-          <Sidebar className="hidden border-r bg-card lg:block">
+          <Sidebar className="border-r bg-card lg:block">
             <SidebarHeader>
               <div className="flex h-14 items-center border-b px-6">
                 <Logo />

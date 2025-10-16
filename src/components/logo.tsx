@@ -12,7 +12,7 @@ export function Logo({ collapsed, ...props }: SVGProps<SVGSVGElement> & { collap
       {...props}
     >
       <rect width="250" height="50" fill="transparent" />
-      <g transform={collapsed ? "translate(55, 0)" : "translate(0,0)"}>
+       <g transform={collapsed ? "translate(95, 0)" : "translate(0,0)"}>
         <path
             d="M25 10 C15 10, 10 15, 10 25 C10 45, 25 50, 25 50 C25 50, 40 45, 40 25 C40 15, 35 10, 25 10 Z"
             fill="hsl(var(--primary))"

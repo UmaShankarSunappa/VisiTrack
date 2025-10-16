@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'VisiTrack Pro',
+  title: 'Smart Lobby',
   description: 'A modern visitor management system.',
 };
 

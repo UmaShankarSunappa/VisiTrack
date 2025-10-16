@@ -129,7 +129,7 @@ export default function LoginPage() {
          <Card className="w-full max-w-sm mx-auto shadow-2xl">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4"><Logo /></div>
-            <CardDescription>Loading VisiTrack Pro...</CardDescription>
+            <CardDescription>Loading Smart Lobby...</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
              <div className="space-y-2 h-16 bg-muted rounded-md animate-pulse" />
@@ -150,7 +150,7 @@ export default function LoginPage() {
                 <Logo />
             </div>
           <CardDescription>
-            Login to VisiTrack Pro
+            Login to Smart Lobby
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -209,5 +209,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
-    

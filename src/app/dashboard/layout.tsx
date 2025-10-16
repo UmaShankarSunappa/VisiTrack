@@ -143,118 +143,108 @@ export default function DashboardLayout({
 
   return (
     <LocationProvider>
-      <SidebarProvider>
-        <div className="min-h-screen w-full lg:grid lg:grid-cols-[256px_1fr]">
-          <Sidebar className="border-r bg-card lg:block">
-            <SidebarHeader>
-              <div className="flex h-14 items-center border-b px-6">
+      <div className="min-h-screen w-full lg:grid lg:grid-cols-[256px_1fr]">
+        <div className="hidden border-r bg-card lg:block">
+          <div className="flex h-full max-h-screen flex-col gap-2">
+            <div className="flex h-14 items-center border-b px-6">
+              <Link href="#" className="flex items-center gap-2 font-semibold">
                 <Logo />
-              </div>
-            </SidebarHeader>
-            <SidebarContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <Link href="/dashboard" legacyBehavior passHref>
-                    <SidebarMenuButton isActive={pathname === '/dashboard'}>
-                      <Home />
+              </Link>
+            </div>
+            <div className="flex-1 overflow-auto py-2">
+              <nav className="grid items-start px-4 text-sm font-medium">
+                 <Link href="/dashboard" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard' ? 'bg-muted text-primary' : ''}`}>
+                      <Home className="h-4 w-4" />
                       Dashboard
-                    </SidebarMenuButton>
                   </Link>
-                </SidebarMenuItem>
                 {isProcessOwner && (
                   <>
-                    <SidebarMenuItem>
-                      <Link href="/dashboard/location-master" legacyBehavior passHref>
-                        <SidebarMenuButton isActive={pathname === '/dashboard/location-master'}>
-                            <Building2 />
-                            Location Master
-                        </SidebarMenuButton>
-                      </Link>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <Link href="/dashboard/location-management" legacyBehavior passHref>
-                        <SidebarMenuButton isActive={pathname === '/dashboard/location-management'}>
-                            <Settings />
-                            Location Management
-                        </SidebarMenuButton>
-                      </Link>
-                    </SidebarMenuItem>
+                    <Link href="/dashboard/location-master" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-master' ? 'bg-muted text-primary' : ''}`}>
+                        <Building2 className="h-4 w-4" />
+                        Location Master
+                    </Link>
+                    <Link href="/dashboard/location-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-management' ? 'bg-muted text-primary' : ''}`}>
+                        <Settings className="h-4 w-4" />
+                        Location Management
+                    </Link>
                   </>
                 )}
-              </SidebarMenu>
-            </SidebarContent>
-          </Sidebar>
-          <div className="flex flex-col">
-            <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
-              <Sheet>
-                  <SheetTrigger asChild>
-                      <Button variant="outline" size="icon" className="lg:hidden">
-                          <PanelLeft className="h-5 w-5" />
-                          <span className="sr-only">Toggle navigation menu</span>
-                      </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="flex flex-col p-0 sm:max-w-xs">
-                      <div className="p-4 border-b">
-                          <Logo />
-                      </div>
-                        <nav className="grid gap-2 text-lg font-medium p-4">
-                          <Link href="/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" data-active={pathname === '/dashboard'}>
-                              <Home className="h-4 w-4" />
-                              Dashboard
-                          </Link>
-                          {isProcessOwner && (
-                            <>
-                              <Link href="/dashboard/location-master" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" data-active={pathname === '/dashboard/location-master'}>
-                                  <Building2 className="h-4 w-4" />
-                                  Location Master
-                              </Link>
-                              <Link href="/dashboard/location-management" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" data-active={pathname === '/dashboard/location-management'}>
-                                  <Settings className="h-4 w-4" />
-                                  Location Management
-                              </Link>
-                            </>
-                          )}
-                      </nav>
-                  </SheetContent>
-              </Sheet>
-              <LocationFilter />
-              <div className="ml-auto flex items-center gap-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                          <AvatarImage src={`https://picsum.photos/seed/${userRole}/100/100`} />
-                          <AvatarFallback>{userRole ? userRole.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
-                        </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{userRole === 'process-owner' ? 'Process Owner' : 'Reception'}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                          {userRole === 'process-owner' ? 'owner@example.com' : 'reception@example.com'}
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <Link href="/">
-                        <DropdownMenuItem>
-                            Log out
-                        </DropdownMenuItem>
-                    </Link>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </header>
-            <main className="flex-1 bg-muted/40 p-4 sm:px-6 sm:py-6 flex">
-              {children}
-            </main>
+              </nav>
+            </div>
           </div>
         </div>
-      </SidebarProvider>
+        <div className="flex flex-col">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button variant="outline" size="icon" className="lg:hidden">
+                        <PanelLeft className="h-5 w-5" />
+                        <span className="sr-only">Toggle navigation menu</span>
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="flex flex-col p-0 sm:max-w-xs">
+                    <div className="p-4 border-b">
+                      <Link href="#" className="flex items-center gap-2 font-semibold">
+                        <Logo />
+                      </Link>
+                    </div>
+                      <nav className="grid gap-2 text-lg font-medium p-4">
+                        <Link href="/dashboard" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard' ? 'bg-muted text-primary' : ''}`}>
+                            <Home className="h-4 w-4" />
+                            Dashboard
+                        </Link>
+                        {isProcessOwner && (
+                          <>
+                            <Link href="/dashboard/location-master" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-master' ? 'bg-muted text-primary' : ''}`}>
+                                <Building2 className="h-4 w-4" />
+                                Location Master
+                            </Link>
+                            <Link href="/dashboard/location-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-management' ? 'bg-muted text-primary' : ''}`}>
+                                <Settings className="h-4 w-4" />
+                                Location Management
+                            </Link>
+                          </>
+                        )}
+                    </nav>
+                </SheetContent>
+            </Sheet>
+            <LocationFilter />
+            <div className="ml-auto flex items-center gap-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                        <AvatarImage src={`https://picsum.photos/seed/${userRole}/100/100`} />
+                        <AvatarFallback>{userRole ? userRole.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
+                      </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{userRole === 'process-owner' ? 'Process Owner' : 'Reception'}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {userRole === 'process-owner' ? 'owner@example.com' : 'reception@example.com'}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <Link href="/">
+                      <DropdownMenuItem>
+                          Log out
+                      </DropdownMenuItem>
+                  </Link>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </header>
+          <main className="flex-1 bg-muted/40 p-4 sm:px-6 sm:py-6 flex">
+            {children}
+          </main>
+        </div>
+      </div>
     </LocationProvider>
   );
 }

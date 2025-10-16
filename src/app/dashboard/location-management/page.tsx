@@ -164,14 +164,14 @@ export default function LocationManagementPage() {
   };
   
   return (
-    <div className="w-full space-y-6">
+    <div className="flex flex-1 flex-col w-full space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Location Management</h1>
         <p className="text-muted-foreground">
           Configure details for your master locations.
         </p>
       </div>
-      <Card>
+      <Card className="flex-1">
         <CardHeader>
           <CardTitle>Locations</CardTitle>
           <CardDescription>A list of all master locations for configuration.</CardDescription>

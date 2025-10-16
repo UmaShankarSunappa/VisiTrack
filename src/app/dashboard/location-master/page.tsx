@@ -226,7 +226,7 @@ export default function LocationMasterPage() {
   }
 
   return (
-    <div className="w-full space-y-6">
+    <div className="flex flex-1 flex-col w-full space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Location Master</h1>
@@ -236,7 +236,7 @@ export default function LocationMasterPage() {
         </div>
         <CreateLocationModal onLocationCreated={handleLocationCreated} />
       </div>
-      <Card>
+      <Card className="flex-1">
         <CardHeader>
           <CardTitle>Master Locations</CardTitle>
           <CardDescription>A list of all created master locations.</CardDescription>

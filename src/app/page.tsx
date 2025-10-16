@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
-import { Mail, Key, Building, UserCog } from "lucide-react";
+import { Mail, Key, UserCog } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { defaultUsers, locations as defaultLocations } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
@@ -24,8 +24,15 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [users, setUsers] = useState<User[]>([]);
 
+    const isConfigured = (location: MainLocation) => {
+        return !!location.macAddress && location.cardStart != null && location.cardEnd != null;
+    }
+
     const generateReceptionists = (locations: MainLocation[]): User[] => {
       return locations.flatMap(loc => {
+        // Only generate users for configured locations
+        if (!isConfigured(loc)) return [];
+
         if (loc.subLocations && loc.subLocations.length > 0) {
           return loc.subLocations.map(sub => ({
             id: `${loc.id}-${sub.id}`,
@@ -51,35 +58,38 @@ export default function LoginPage() {
         const storedUsers = localStorage.getItem('users');
         const storedLocations = localStorage.getItem('locations');
         
-        let allUsers: User[] = [];
+        let allStoredUsers: User[] = [];
         let loadedLocations = storedLocations ? JSON.parse(storedLocations) : defaultLocations;
         
+        // Generate receptionists only for configured locations
         const dynamicReceptionists = generateReceptionists(loadedLocations);
 
         if (storedUsers) {
-            allUsers = JSON.parse(storedUsers);
+            allStoredUsers = JSON.parse(storedUsers);
         } else {
-            allUsers = [...defaultUsers, ...dynamicReceptionists];
-            localStorage.setItem('users', JSON.stringify(allUsers));
+            allStoredUsers = [...defaultUsers, ...dynamicReceptionists];
+            localStorage.setItem('users', JSON.stringify(allStoredUsers));
         }
 
         const userMap = new Map<string, User>();
-        // Add default process owner first
-        defaultUsers.forEach(u => userMap.set(u.id, u));
         
-        // Add/update dynamic receptionists
+        // Start with default owner and dynamic receptionists as the base
+        defaultUsers.forEach(u => userMap.set(u.id, u));
         dynamicReceptionists.forEach(u => userMap.set(u.id, u));
         
-        // Overwrite with any custom/stored users, this makes sure deletions are respected
-        allUsers.forEach(u => userMap.set(u.id, u));
+        // Overwrite/add with any custom/stored users
+        allStoredUsers.forEach(u => userMap.set(u.id, u));
         
-        // Filter out users whose location might have been deleted
-        const validLocationIds = new Set(loadedLocations.flatMap(l => [l.id, ...(l.subLocations?.map(sl => `${l.id}-${sl.id}`) ?? [])]));
-        validLocationIds.add('process-owner'); // Keep process owner
+        const finalUsers = Array.from(userMap.values());
         
-        const finalUsers = Array.from(userMap.values()).filter(u => validLocationIds.has(u.locationId || u.id));
+        // Filter out users whose role is 'receptionist' but their location is no longer in the dynamic (and configured) list
+        const dynamicReceptionistIds = new Set(dynamicReceptionists.map(r => r.id));
+        const filteredUsers = finalUsers.filter(u => {
+            if (u.role === 'process-owner') return true;
+            return dynamicReceptionistIds.has(u.id);
+        });
 
-        setUsers(finalUsers);
+        setUsers(filteredUsers);
     }, [])
 
     const handleLogin = (event: React.FormEvent) => {
@@ -176,3 +186,5 @@ export default function LoginPage() {
     </div>
   )
 }
+
+    

@@ -146,7 +146,7 @@ export default function DashboardLayout({
   return (
     <LocationProvider>
       <SidebarProvider defaultOpen={true}>
-        <Sidebar collapsible="none">
+        <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-2 p-2">
                <Logo />

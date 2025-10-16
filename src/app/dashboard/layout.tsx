@@ -44,6 +44,7 @@ function LocationFilter() {
   const { locations, selectedLocations, setSelectedLocations } = useLocation();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [locationName, setLocationName] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -51,6 +52,7 @@ function LocationFilter() {
       const storedRole = localStorage.getItem('userRole');
       setLocationName(storedLocation);
       setUserRole(storedRole);
+      setIsLoading(false);
     }
   }, []);
 
@@ -75,6 +77,12 @@ function LocationFilter() {
     if (selectedLocations.length === 1) return selectedLocations[0];
     if (selectedLocations.length > 1) return `${selectedLocations.length} locations selected`;
     return "No locations selected";
+  }
+
+  if (isLoading) {
+    return (
+       <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-1 text-sm font-semibold text-foreground h-9 w-48 animate-pulse" />
+    )
   }
 
   if (!isProcessOwner) {
@@ -256,3 +264,5 @@ export default function DashboardLayout({
     </LocationProvider>
   );
 }
+
+    

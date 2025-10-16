@@ -213,10 +213,17 @@ function CreateUserModal({ onUserCreated }: { onUserCreated: (newUser: User) => 
 export default function UserManagementPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [deletingUser, setDeletingUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
+
+    const isConfigured = (location: MainLocation) => {
+        return !!location.macAddress && location.cardStart != null && location.cardEnd != null;
+    }
 
     const generateReceptionists = (locations: MainLocation[]): User[] => {
       return locations.flatMap(loc => {
+        if (!isConfigured(loc)) return [];
+    
         if (loc.subLocations && loc.subLocations.length > 0) {
           return loc.subLocations.map(sub => ({
             id: `${loc.id}-${sub.id}`,
@@ -250,43 +257,40 @@ export default function UserManagementPage() {
         const storedUsers = localStorage.getItem('users');
         const storedLocations = localStorage.getItem('locations');
         
-        let allUsers: User[] = [];
+        let allStoredUsers: User[] = [];
         let loadedLocations = storedLocations ? JSON.parse(storedLocations) : defaultLocations;
         
         const dynamicReceptionists = generateReceptionists(loadedLocations);
-        
+
         if (storedUsers) {
-            allUsers = JSON.parse(storedUsers);
+            allStoredUsers = JSON.parse(storedUsers);
         } else {
-            allUsers = [...defaultUsers, ...dynamicReceptionists];
-            updateLocalStorage(allUsers);
+            allStoredUsers = [...defaultUsers, ...dynamicReceptionists];
+            localStorage.setItem('users', JSON.stringify(allStoredUsers));
         }
 
         const userMap = new Map<string, User>();
-        // Add default process owner first
+        
+        // Base users are default owners and dynamically generated receptionists
         defaultUsers.forEach(u => userMap.set(u.id, u));
-        
-        // Add dynamic receptionists
         dynamicReceptionists.forEach(u => userMap.set(u.id, u));
-        
-        // Overwrite with any custom/stored users
-        allUsers.forEach(u => {
-             // ensure we don't carry over deleted dynamic users if locations change
-            if (u.role === 'process-owner' || dynamicReceptionistIds.has(u.id)) {
+
+        // Overwrite with any custom/stored users that are still valid
+        const dynamicReceptionistIds = new Set(dynamicReceptionists.map(r => r.id));
+        allStoredUsers.forEach(u => {
+            if (u.role === 'process-owner') {
+                userMap.set(u.id, u); // Always include process owners
+            } else if (dynamicReceptionistIds.has(u.id)) {
+                // Only include receptionists if their location is still valid and configured
                 userMap.set(u.id, u);
             }
         });
         
-        const dynamicReceptionistIds = new Set(dynamicReceptionists.map(r => r.id));
-        const finalUsers = Array.from(userMap.values()).filter(u => {
-            if (u.role === 'receptionist') {
-                return dynamicReceptionistIds.has(u.id);
-            }
-            return true;
-        });
+        const finalUsers = Array.from(userMap.values());
 
         setUsers(finalUsers);
         updateLocalStorage(finalUsers);
+        setIsLoading(false);
     }, [])
 
     const handleUserCreated = (newUser: User) => {
@@ -297,7 +301,6 @@ export default function UserManagementPage() {
     
     const handleUserDeleted = () => {
         if (!deletingUser) return;
-
         const updatedUsers = users.filter(user => user.id !== deletingUser.id);
         setUsers(updatedUsers);
         updateLocalStorage(updatedUsers);
@@ -307,6 +310,11 @@ export default function UserManagementPage() {
         });
         setDeletingUser(null);
     };
+    
+    if (isLoading) {
+        return <div className="flex-1 flex items-center justify-center">Loading...</div>
+    }
+
 
   return (
     <div className="flex flex-1 flex-col w-full space-y-6">
@@ -376,3 +384,5 @@ export default function UserManagementPage() {
     </div>
   );
 }
+
+    

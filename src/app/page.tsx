@@ -23,6 +23,7 @@ export default function LoginPage() {
     const [selectedUserId, setSelectedUserId] = useState<string | undefined>();
     const [error, setError] = useState('');
     const [users, setUsers] = useState<User[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const isConfigured = (location: MainLocation) => {
         return !!location.macAddress && location.cardStart != null && location.cardEnd != null;
@@ -63,7 +64,6 @@ export default function LoginPage() {
         let allStoredUsers: User[] = [];
         let loadedLocations = storedLocations ? JSON.parse(storedLocations) : defaultLocations;
         
-        // Generate receptionists only for configured locations
         const dynamicReceptionists = generateReceptionists(loadedLocations);
 
         if (storedUsers) {
@@ -75,23 +75,25 @@ export default function LoginPage() {
 
         const userMap = new Map<string, User>();
         
-        // Start with default owner and dynamic receptionists as the base
+        // Base users are default owners and dynamically generated receptionists
         defaultUsers.forEach(u => userMap.set(u.id, u));
         dynamicReceptionists.forEach(u => userMap.set(u.id, u));
-        
-        // Overwrite/add with any custom/stored users
-        allStoredUsers.forEach(u => userMap.set(u.id, u));
+
+        // Overwrite with any custom/stored users that are still valid
+        const dynamicReceptionistIds = new Set(dynamicReceptionists.map(r => r.id));
+        allStoredUsers.forEach(u => {
+            if (u.role === 'process-owner') {
+                userMap.set(u.id, u); // Always include process owners
+            } else if (dynamicReceptionistIds.has(u.id)) {
+                 // Only include receptionists if their location is still valid and configured
+                userMap.set(u.id, u);
+            }
+        });
         
         const finalUsers = Array.from(userMap.values());
-        
-        // Filter out users whose role is 'receptionist' but their location is no longer in the dynamic (and configured) list
-        const dynamicReceptionistIds = new Set(dynamicReceptionists.map(r => r.id));
-        const filteredUsers = finalUsers.filter(u => {
-            if (u.role === 'process-owner') return true;
-            return dynamicReceptionistIds.has(u.id);
-        });
 
-        setUsers(filteredUsers);
+        setUsers(finalUsers);
+        setIsLoading(false);
     }, [])
 
     const handleLogin = (event: React.FormEvent) => {
@@ -120,6 +122,25 @@ export default function LoginPage() {
              setError("Invalid credentials. Please try again.");
         }
     }
+
+  if (isLoading) {
+    return (
+       <div className="flex items-center justify-center min-h-screen bg-background">
+         <Card className="w-full max-w-sm mx-auto shadow-2xl">
+          <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center mb-4"><Logo /></div>
+            <CardDescription>Loading VisiTrack Pro...</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+             <div className="space-y-2 h-16 bg-muted rounded-md animate-pulse" />
+             <div className="space-y-2 h-16 bg-muted rounded-md animate-pulse" />
+             <div className="space-y-2 h-16 bg-muted rounded-md animate-pulse" />
+             <div className="h-10 bg-muted rounded-md animate-pulse" />
+          </CardContent>
+         </Card>
+       </div>
+    )
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -188,3 +209,5 @@ export default function LoginPage() {
     </div>
   )
 }
+
+    

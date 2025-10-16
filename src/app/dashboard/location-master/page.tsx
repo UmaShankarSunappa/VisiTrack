@@ -31,7 +31,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { MainLocation } from '@/lib/types';
 import { locations as defaultLocations } from '@/lib/data';
-import { read, utils } from 'xlsx';
 
 function BulkUploadModal({ onLocationsUploaded }: { onLocationsUploaded: (newLocations: MainLocation[]) => void }) {
   const [open, setOpen] = useState(false);
@@ -45,6 +44,8 @@ function BulkUploadModal({ onLocationsUploaded }: { onLocationsUploaded: (newLoc
 
     setIsProcessing(true);
     try {
+      // Dynamically import xlsx library only on the client side
+      const { read, utils } = await import('xlsx');
       const data = await file.arrayBuffer();
       const workbook = read(data);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -453,3 +454,5 @@ export default function LocationMasterPage() {
     </div>
   );
 }
+
+    

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Edit } from 'lucide-react';
+import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -193,6 +203,8 @@ function EditLocationModal({
 export default function LocationMasterPage() {
   const [locations, setLocations] = useState<MainLocation[]>([]);
   const [editingLocation, setEditingLocation] = useState<MainLocation | null>(null);
+  const [deletingLocation, setDeletingLocation] = useState<MainLocation | null>(null);
+  const { toast } = useToast();
   
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -220,6 +232,19 @@ export default function LocationMasterPage() {
     localStorage.setItem('locations', JSON.stringify(updatedLocations));
     setEditingLocation(null);
   };
+  
+  const handleLocationDeleted = () => {
+    if (!deletingLocation) return;
+    const updatedLocations = locations.filter(loc => loc.id !== deletingLocation.id);
+    setLocations(updatedLocations);
+    localStorage.setItem('locations', JSON.stringify(updatedLocations));
+    toast({
+      title: "Location Deleted",
+      description: `Location "${deletingLocation.name}" has been deleted.`,
+    });
+    setDeletingLocation(null);
+  };
+
 
   const isConfigured = (location: MainLocation) => {
     return !!location.macAddress && location.cardStart != null && location.cardEnd != null;
@@ -262,10 +287,14 @@ export default function LocationMasterPage() {
                          {isConfigured(location) ? 'Configured' : 'Not Configured'}
                        </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right space-x-2">
                       <Button variant="outline" size="sm" onClick={() => setEditingLocation(location)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => setDeletingLocation(location)}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -287,6 +316,24 @@ export default function LocationMasterPage() {
         onLocationUpdated={handleLocationUpdated}
         onOpenChange={(open) => !open && setEditingLocation(null)}
       />
+
+      <AlertDialog open={!!deletingLocation} onOpenChange={(open) => !open && setDeletingLocation(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the 
+                location "{deletingLocation?.name}".
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLocationDeleted} className="bg-destructive hover:bg-destructive/90">
+                Delete
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
     </div>
   );
 }

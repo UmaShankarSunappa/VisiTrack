@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
-import { Mail, Key, Building } from "lucide-react";
+import { Mail, Key, Building, UserCog } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { receptionists } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
@@ -41,8 +41,8 @@ export default function LoginPage() {
             // Store location info for dashboard
             if (typeof window !== "undefined") {
               localStorage.setItem('receptionistLocation', user.locationName);
-              if (user.locationId === 'admin') {
-                  localStorage.setItem('userRole', 'admin');
+              if (user.locationId === 'process-owner') {
+                  localStorage.setItem('userRole', 'process-owner');
               } else {
                   localStorage.removeItem('userRole');
               }
@@ -61,7 +61,7 @@ export default function LoginPage() {
                 <Logo />
             </div>
           <CardDescription>
-            Receptionist Login
+            Receptionist/Admin Login
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -69,7 +69,7 @@ export default function LoginPage() {
             <div className="space-y-2">
                 <Label htmlFor="location">Role / Location</Label>
                 <div className="relative">
-                    <Building className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
+                    <UserCog className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
                     <Select value={locationId} onValueChange={(value) => {
                         setLocationId(value)
                         const user = receptionists.find(r => r.locationId === value);

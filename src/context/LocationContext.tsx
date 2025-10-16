@@ -2,7 +2,8 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, useMemo } from 'react';
-import { receptionists } from '@/lib/data';
+import { receptionists, locations as mockLocations } from '@/lib/data';
+import type { MainLocation } from '@/lib/types';
 
 interface LocationContextType {
   locations: string[];
@@ -13,15 +14,37 @@ interface LocationContextType {
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
 
 export function LocationProvider({ children }: { children: React.ReactNode }) {
-  const allLocations = useMemo(() => receptionists
-    .filter(r => r.locationId !== 'admin')
-    .map(r => r.locationName), []);
-  
+    const [allLocations, setAllLocations] = useState<string[]>([]);
+    
+    useEffect(() => {
+        const storedLocations = localStorage.getItem("locations");
+        let loadedLocations: MainLocation[] = mockLocations;
+        if (storedLocations) {
+            try {
+                const parsedLocations = JSON.parse(storedLocations);
+                 if (Array.isArray(parsedLocations) && parsedLocations.every(l => l.id)) {
+                   loadedLocations = parsedLocations;
+                }
+            } catch (e) {
+                console.error("Failed to parse locations from localStorage", e);
+            }
+        }
+        
+        const locationNames = loadedLocations.flatMap(loc => 
+            loc.subLocations && loc.subLocations.length > 0 
+            ? loc.subLocations.map(sub => `${loc.descriptiveName || loc.name} - ${sub.name}`)
+            : `${loc.descriptiveName || loc.name}`
+        );
+        
+        const uniqueLocationNames = [...new Set(locationNames)];
+        setAllLocations(uniqueLocationNames);
+        setSelectedLocations(uniqueLocationNames);
+    }, []);
+
   const [selectedLocations, setSelectedLocations] = useState<string[]>(allLocations);
-  const [locations] = useState<string[]>(allLocations);
 
   return (
-    <LocationContext.Provider value={{ locations, selectedLocations, setSelectedLocations }}>
+    <LocationContext.Provider value={{ locations: allLocations, selectedLocations, setSelectedLocations }}>
       {children}
     </LocationContext.Provider>
   );

@@ -1,9 +1,11 @@
+
 import type { MainLocation, Entry, Department } from './types';
 
 export const locations: MainLocation[] = [
   {
     id: 'corporate-office',
     name: 'Corporate Office',
+    descriptiveName: 'Corporate Office',
     subLocations: [
       { id: '1st-floor', name: '1st Floor' },
       { id: '2nd-floor', name: '2nd Floor' },
@@ -13,16 +15,19 @@ export const locations: MainLocation[] = [
   {
     id: 'software-office',
     name: 'Software Office',
+    descriptiveName: 'Software Office',
     subLocations: [],
   },
   {
     id: 'warehouse',
     name: 'Warehouse',
+    descriptiveName: 'Warehouse',
     subLocations: [],
   },
   {
     id: 'hostel',
     name: 'Hostel',
+    descriptiveName: 'Hostel',
     subLocations: [],
   },
 ];
@@ -31,9 +36,9 @@ export const departments: Department[] = ['Supply Chain', 'Accounts', 'HR', 'Ope
 
 export const receptionists = [
   {
-    locationId: 'admin',
-    locationName: 'Admin (All Locations)',
-    email: 'admin@example.com',
+    locationId: 'process-owner',
+    locationName: 'Process Owner',
+    email: 'owner@example.com',
     password: 'password123',
   },
   {

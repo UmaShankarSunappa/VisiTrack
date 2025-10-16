@@ -85,7 +85,7 @@ export default function DashboardPage() {
     React.useEffect(() => {
         let entriesToFilter = allEntries;
         
-        if (userRole === 'admin') {
+        if (userRole === 'process-owner') {
             entriesToFilter = entriesToFilter.filter(entry => {
                 const entryLocationString = `${entry.location.main}${entry.location.sub ? ` - ${entry.location.sub}` : ''}`;
                 return selectedLocations.includes(entryLocationString);

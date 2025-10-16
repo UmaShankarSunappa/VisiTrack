@@ -199,7 +199,7 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
         });
     }
   
-  const isAdmin = userRole === 'admin';
+  const isProcessOwner = userRole === 'process-owner';
 
   return (
     <>
@@ -253,13 +253,13 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
         </div>
       </div>
       <TabsContent value="all">
-        <VisitorListCard entries={entryList} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isAdmin}/>
+        <VisitorListCard entries={entryList} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isProcessOwner}/>
       </TabsContent>
       <TabsContent value="checked-in">
-        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-in')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isAdmin}/>
+        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-in')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isProcessOwner}/>
       </TabsContent>
        <TabsContent value="checked-out">
-        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-out')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isAdmin}/>
+        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-out')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isProcessOwner}/>
       </TabsContent>
     </Tabs>
      {selectedEntry && (

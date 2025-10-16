@@ -55,7 +55,6 @@ export const defaultUsers: User[] = [
 
 
 export const mockData: Entry[] = [
-  // Corporate Office - 1st Floor
   {
     id: '1',
     type: 'Visitor',
@@ -68,7 +67,7 @@ export const mockData: Entry[] = [
     selfieUrl: 'https://picsum.photos/seed/ananya/100/100',
     checkInTime: new Date(new Date().setHours(9, 30, 0, 0)),
     status: 'Checked-in',
-    location: { main: 'Corporate Office', sub: '1st Floor' },
+    location: { main: 'Corporate Office' },
     govtIdType: 'Aadhaar Card',
     visitorCardNumber: '101',
     visitorCardReturned: false,
@@ -84,7 +83,7 @@ export const mockData: Entry[] = [
     selfieUrl: 'https://picsum.photos/seed/sameer/100/100',
     checkInTime: new Date(new Date().setHours(14, 0, 0, 0)),
     status: 'Checked-in',
-    location: { main: 'Corporate Office', sub: '1st Floor' },
+    location: { main: 'Corporate Office' },
     govtIdType: 'Driving Licence',
     visitorCardNumber: '102',
     visitorCardReturned: false,
@@ -102,7 +101,7 @@ export const mockData: Entry[] = [
     checkInTime: new Date(new Date().setHours(10, 0, 0, 0)),
     checkOutTime: new Date(new Date().setHours(11, 30, 0, 0)),
     status: 'Checked-out',
-    location: { main: 'Corporate Office', sub: '1st Floor' },
+    location: { main: 'Corporate Office' },
     govtIdType: 'Passport',
     visitorCardNumber: '103',
     visitorCardReturned: true,
@@ -121,7 +120,7 @@ export const mockData: Entry[] = [
     selfieUrl: 'https://picsum.photos/seed/ravi-emp/100/100',
     checkInTime: new Date(new Date().setHours(9, 15, 0, 0)),
     status: 'Checked-in',
-    location: { main: 'Corporate Office', sub: '1st Floor' },
+    location: { main: 'Corporate Office' },
   },
   {
     id: 'emp-102',
@@ -136,6 +135,6 @@ export const mockData: Entry[] = [
     checkInTime: new Date(new Date().setHours(10, 40, 0, 0)),
     checkOutTime: new Date(new Date().setHours(12, 0, 0, 0)),
     status: 'Checked-out',
-    location: { main: 'Corporate Office', sub: '2nd Floor' },
+    location: { main: 'Software Office' },
   },
 ];

@@ -30,9 +30,12 @@ import { Progress } from "@/components/ui/progress";
 import type { Visitor, Employee, Entry, EntryType, GovtIdType, Department } from "@/lib/types";
 
 // Schemas
-const visitorSchema = z.object({
+const visitorMobileSchema = z.object({
+    mobile: z.string().transform((val) => val.replace(/\D/g, '')).pipe(z.string().length(10, "Please enter a valid 10-digit mobile number.")),
+});
+
+const visitorDetailsSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  mobile: z.string().transform((val) => val.replace(/\D/g, '')).pipe(z.string().length(10, "Please enter a valid 10-digit mobile number.")),
   email: z.string().email("Invalid email address.").optional().or(z.literal("")),
   govtIdType: z.enum(["Aadhaar Card", "Driving Licence", "Voter ID", "Passport", "PAN Card", "Other"]),
   govtIdOther: z.string().optional(),
@@ -44,6 +47,7 @@ const visitorSchema = z.object({
   message: "Please specify the ID type",
   path: ["govtIdOther"],
 });
+
 
 const employeeSchema = z.object({
   employeeId: z.string().min(4, "Employee ID is required"),
@@ -60,7 +64,8 @@ const otpSchema = z.object({
   otp: z.string().length(6, "OTP must be 6 digits."),
 });
 
-type VisitorFormData = z.infer<typeof visitorSchema>;
+type VisitorMobileFormData = z.infer<typeof visitorMobileSchema>;
+type VisitorDetailsFormData = z.infer<typeof visitorDetailsSchema>;
 type EmployeeFormData = z.infer<typeof employeeSchema>;
 type SelfieData = { selfie: string };
 
@@ -140,7 +145,7 @@ function TypeSelectionStep({ onSelect }: { onSelect: (type: EntryType) => void }
 
 function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: EntryType, onEntryAdded: (entry: Entry) => void, resetFlow: () => void }) {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<Partial<VisitorFormData & EmployeeFormData>>({});
+  const [formData, setFormData] = useState<Partial<VisitorMobileFormData & VisitorDetailsFormData & EmployeeFormData>>({});
   const { toast } = useToast();
   const [locationName, setLocationName] = useState<string | null>(null);
 
@@ -151,10 +156,10 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: Entry
     }
   }, []);
 
-  const totalSteps = 2;
+  const totalSteps = entryType === 'Visitor' ? 3 : 2;
   const progress = (step / totalSteps) * 100;
   
-  const handleNextStep = (data: Partial<VisitorFormData | EmployeeFormData>) => {
+  const handleNextStep = (data: Partial<VisitorMobileFormData | VisitorDetailsFormData | EmployeeFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
     setStep((prev) => prev + 1);
   };
@@ -176,7 +181,7 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: Entry
      let newEntry: Entry;
 
      if (entryType === 'Visitor') {
-        const visitorData = finalData as VisitorFormData & SelfieData;
+        const visitorData = finalData as VisitorMobileFormData & VisitorDetailsFormData & SelfieData;
         newEntry = {
             id: new Date().toISOString(),
             type: 'Visitor',
@@ -236,15 +241,26 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: Entry
   }
   
   const renderStep = () => {
-    switch (step) {
-      case 1:
-        return entryType === 'Visitor' 
-            ? <VisitorDetailsStep onNext={handleNextStep} defaultValues={formData as Partial<VisitorFormData>} />
-            : <EmployeeDetailsStep onNext={handleNextStep} defaultValues={formData as Partial<EmployeeFormData>} />;
-      case 2:
-        return <SelfieStep onNext={handleFinalSubmit} onBack={handlePrevStep} />;
-      default:
-        return null;
+    if (entryType === 'Visitor') {
+        switch (step) {
+            case 1:
+                return <VisitorMobileStep onNext={handleNextStep} defaultValues={formData as Partial<VisitorMobileFormData>} />;
+            case 2:
+                return <VisitorDetailsStep onNext={handleNextStep} onBack={handlePrevStep} defaultValues={formData as Partial<VisitorDetailsFormData>} />;
+            case 3:
+                return <SelfieStep onNext={handleFinalSubmit} onBack={handlePrevStep} />;
+            default:
+                return null;
+        }
+    } else { // Employee
+        switch (step) {
+            case 1:
+                return <EmployeeDetailsStep onNext={handleNextStep} defaultValues={formData as Partial<EmployeeFormData>} />;
+            case 2:
+                return <SelfieStep onNext={handleFinalSubmit} onBack={handlePrevStep} />;
+            default:
+                return null;
+        }
     }
   };
 
@@ -265,23 +281,21 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: Entry
   )
 }
 
-function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorFormData) => void; defaultValues: Partial<VisitorFormData> }) {
+function VisitorMobileStep({ onNext, defaultValues }: { onNext: (data: VisitorMobileFormData) => void; defaultValues: Partial<VisitorMobileFormData> }) {
   const [otpSent, setOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const { toast } = useToast();
   
-  const form = useForm<VisitorFormData>({
-    resolver: zodResolver(visitorSchema),
+  const form = useForm<VisitorMobileFormData>({
+    resolver: zodResolver(visitorMobileSchema),
     defaultValues,
   });
 
   const otpForm = useForm<{ otp: string }>({
     resolver: zodResolver(otpSchema),
   });
-
-  const govtIdType = form.watch("govtIdType");
 
   const handleSendOtp = async () => {
     const mobileValid = await form.trigger("mobile");
@@ -308,7 +322,7 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
     }, 1000);
   };
 
-  const onSubmit: SubmitHandler<VisitorFormData> = (data) => {
+  const onSubmit: SubmitHandler<VisitorMobileFormData> = (data) => {
       if (isOtpVerified) {
         onNext(data);
       } else {
@@ -319,23 +333,6 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[60vh] overflow-y-auto p-1">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="John Doe" {...field} className="pl-10" />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
         <div className="space-y-2">
             <FormLabel>Mobile Number</FormLabel>
             <div className="flex items-start gap-2">
@@ -385,6 +382,49 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
           </Form>
         )}
 
+        <DialogFooter>
+            <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
+                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Next
+            </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
+
+
+function VisitorDetailsStep({ onNext, onBack, defaultValues }: { onNext: (data: VisitorDetailsFormData) => void; onBack: () => void; defaultValues: Partial<VisitorDetailsFormData> }) {
+  const form = useForm<VisitorDetailsFormData>({
+    resolver: zodResolver(visitorDetailsSchema),
+    defaultValues,
+  });
+
+  const govtIdType = form.watch("govtIdType");
+  const onSubmit: SubmitHandler<VisitorDetailsFormData> = (data) => {
+    onNext(data);
+  };
+  
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[60vh] overflow-y-auto p-1">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="John Doe" {...field} className="pl-10" />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
         <FormField
           control={form.control}
           name="email"
@@ -505,8 +545,11 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
             </FormItem>
           )}
         />
-        <DialogFooter>
-            <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
+        <DialogFooter className="flex-row gap-4 justify-end">
+            <Button type="button" variant="outline" onClick={onBack} className="w-full sm:w-auto">
+                Back
+            </Button>
+            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full sm:w-auto">
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Next
             </Button>
@@ -515,6 +558,7 @@ function VisitorDetailsStep({ onNext, defaultValues }: { onNext: (data: VisitorF
     </Form>
   );
 }
+
 
 function EmployeeDetailsStep({ onNext, defaultValues }: { onNext: (data: EmployeeFormData) => void; defaultValues: Partial<EmployeeFormData> }) {
   const [otpSent, setOtpSent] = useState(false);
@@ -749,8 +793,3 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: SelfieData) => void; on
     </div>
   );
 }
-
-
-    
-
-    

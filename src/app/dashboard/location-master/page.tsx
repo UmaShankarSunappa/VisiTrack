@@ -510,6 +510,8 @@ export default function LocationMasterPage() {
                 <TableHead>Descriptive Name</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Address</TableHead>
+                <TableHead>City</TableHead>
+                <TableHead>State</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -521,7 +523,9 @@ export default function LocationMasterPage() {
                     <TableCell className="font-medium">{location.name}</TableCell>
                     <TableCell>{location.descriptiveName || '-'}</TableCell>
                     <TableCell>{location.locationType || '-'}</TableCell>
-                    <TableCell>{location.address ? `${location.address}, ${location.city}` : '-'}</TableCell>
+                    <TableCell>{location.address || '-'}</TableCell>
+                    <TableCell>{location.city || '-'}</TableCell>
+                    <TableCell>{location.state || '-'}</TableCell>
                     <TableCell>
                        <Badge variant={isConfigured(location) ? 'secondary' : 'destructive'}>
                          {isConfigured(location) ? 'Configured' : 'Not Configured'}
@@ -541,7 +545,7 @@ export default function LocationMasterPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24">
+                  <TableCell colSpan={8} className="text-center h-24">
                     No locations created yet.
                   </TableCell>
                 </TableRow>
@@ -577,3 +581,5 @@ export default function LocationMasterPage() {
     </div>
   );
 }
+
+    

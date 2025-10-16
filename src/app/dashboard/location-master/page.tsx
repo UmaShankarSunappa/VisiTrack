@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Edit } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -108,9 +108,91 @@ function CreateLocationModal({ onLocationCreated }: { onLocationCreated: (newLoc
   );
 }
 
+function EditLocationModal({
+  location,
+  onLocationUpdated,
+  onOpenChange,
+}: {
+  location: MainLocation | null;
+  onLocationUpdated: (updatedLocation: MainLocation) => void;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [descriptiveName, setDescriptiveName] = useState('');
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (location) {
+      setDescriptiveName(location.descriptiveName || '');
+    }
+  }, [location]);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!location) return;
+
+    const updatedLocation: MainLocation = {
+      ...location,
+      descriptiveName,
+    };
+    onLocationUpdated(updatedLocation);
+    toast({
+      title: "Location Updated",
+      description: `Details for "${location.name}" have been updated.`,
+    });
+    onOpenChange(false);
+  };
+  
+  if (!location) return null;
+
+  return (
+    <Dialog open={!!location} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit Location: {location.name}</DialogTitle>
+          <DialogDescription>
+            Update the descriptive name for this master location.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="location-id" className="text-right">
+                Location ID
+              </Label>
+              <Input
+                id="location-id"
+                value={location.name}
+                readOnly
+                className="col-span-3 bg-muted"
+              />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="descriptive-name" className="text-right">
+                Descriptive Name
+              </Label>
+              <Input
+                id="descriptive-name"
+                value={descriptiveName}
+                onChange={(e) => setDescriptiveName(e.target.value)}
+                className="col-span-3"
+                placeholder="e.g. Corporate Office"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit">Save Changes</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 export default function LocationMasterPage() {
   const [locations, setLocations] = useState<MainLocation[]>([]);
+  const [editingLocation, setEditingLocation] = useState<MainLocation | null>(null);
   
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -128,6 +210,15 @@ export default function LocationMasterPage() {
     const updatedLocations = [...locations, newLocation];
     setLocations(updatedLocations);
     localStorage.setItem('locations', JSON.stringify(updatedLocations));
+  };
+
+  const handleLocationUpdated = (updatedLocation: MainLocation) => {
+    const updatedLocations = locations.map(loc => 
+      loc.id === updatedLocation.id ? updatedLocation : loc
+    );
+    setLocations(updatedLocations);
+    localStorage.setItem('locations', JSON.stringify(updatedLocations));
+    setEditingLocation(null);
   };
 
   const isConfigured = (location: MainLocation) => {
@@ -157,6 +248,7 @@ export default function LocationMasterPage() {
                 <TableHead>Location ID</TableHead>
                 <TableHead>Descriptive Name</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -170,11 +262,17 @@ export default function LocationMasterPage() {
                          {isConfigured(location) ? 'Configured' : 'Not Configured'}
                        </Badge>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm" onClick={() => setEditingLocation(location)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center h-24">
+                  <TableCell colSpan={4} className="text-center h-24">
                     No locations created yet.
                   </TableCell>
                 </TableRow>
@@ -183,6 +281,12 @@ export default function LocationMasterPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <EditLocationModal 
+        location={editingLocation}
+        onLocationUpdated={handleLocationUpdated}
+        onOpenChange={(open) => !open && setEditingLocation(null)}
+      />
     </div>
   );
 }

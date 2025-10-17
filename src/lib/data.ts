@@ -58,6 +58,15 @@ export const locations: MainLocation[] = [
 
 export const departments: Department[] = ['Supply Chain', 'Accounts', 'HR', 'Operations'];
 
+export const hrmsUsers: { name: string; department: Department }[] = [
+    { name: 'Sunita Reddy', department: 'Supply Chain'},
+    { name: 'Rajesh Gupta', department: 'Accounts'},
+    { name: 'Priya Sharma', department: 'HR'},
+    { name: 'Amit Kumar', department: 'Operations'},
+    { name: 'Vijay Singh', department: 'Supply Chain'},
+    { name: 'Anjali Mehta', department: 'Accounts'},
+];
+
 export const defaultUsers: User[] = [
   {
     id: 'process-owner',

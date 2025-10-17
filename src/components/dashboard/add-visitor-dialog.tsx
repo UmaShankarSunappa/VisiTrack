@@ -5,7 +5,7 @@ import { useState, useTransition, useRef, useEffect, useCallback } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { departments } from "@/lib/data";
+import { departments, hrmsUsers } from "@/lib/data";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button"
@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, Briefcase, Fingerprint, CreditCard } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import type { Visitor, Employee, Entry, EntryType, GovtIdType, Department } from "@/lib/types";
+import { Combobox } from "@/components/ui/combobox";
 
 // Schemas
 const visitorMobileSchema = z.object({
@@ -400,6 +401,8 @@ function VisitorDetailsStep({ onNext, onBack, defaultValues }: { onNext: (data: 
     defaultValues,
   });
 
+  const hrmsOptions = hrmsUsers.map(user => ({ value: user.name, label: `${user.name} (${user.department})`}));
+
   const govtIdType = form.watch("govtIdType");
   const onSubmit: SubmitHandler<VisitorDetailsFormData> = (data) => {
     onNext(data);
@@ -483,14 +486,24 @@ function VisitorDetailsStep({ onNext, onBack, defaultValues }: { onNext: (data: 
           control={form.control}
           name="hostName"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>Person To Meet</FormLabel>
-              <FormControl>
-                <div className="relative">
-                    <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="e.g. Jane Smith" {...field} className="pl-10"/>
-                </div>
-              </FormControl>
+                <Combobox
+                  options={hrmsOptions}
+                  value={field.value}
+                  onChange={(value) => {
+                    const selectedUser = hrmsUsers.find(u => u.name === value);
+                    if (selectedUser) {
+                      field.onChange(selectedUser.name);
+                      form.setValue('hostDepartment', selectedUser.department);
+                    } else {
+                      field.onChange('');
+                    }
+                  }}
+                  placeholder="Select a person..."
+                  searchPlaceholder="Search by name..."
+                  noResultsMessage="Person not found."
+                />
               <FormMessage />
             </FormItem>
           )}
@@ -503,7 +516,7 @@ function VisitorDetailsStep({ onNext, onBack, defaultValues }: { onNext: (data: 
               <FormLabel>Host Department</FormLabel>
                <div className="relative">
                     <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                         <SelectTrigger className="pl-10">
                             <SelectValue placeholder="Select a department" />
@@ -571,6 +584,8 @@ function EmployeeDetailsStep({ onNext, defaultValues }: { onNext: (data: Employe
     resolver: zodResolver(employeeSchema),
     defaultValues,
   });
+  
+  const hrmsOptions = hrmsUsers.map(user => ({ value: user.name, label: `${user.name} (${user.department})`}));
 
   const otpForm = useForm<{ otp: string }>({
     resolver: zodResolver(otpSchema),
@@ -675,7 +690,34 @@ function EmployeeDetailsStep({ onNext, defaultValues }: { onNext: (data: Employe
           <>
             <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted/50" /></FormControl><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="department" render={({ field }) => (<FormItem><FormLabel>Department</FormLabel><FormControl><Input {...field} readOnly className="bg-muted/50" /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="hostName" render={({ field }) => (<FormItem><FormLabel>Person To Meet</FormLabel><FormControl><Input placeholder="e.g. Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            
+            <FormField
+              control={form.control}
+              name="hostName"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Person To Meet</FormLabel>
+                    <Combobox
+                      options={hrmsOptions}
+                      value={field.value}
+                      onChange={(value) => {
+                        const selectedUser = hrmsUsers.find(u => u.name === value);
+                        if (selectedUser) {
+                          field.onChange(selectedUser.name);
+                          form.setValue('hostDepartment', selectedUser.department);
+                        } else {
+                          field.onChange('');
+                        }
+                      }}
+                      placeholder="Select a person..."
+                      searchPlaceholder="Search by name..."
+                      noResultsMessage="Person not found."
+                    />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField control={form.control} name="hostDepartment" render={({ field }) => (<FormItem><FormLabel>Host Department</FormLabel><FormControl><Input {...field} readOnly className="bg-muted/50" /></FormControl><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="reasonForVisit" render={({ field }) => (<FormItem><FormLabel>Reason for Visit</FormLabel><FormControl><Textarea placeholder="e.g. Project meeting" {...field} /></FormControl><FormMessage /></FormItem>)} />
           </>

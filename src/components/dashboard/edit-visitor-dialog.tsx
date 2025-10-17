@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { departments } from "@/lib/data";
+import { departments, hrmsUsers } from "@/lib/data";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -20,8 +20,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, Phone, Mail, UserCheck, CreditCard } from "lucide-react";
-import type { Entry, Visitor, Employee } from "@/lib/types";
+import { Loader2, User, Phone, Mail, UserCheck, CreditCard, Building } from "lucide-react";
+import type { Entry, Visitor, Employee, Department } from "@/lib/types";
+import { Combobox } from "@/components/ui/combobox";
 
 // Schemas
 const editVisitorSchema = z.object({
@@ -54,13 +55,14 @@ interface EditEntryDialogProps {
 
 export function EditVisitorDialog({ entry, open, onOpenChange, onEntryUpdated }: EditEntryDialogProps) {
   if (entry.type === 'Visitor') {
-    return <EditVisitorForm entry={entry} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
+    return <EditVisitorForm entry={entry as Visitor} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
   }
   return <EditEmployeeForm entry={entry as Employee} open={open} onOpenChange={onOpenChange} onEntryUpdated={onEntryUpdated} />
 }
 
 function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry: Visitor, open: boolean, onOpenChange: (open: boolean) => void, onEntryUpdated: (entry: Entry) => void }){
   const { toast } = useToast();
+  const hrmsOptions = hrmsUsers.map(user => ({ value: user.name, label: `${user.name} (${user.department})`}));
 
   const form = useForm<EditVisitorFormData>({
     resolver: zodResolver(editVisitorSchema),
@@ -176,18 +178,32 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                   </FormItem>
                 )} />
 
-                <FormField control={form.control} name="hostName" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Person To Meet</FormLabel>
-                    <div className="relative flex items-center">
-                        <UserCheck className="absolute left-3 h-4 w-4 text-muted-foreground" />
-                        <FormControl>
-                            <Input placeholder="e.g. Jane Smith" {...field} className="pl-10"/>
-                        </FormControl>
-                    </div>
-                    <FormMessage />
-                  </FormItem> 
-                )}/>
+                <FormField
+                  control={form.control}
+                  name="hostName"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Person To Meet</FormLabel>
+                      <Combobox
+                          options={hrmsOptions}
+                          value={field.value}
+                          onChange={(value) => {
+                            const selectedUser = hrmsUsers.find(u => u.name === value);
+                            if (selectedUser) {
+                              field.onChange(selectedUser.name);
+                              form.setValue('hostDepartment', selectedUser.department);
+                            } else {
+                              field.onChange('');
+                            }
+                          }}
+                          placeholder="Select a person..."
+                          searchPlaceholder="Search by name..."
+                          noResultsMessage="Person not found."
+                        />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -195,7 +211,7 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Host Department</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                               <SelectTrigger>
                                   <SelectValue placeholder="Select a department" />
@@ -238,6 +254,7 @@ function EditVisitorForm({ entry, open, onOpenChange, onEntryUpdated }: { entry:
 
 function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry: Employee, open: boolean, onOpenChange: (open: boolean) => void, onEntryUpdated: (entry: Entry) => void }){
   const { toast } = useToast();
+  const hrmsOptions = hrmsUsers.map(user => ({ value: user.name, label: `${user.name} (${user.department})`}));
 
   const form = useForm<EditEmployeeFormData>({
     resolver: zodResolver(editEmployeeSchema),
@@ -285,18 +302,32 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
                     </FormItem> 
                 )}/>
                 
-                <FormField control={form.control} name="hostName" render={({ field }) => ( 
-                  <FormItem>
-                    <FormLabel>Person To Meet</FormLabel>
-                    <div className="relative flex items-center">
-                      <UserCheck className="absolute left-3 h-4 w-4 text-muted-foreground" />
-                      <FormControl>
-                        <Input placeholder="e.g. Jane Smith" {...field} className="pl-10"/>
-                      </FormControl>
-                    </div>
-                    <FormMessage />
-                  </FormItem> 
-                )}/>
+                <FormField
+                  control={form.control}
+                  name="hostName"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Person To Meet</FormLabel>
+                       <Combobox
+                          options={hrmsOptions}
+                          value={field.value}
+                          onChange={(value) => {
+                            const selectedUser = hrmsUsers.find(u => u.name === value);
+                            if (selectedUser) {
+                              field.onChange(selectedUser.name);
+                              form.setValue('hostDepartment', selectedUser.department);
+                            } else {
+                              field.onChange('');
+                            }
+                          }}
+                          placeholder="Select a person..."
+                          searchPlaceholder="Search by name..."
+                          noResultsMessage="Person not found."
+                        />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                  <FormField
                   control={form.control}
@@ -304,7 +335,7 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Host Department</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a department" />
@@ -346,5 +377,3 @@ function EditEmployeeForm({ entry, open, onOpenChange, onEntryUpdated }: { entry
     </Dialog>
   )
 }
-
-    

@@ -54,7 +54,7 @@ function LocationFilter() {
     if (selectedLocations.length === locations.length) {
       setSelectedLocations([]);
     } else {
-      setSelectedLocations(locations);
+      setSelectedLocations(locations.map(l => l));
     }
   };
 

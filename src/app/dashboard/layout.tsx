@@ -13,6 +13,7 @@ import {
   UserCog,
   Building2,
   Settings,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
 import { LocationProvider, useLocation } from "@/context/LocationContext";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 function LocationFilter() {
@@ -57,6 +59,10 @@ function LocationFilter() {
       setSelectedLocations(locations.map(l => l));
     }
   };
+  
+  const handleClearAll = () => {
+    setSelectedLocations([]);
+  }
 
   const handleLocationSelect = (location: string) => {
     setSelectedLocations(prev => 
@@ -96,12 +102,28 @@ function LocationFilter() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64">
-        <DropdownMenuCheckboxItem
-          checked={locations.length > 0 && selectedLocations.length === locations.length}
-          onSelect={(e) => { e.preventDefault(); handleSelectAll(); }}
-        >
-          All Locations
-        </DropdownMenuCheckboxItem>
+        <div className="flex items-center justify-between pr-2">
+            <DropdownMenuCheckboxItem
+            className="flex-grow"
+            checked={locations.length > 0 && selectedLocations.length === locations.length}
+            onSelect={(e) => { e.preventDefault(); handleSelectAll(); }}
+            >
+            All Locations
+            </DropdownMenuCheckboxItem>
+             <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleClearAll}>
+                            <X className="h-4 w-4 text-muted-foreground" />
+                            <span className="sr-only">Clear selection</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Clear selection</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        </div>
         <DropdownMenuSeparator />
         {locations.map(loc => (
           <DropdownMenuCheckboxItem

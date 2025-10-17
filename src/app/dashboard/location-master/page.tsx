@@ -393,15 +393,31 @@ export default function LocationMasterPage() {
   const [deletingLocation, setDeletingLocation] = useState<MainLocation | null>(null);
   const { toast } = useToast();
   
-  useEffect(() => {
+useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedLocations = localStorage.getItem('locations');
-      if (storedLocations) {
-        setLocations(JSON.parse(storedLocations));
-      } else {
-        localStorage.setItem('locations', JSON.stringify(defaultLocations));
-        setLocations(defaultLocations);
-      }
+        const storedLocations = localStorage.getItem('locations');
+        const locationMap = new Map<string, MainLocation>();
+
+        // Pre-populate map with default locations to ensure they are always present
+        defaultLocations.forEach(loc => locationMap.set(loc.id, loc));
+
+        // If there's data in localStorage, parse it and update the map
+        if (storedLocations) {
+            try {
+                const parsedLocations: MainLocation[] = JSON.parse(storedLocations);
+                // The stored locations might be old, so merge them over the defaults
+                // or add them if they are new.
+                parsedLocations.forEach(loc => locationMap.set(loc.id, loc));
+            } catch (e) {
+                console.error("Failed to parse locations from localStorage", e);
+                // If parsing fails, the map already has the defaults
+            }
+        }
+        
+        const combinedLocations = Array.from(locationMap.values());
+        setLocations(combinedLocations);
+        // Immediately update localStorage with the combined, up-to-date list
+        updateLocalStorage(combinedLocations);
     }
   }, []);
   
@@ -581,6 +597,3 @@ export default function LocationMasterPage() {
     </div>
   );
 }
-
-    
-    

@@ -14,6 +14,7 @@ import {
   Building2,
   Settings,
   X,
+  AreaChart,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -184,6 +185,10 @@ export default function DashboardLayout({
                       <Home className="h-4 w-4" />
                       {!isSidebarCollapsed && "Dashboard"}
                   </Link>
+                 <Link href="/dashboard/reports" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/reports' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
+                    <AreaChart className="h-4 w-4" />
+                    {!isSidebarCollapsed && "Reports"}
+                  </Link>
                 {isProcessOwner && (
                   <>
                     <Link href="/dashboard/location-master" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-master' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
@@ -224,6 +229,10 @@ export default function DashboardLayout({
                           <Home className="h-4 w-4" />
                           Dashboard
                       </Link>
+                       <Link href="/dashboard/reports" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/reports' ? 'bg-muted text-primary' : ''}`}>
+                          <AreaChart className="h-4 w-4" />
+                          Reports
+                      </Link>
                       {isProcessOwner && (
                         <>
                           <Link href="/dashboard/location-master" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-master' ? 'bg-muted text-primary' : ''}`}>
@@ -248,7 +257,7 @@ export default function DashboardLayout({
               <span className="sr-only">Toggle sidebar</span>
             </Button>
             
-            <LocationFilter />
+            { pathname !== '/dashboard/reports' && <LocationFilter /> }
             <div className="ml-auto flex items-center gap-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

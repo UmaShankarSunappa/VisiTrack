@@ -22,25 +22,25 @@ import { locations as defaultLocations } from '@/lib/data';
 
 function ConfigureLocationModal({
   location,
+  allLocations,
   onLocationUpdated,
   onOpenChange,
 }: {
   location: MainLocation | null;
+  allLocations: MainLocation[];
   onLocationUpdated: (updatedLocation: MainLocation) => void;
   onOpenChange: (open: boolean) => void;
 }) {
   const [descriptiveName, setDescriptiveName] = useState('');
   const [macAddress, setMacAddress] = useState('');
-  const [cardStart, setCardStart] = useState<number | ''>('');
-  const [cardEnd, setCardEnd] = useState<number | ''>('');
+  const [numberOfCards, setNumberOfCards] = useState<number | ''>('');
   const { toast } = useToast();
 
   useEffect(() => {
     if (location) {
       setDescriptiveName(location.descriptiveName || '');
       setMacAddress(location.macAddress || '');
-      setCardStart(location.cardStart || '');
-      setCardEnd(location.cardEnd || '');
+      setNumberOfCards(location.numberOfCards || '');
     }
   }, [location]);
 
@@ -48,12 +48,23 @@ function ConfigureLocationModal({
     event.preventDefault();
     if (!location) return;
 
+    const cardsRequested = numberOfCards !== '' ? Number(numberOfCards) : 0;
+
+    // Find the highest cardEnd number across all other locations
+    const maxCardEnd = allLocations
+      .filter(loc => loc.id !== location.id && loc.cardEnd)
+      .reduce((max, loc) => Math.max(max, loc.cardEnd!), 0);
+      
+    const newCardStart = maxCardEnd + 1;
+    const newCardEnd = newCardStart + cardsRequested - 1;
+
     const updatedLocation: MainLocation = {
       ...location,
       descriptiveName,
       macAddress,
-      cardStart: cardStart !== '' ? Number(cardStart) : undefined,
-      cardEnd: cardEnd !== '' ? Number(cardEnd) : undefined,
+      numberOfCards: cardsRequested,
+      cardStart: cardsRequested > 0 ? newCardStart : undefined,
+      cardEnd: cardsRequested > 0 ? newCardEnd : undefined,
     };
     onLocationUpdated(updatedLocation);
     toast({
@@ -100,30 +111,17 @@ function ConfigureLocationModal({
                 placeholder="00:1A:2B:3C:4D:5E"
               />
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="card-start" className="text-right">
-                Card Start
-              </Label>
-              <Input
-                id="card-start"
-                type="number"
-                value={cardStart}
-                onChange={(e) => setCardStart(e.target.value === '' ? '' : Number(e.target.value))}
-                className="col-span-3"
-                placeholder="e.g., 101"
-              />
-            </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="card-end" className="text-right">
-                Card End
+              <Label htmlFor="num-cards" className="text-right">
+                Cards Required
               </Label>
               <Input
-                id="card-end"
+                id="num-cards"
                 type="number"
-                value={cardEnd}
-                onChange={(e) => setCardEnd(e.target.value === '' ? '' : Number(e.target.value))}
+                value={numberOfCards}
+                onChange={(e) => setNumberOfCards(e.target.value === '' ? '' : Number(e.target.value))}
                 className="col-span-3"
-                placeholder="e.g., 150"
+                placeholder="e.g. 100"
               />
             </div>
           </div>
@@ -189,6 +187,7 @@ export default function LocationManagementPage() {
                 <TableHead>Location ID</TableHead>
                 <TableHead>Descriptive Name</TableHead>
                 <TableHead>Associated MAC Address</TableHead>
+                <TableHead>Cards Required</TableHead>
                 <TableHead>Card Start</TableHead>
                 <TableHead>Card End</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -201,6 +200,7 @@ export default function LocationManagementPage() {
                     <TableCell className="font-medium">{location.name}</TableCell>
                     <TableCell>{location.descriptiveName || '-'}</TableCell>
                     <TableCell>{location.macAddress || '-'}</TableCell>
+                    <TableCell>{location.numberOfCards || '-'}</TableCell>
                     <TableCell>{location.cardStart || '-'}</TableCell>
                     <TableCell>{location.cardEnd || '-'}</TableCell>
                     <TableCell className="text-right">
@@ -213,7 +213,7 @@ export default function LocationManagementPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24">
+                  <TableCell colSpan={7} className="text-center h-24">
                     No locations found. Create one in Location Master.
                   </TableCell>
                 </TableRow>
@@ -224,6 +224,7 @@ export default function LocationManagementPage() {
       </Card>
       <ConfigureLocationModal
         location={selectedLocation}
+        allLocations={locations}
         onLocationUpdated={handleLocationUpdated}
         onOpenChange={(open) => !open && setSelectedLocation(null)}
       />

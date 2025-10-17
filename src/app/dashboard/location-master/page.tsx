@@ -617,32 +617,32 @@ useEffect(() => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Location ID</TableHead>
-                <TableHead>Descriptive Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Address</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>State</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="py-2">Location ID</TableHead>
+                <TableHead className="py-2">Descriptive Name</TableHead>
+                <TableHead className="py-2">Type</TableHead>
+                <TableHead className="py-2">Address</TableHead>
+                <TableHead className="py-2">City</TableHead>
+                <TableHead className="py-2">State</TableHead>
+                <TableHead className="py-2">Status</TableHead>
+                <TableHead className="text-right py-2">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {locations.length > 0 ? (
                 locations.map((location) => (
                   <TableRow key={location.id}>
-                    <TableCell className="font-medium">{location.name}</TableCell>
-                    <TableCell>{location.descriptiveName || '-'}</TableCell>
-                    <TableCell>{location.locationType || '-'}</TableCell>
-                    <TableCell>{location.address || '-'}</TableCell>
-                    <TableCell>{location.city || '-'}</TableCell>
-                    <TableCell>{location.state || '-'}</TableCell>
-                    <TableCell>
+                    <TableCell className="font-medium py-2">{location.name}</TableCell>
+                    <TableCell className="py-2">{location.descriptiveName || '-'}</TableCell>
+                    <TableCell className="py-2">{location.locationType || '-'}</TableCell>
+                    <TableCell className="py-2">{location.address || '-'}</TableCell>
+                    <TableCell className="py-2">{location.city || '-'}</TableCell>
+                    <TableCell className="py-2">{location.state || '-'}</TableCell>
+                    <TableCell className="py-2">
                        <Badge variant={isConfigured(location) ? 'secondary' : 'destructive'}>
                          {isConfigured(location) ? 'Configured' : 'Not Configured'}
                        </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right py-2">
                        <TooltipProvider>
                         <div className="flex items-center justify-end gap-2">
                           <Tooltip>
@@ -706,5 +706,7 @@ useEffect(() => {
     </div>
   );
 }
+
+    
 
     

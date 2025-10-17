@@ -312,12 +312,24 @@ function EditLocationModal({
 }) {
   const [name, setName] = useState('');
   const [descriptiveName, setDescriptiveName] = useState('');
+  const [locationType, setLocationType] = useState<LocationType | ''>('');
+  const [coordinates, setCoordinates] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [pincode, setPincode] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
     if (location) {
       setName(location.name);
       setDescriptiveName(location.descriptiveName || '');
+      setLocationType(location.locationType || '');
+      setCoordinates(location.coordinates || '');
+      setAddress(location.address || '');
+      setCity(location.city || '');
+      setState(location.state || '');
+      setPincode(location.pincode || '');
     }
   }, [location]);
 
@@ -330,6 +342,12 @@ function EditLocationModal({
       id: name.toLowerCase().replace(/\s+/g, '-'),
       name,
       descriptiveName,
+      locationType: locationType || undefined,
+      coordinates,
+      address,
+      city,
+      state,
+      pincode,
     };
     onLocationUpdated(location.id, updatedLocation);
     toast({
@@ -340,17 +358,19 @@ function EditLocationModal({
   };
   
   if (!location) return null;
+  
+  const locationTypes: LocationType[] = ["Office", "Warehouse", "Factory", "Hostel"];
 
   return (
     <Dialog open={!!location} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit Location: {location.name}</DialogTitle>
           <DialogDescription>
             Update the details for this master location.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="max-h-[60vh] overflow-y-auto p-1">
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="location-id" className="text-right">
@@ -373,6 +393,81 @@ function EditLocationModal({
                 onChange={(e) => setDescriptiveName(e.target.value)}
                 className="col-span-3"
                 placeholder="e.g. Corporate Office"
+              />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="location-type" className="text-right">
+                Type
+              </Label>
+                <Select value={locationType} onValueChange={(value) => setLocationType(value as LocationType)}>
+                    <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {locationTypes.map(type => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="coordinates" className="text-right">
+                Coordinates
+              </Label>
+              <Input
+                id="coordinates"
+                value={coordinates}
+                onChange={(e) => setCoordinates(e.target.value)}
+                className="col-span-3"
+                placeholder="e.g. 17.3850, 78.4867"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="address" className="text-right">
+                Address
+              </Label>
+              <Input
+                id="address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="col-span-3"
+                placeholder="e.g. 123 Main St"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="city" className="text-right">
+                City
+              </Label>
+              <Input
+                id="city"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="col-span-3"
+                placeholder="e.g. Hyderabad"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="state" className="text-right">
+                State
+              </Label>
+              <Input
+                id="state"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                className="col-span-3"
+                placeholder="e.g. Telangana"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="pincode" className="text-right">
+                Pincode
+              </Label>
+              <Input
+                id="pincode"
+                value={pincode}
+                onChange={(e) => setPincode(e.target.value)}
+                className="col-span-3"
+                placeholder="e.g. 500001"
               />
             </div>
           </div>
@@ -597,3 +692,5 @@ useEffect(() => {
     </div>
   );
 }
+
+    

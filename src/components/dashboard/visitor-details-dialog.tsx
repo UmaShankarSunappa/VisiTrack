@@ -90,7 +90,7 @@ export function VisitorDetailsDialog({ entry, open, onOpenChange }: VisitorDetai
             <span>{entry.location.main}{entry.location.sub ? `, ${entry.location.sub}`: ''}</span>
 
             <strong className="text-muted-foreground">Reason for Visit:</strong>
-            <span className="col-span-2">{entry.reasonForVisit}</span>
+            <span>{entry.reasonForVisit}</span>
 
             <strong className="text-muted-foreground">Status:</strong>
             <Badge variant={entry.status === 'Checked-in' ? 'default' : 'outline'}>

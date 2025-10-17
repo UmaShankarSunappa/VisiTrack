@@ -18,7 +18,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip as TooltipComponent, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 function ReportsLocationFilter() {
@@ -65,16 +65,16 @@ function ReportsLocationFilter() {
           >
             All Locations
           </DropdownMenuCheckboxItem>
-          <UiTooltipProvider>
-            <UiTooltip>
-              <UiTooltipTrigger asChild>
+          <TooltipProvider>
+            <TooltipComponent>
+              <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleClearAll}>
                   <XIcon className="h-4 w-4 text-muted-foreground" />
                 </Button>
-              </UiTooltipTrigger>
-              <UiTooltipContent><p>Clear selection</p></UiTooltipContent>
-            </UiTooltip>
-          </UiTooltipProvider>
+              </TooltipTrigger>
+              <TooltipContent><p>Clear selection</p></TooltipContent>
+            </TooltipComponent>
+          </TooltipProvider>
         </div>
         <DropdownMenuSeparator />
         {locations.map(loc => (
@@ -342,5 +342,5 @@ export default function ReportsPage() {
             </div>
         </div>
     );
-}
 
+    

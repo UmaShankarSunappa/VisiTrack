@@ -24,11 +24,11 @@ import { Tooltip as TooltipComponent, TooltipContent, TooltipProvider, TooltipTr
 function ReportsLocationFilter() {
   const { locations, selectedLocations, setSelectedLocations } = useLocation();
   
-  const handleSelectAll = () => {
-    if (selectedLocations.length === locations.length) {
-      setSelectedLocations([]);
-    } else {
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
       setSelectedLocations(locations.map(l => l));
+    } else {
+      setSelectedLocations([]);
     }
   };
 
@@ -46,6 +46,8 @@ function ReportsLocationFilter() {
     if (selectedLocations.length > 1) return `${selectedLocations.length} locations selected`;
     return "Select Locations";
   };
+  
+  const areAllSelected = locations.length > 0 && selectedLocations.length === locations.length;
 
   return (
     <DropdownMenu>
@@ -60,8 +62,8 @@ function ReportsLocationFilter() {
         <div className="flex items-center justify-between pr-2">
           <DropdownMenuCheckboxItem
             className="flex-grow"
-            checked={locations.length > 0 && selectedLocations.length === locations.length}
-            onSelect={(e) => { e.preventDefault(); handleSelectAll(); }}
+            checked={areAllSelected}
+            onCheckedChange={handleSelectAll}
           >
             All Locations
           </DropdownMenuCheckboxItem>
@@ -342,5 +344,3 @@ export default function ReportsPage() {
             </div>
         </div>
     );
-
-    

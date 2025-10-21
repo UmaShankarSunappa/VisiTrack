@@ -6,8 +6,8 @@ export function Logo({ collapsed, ...props }: SVGProps<SVGSVGElement> & { collap
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox={collapsed ? "0 0 50 50" : "0 0 250 50"}
-      width={collapsed ? 40 : 200}
+      viewBox={collapsed ? "0 0 50 50" : "0 0 280 50"}
+      width={collapsed ? 40 : 220}
       height="40"
       className={cn("transition-all duration-300", props.className)}
       {...props}

@@ -265,7 +265,7 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow, userRole }: { entryT
     } else { // Employee
         switch (step) {
             case 1:
-                return <EmployeeDetailsStep onNext={handleNextStep} defaultValues={formData as Partial<EmployeeFormData>} userRole={userRole} />;
+                return <EmployeeDetailsStep onNext={handleNextStep} onBack={handlePrevStep} defaultValues={formData as Partial<EmployeeFormData>} userRole={userRole} />;
             case 2:
                 return <SelfieStep onNext={handleFinalSubmit} onBack={handlePrevStep} />;
             default:
@@ -615,7 +615,7 @@ function VisitorDetailsStep({ onNext, onBack, defaultValues, userRole }: { onNex
 }
 
 
-function EmployeeDetailsStep({ onNext, defaultValues, userRole }: { onNext: (data: EmployeeFormData) => void; defaultValues: Partial<EmployeeFormData>; userRole: string | null; }) {
+function EmployeeDetailsStep({ onNext, onBack, defaultValues, userRole }: { onNext: (data: EmployeeFormData) => void; onBack: () => void; defaultValues: Partial<EmployeeFormData>; userRole: string | null; }) {
   const [otpSent, setOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
@@ -798,8 +798,11 @@ function EmployeeDetailsStep({ onNext, defaultValues, userRole }: { onNext: (dat
           </>
         )}
 
-        <DialogFooter>
-            <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
+        <DialogFooter className="flex-row gap-4 justify-end">
+             <Button type="button" variant="outline" onClick={onBack} className="w-full sm:w-auto">
+                Back
+            </Button>
+            <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full sm:w-auto">
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Next
             </Button>
@@ -910,3 +913,5 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: SelfieData) => void; on
     </div>
   );
 }
+
+    

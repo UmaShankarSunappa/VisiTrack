@@ -20,7 +20,7 @@ export const chatFlow = ai.defineFlow(
         prompt: input.message,
         model: 'gemini-1.5-flash-latest',
     });
-    const text = result.text();
+    const text = result.text;
     if (text === undefined) {
       // Handle the case where text() returns undefined
       // For example, by throwing an error or returning a default string

@@ -217,7 +217,7 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow, userRole }: { entryT
             type: 'Employee',
             name: employeeData.name!,
             employeeId: employeeData.employeeId,
-            department: employeeData.department!,
+            department: employeeData.department as Department,
             email: employeeData.email,
             hostName: employeeData.hostName,
             hostDepartment: employeeData.hostDepartment,
@@ -659,11 +659,13 @@ function EmployeeDetailsStep({ onNext, onBack, defaultValues, userRole }: { onNe
       if (data.otp === "123456") {
         setIsOtpVerified(true);
         const employeeData = hrmsData[employeeId];
-        form.setValue("name", employeeData.name);
-        form.setValue("department", employeeData.department);
-        form.setValue("email", employeeData.email);
-        form.setValue("hostDepartment", employeeData.department);
-        toast({ title: "OTP Verified", description: "Employee details auto-filled." });
+        if (employeeData) {
+            form.setValue("name", employeeData.name);
+            form.setValue("department", employeeData.department);
+            form.setValue("email", employeeData.email);
+            form.setValue("hostDepartment", employeeData.department);
+            toast({ title: "OTP Verified", description: "Employee details auto-filled." });
+        }
       } else {
         toast({ title: "Invalid OTP", variant: "destructive" });
         otpForm.setError("otp", { message: "Incorrect OTP" });
@@ -913,5 +915,3 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: SelfieData) => void; on
     </div>
   );
 }
-
-    

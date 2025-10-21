@@ -1,4 +1,6 @@
 
+import { departments } from './data';
+
 export type SubLocation = {
   id: string;
   name: string;
@@ -23,7 +25,7 @@ export type MainLocation = {
   pincode?: string;
 };
 
-export type Department = 'Supply Chain' | 'Accounts' | 'HR' | 'Operations';
+export type Department = typeof departments[number];
 
 export type GovtIdType = "Aadhaar Card" | "Driving Licence" | "Voter ID" | "Passport" | "PAN Card" | "Other";
 
@@ -59,7 +61,7 @@ export interface Visitor extends BaseEntry {
 export interface Employee extends BaseEntry {
   type: 'Employee';
   employeeId: string;
-  department: string;
+  department: Department;
 }
 
 export type Entry = Visitor | Employee;

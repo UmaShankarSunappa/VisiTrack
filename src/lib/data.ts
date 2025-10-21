@@ -56,7 +56,7 @@ export const locations: MainLocation[] = [
   },
 ];
 
-export const departments: Department[] = ['Supply Chain', 'Accounts', 'HR', 'Operations'];
+export const departments = ['Supply Chain', 'Accounts', 'HR', 'Operations'] as const;
 
 export const hrmsUsers: { name: string; department: Department }[] = [
     { name: 'Sunita Reddy', department: 'Supply Chain'},

@@ -1,5 +1,7 @@
 'use server';
-import createApiHandler from '@genkit-ai/next';
-import '@/ai/dev';
+import { appRoute } from '@genkit-ai/next';
+import { chatFlow } from '@/ai/dev';
 
-export const POST = createApiHandler({});
+export const POST = appRoute({
+  flow: chatFlow,
+});

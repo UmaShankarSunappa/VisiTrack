@@ -1,4 +1,4 @@
-import {createApiHandler} from '@genkit-ai/next/api';
+import {createApiHandler} from '@genkit-ai/next';
 import {ai} from '@/ai/genkit';
 
 export const {POST} = createApiHandler({

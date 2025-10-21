@@ -28,7 +28,7 @@ export function Logo({ collapsed, ...props }: SVGProps<SVGSVGElement> & { collap
             fontWeight="bold"
             fill="hsl(var(--foreground))"
         >
-            VisiTrack
+            FrontDesk 360
         </text>
       )}
     </svg>

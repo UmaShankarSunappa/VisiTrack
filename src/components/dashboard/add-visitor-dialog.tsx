@@ -25,10 +25,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, Briefcase, Fingerprint, CreditCard } from "lucide-react";
+import { UserPlus, Loader2, User, Phone, Mail, Building, UserCheck, ShieldCheck, Camera, RefreshCw, Briefcase, Fingerprint, CreditCard, MapPin } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import type { Visitor, Employee, Entry, EntryType, GovtIdType, Department } from "@/lib/types";
+import type { Visitor, Employee, Entry, EntryType, GovtIdType, Department, MainLocation } from "@/lib/types";
 import { Combobox } from "@/components/ui/combobox";
+import { useLocation } from "@/context/LocationContext";
 
 // Schemas
 const visitorMobileSchema = z.object({
@@ -44,6 +45,7 @@ const visitorDetailsSchema = z.object({
   hostDepartment: z.enum(departments),
   reasonForVisit: z.string().min(5, "Please provide a reason for your visit."),
   visitorCardNumber: z.string().min(1, "Visitor card number is required."),
+  location: z.string().optional(),
 }).refine(data => !(data.govtIdType === 'Other' && !data.govtIdOther), {
   message: "Please specify the ID type",
   path: ["govtIdOther"],
@@ -58,6 +60,7 @@ const employeeSchema = z.object({
   hostName: z.string().min(2, "Person to meet is required."),
   hostDepartment: z.enum(departments),
   reasonForVisit: z.string().min(5, "Please provide a reason for your visit."),
+  location: z.string().optional(),
 });
 
 
@@ -72,6 +75,7 @@ type SelfieData = { selfie: string };
 
 type AddVisitorDialogProps = {
     onEntryAdded: (entry: Entry) => void;
+    userRole: string | null;
 };
 
 // Mock HRMS Data
@@ -81,7 +85,7 @@ const hrmsData: { [key: string]: { name: string; department: Department; email: 
 };
 
 
-export function AddVisitorDialog({ onEntryAdded }: AddVisitorDialogProps) {
+export function AddVisitorDialog({ onEntryAdded, userRole }: AddVisitorDialogProps) {
   const [open, setOpen] = useState(false);
   const [entryType, setEntryType] = useState<EntryType | null>(null);
 
@@ -113,7 +117,7 @@ export function AddVisitorDialog({ onEntryAdded }: AddVisitorDialogProps) {
         {!entryType ? (
           <TypeSelectionStep onSelect={handleSelectEntryType} />
         ) : (
-          <AddEntryFlow entryType={entryType} onEntryAdded={onEntryAdded} resetFlow={resetFlow} />
+          <AddEntryFlow entryType={entryType} onEntryAdded={onEntryAdded} resetFlow={resetFlow} userRole={userRole} />
         )}
       </DialogContent>
     </Dialog>
@@ -144,18 +148,18 @@ function TypeSelectionStep({ onSelect }: { onSelect: (type: EntryType) => void }
 }
 
 
-function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: EntryType, onEntryAdded: (entry: Entry) => void, resetFlow: () => void }) {
+function AddEntryFlow({ entryType, onEntryAdded, resetFlow, userRole }: { entryType: EntryType, onEntryAdded: (entry: Entry) => void, resetFlow: () => void, userRole: string | null }) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<VisitorMobileFormData & VisitorDetailsFormData & EmployeeFormData>>({});
   const { toast } = useToast();
   const [locationName, setLocationName] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && userRole === 'receptionist') {
       const storedLocation = localStorage.getItem('receptionistLocation');
       setLocationName(storedLocation);
     }
-  }, []);
+  }, [userRole]);
 
   const totalSteps = entryType === 'Visitor' ? 3 : 2;
   const progress = (step / totalSteps) * 100;
@@ -172,12 +176,17 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: Entry
   const handleFinalSubmit = (selfieData: SelfieData) => {
      const finalData = { ...formData, ...selfieData };
      
-     if (!locationName) {
-        toast({ title: "Error", description: "Could not determine receptionist location.", variant: "destructive" });
+     let entryLocation = locationName;
+     if (userRole === 'process-owner') {
+        entryLocation = (finalData as (VisitorDetailsFormData | EmployeeFormData)).location!;
+     }
+
+     if (!entryLocation) {
+        toast({ title: "Error", description: "Could not determine location for this entry.", variant: "destructive" });
         return;
      }
 
-     const [main, sub] = locationName.split(' - ');
+     const [main, sub] = entryLocation.split(' - ');
      
      let newEntry: Entry;
 
@@ -195,7 +204,7 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: Entry
             selfieUrl: visitorData.selfie,
             checkInTime: new Date(),
             status: 'Checked-in',
-            location: { main, sub },
+            location: { main: main!, sub: sub },
             govtIdType: visitorData.govtIdType as GovtIdType,
             govtIdOther: visitorData.govtIdOther,
             visitorCardNumber: visitorData.visitorCardNumber,
@@ -216,7 +225,7 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: Entry
             selfieUrl: employeeData.selfie,
             checkInTime: new Date(),
             status: 'Checked-in',
-            location: { main, sub },
+            location: { main: main!, sub: sub },
         };
      }
 
@@ -247,7 +256,7 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: Entry
             case 1:
                 return <VisitorMobileStep onNext={handleNextStep} defaultValues={formData as Partial<VisitorMobileFormData>} />;
             case 2:
-                return <VisitorDetailsStep onNext={handleNextStep} onBack={handlePrevStep} defaultValues={formData as Partial<VisitorDetailsFormData>} />;
+                return <VisitorDetailsStep onNext={handleNextStep} onBack={handlePrevStep} defaultValues={formData as Partial<VisitorDetailsFormData>} userRole={userRole} />;
             case 3:
                 return <SelfieStep onNext={handleFinalSubmit} onBack={handlePrevStep} />;
             default:
@@ -256,7 +265,7 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow }: { entryType: Entry
     } else { // Employee
         switch (step) {
             case 1:
-                return <EmployeeDetailsStep onNext={handleNextStep} defaultValues={formData as Partial<EmployeeFormData>} />;
+                return <EmployeeDetailsStep onNext={handleNextStep} defaultValues={formData as Partial<EmployeeFormData>} userRole={userRole} />;
             case 2:
                 return <SelfieStep onNext={handleFinalSubmit} onBack={handlePrevStep} />;
             default:
@@ -395,9 +404,13 @@ function VisitorMobileStep({ onNext, defaultValues }: { onNext: (data: VisitorMo
 }
 
 
-function VisitorDetailsStep({ onNext, onBack, defaultValues }: { onNext: (data: VisitorDetailsFormData) => void; onBack: () => void; defaultValues: Partial<VisitorDetailsFormData> }) {
+function VisitorDetailsStep({ onNext, onBack, defaultValues, userRole }: { onNext: (data: VisitorDetailsFormData) => void; onBack: () => void; defaultValues: Partial<VisitorDetailsFormData>; userRole: string | null; }) {
+  const { locations } = useLocation();
   const form = useForm<VisitorDetailsFormData>({
-    resolver: zodResolver(visitorDetailsSchema),
+    resolver: zodResolver(visitorDetailsSchema.refine(data => !(userRole === 'process-owner' && !data.location), {
+        message: "Please select a location.",
+        path: ["location"],
+    })),
     defaultValues,
   });
 
@@ -408,9 +421,38 @@ function VisitorDetailsStep({ onNext, onBack, defaultValues }: { onNext: (data: 
     onNext(data);
   };
   
+  const isProcessOwner = userRole === 'process-owner';
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[60vh] overflow-y-auto p-1">
+        
+        {isProcessOwner && (
+            <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Location</FormLabel>
+                         <div className="relative">
+                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="pl-10">
+                                        <SelectValue placeholder="Select a location for this entry" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {locations.map((loc) => (<SelectItem key={loc} value={loc}>{loc}</SelectItem>))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        )}
+        
         <FormField
           control={form.control}
           name="name"
@@ -573,15 +615,19 @@ function VisitorDetailsStep({ onNext, onBack, defaultValues }: { onNext: (data: 
 }
 
 
-function EmployeeDetailsStep({ onNext, defaultValues }: { onNext: (data: EmployeeFormData) => void; defaultValues: Partial<EmployeeFormData> }) {
+function EmployeeDetailsStep({ onNext, defaultValues, userRole }: { onNext: (data: EmployeeFormData) => void; defaultValues: Partial<EmployeeFormData>; userRole: string | null; }) {
   const [otpSent, setOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const { toast } = useToast();
+  const { locations } = useLocation();
   
   const form = useForm<EmployeeFormData>({
-    resolver: zodResolver(employeeSchema),
+    resolver: zodResolver(employeeSchema.refine(data => !(userRole === 'process-owner' && !data.location), {
+        message: "Please select a location.",
+        path: ["location"],
+    })),
     defaultValues,
   });
   
@@ -634,9 +680,38 @@ function EmployeeDetailsStep({ onNext, defaultValues }: { onNext: (data: Employe
     }
   };
   
+  const isProcessOwner = userRole === 'process-owner';
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[60vh] overflow-y-auto p-1">
+        
+        {isProcessOwner && (
+            <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Location</FormLabel>
+                         <div className="relative">
+                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="pl-10">
+                                        <SelectValue placeholder="Select a location for this entry" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {locations.map((loc) => (<SelectItem key={loc} value={loc}>{loc}</SelectItem>))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        )}
+        
         <div className="space-y-2">
             <FormLabel>Employee ID</FormLabel>
             <div className="flex items-start gap-2">

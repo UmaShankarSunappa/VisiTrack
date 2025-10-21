@@ -86,10 +86,14 @@ export default function DashboardPage() {
         let entriesToFilter = allEntries;
         
         if (userRole === 'process-owner') {
-            entriesToFilter = entriesToFilter.filter(entry => {
-                const entryLocationString = `${entry.location.main}${entry.location.sub ? ` - ${entry.location.sub}` : ''}`;
-                return selectedLocations.includes(entryLocationString);
-            });
+             if (selectedLocations.length > 0) {
+                entriesToFilter = entriesToFilter.filter(entry => {
+                    const entryLocationString = `${entry.location.main}${entry.location.sub ? ` - ${entry.location.sub}` : ''}`;
+                    return selectedLocations.includes(entryLocationString);
+                });
+            } else {
+                entriesToFilter = []; // No locations selected, show no data
+            }
         } else if (locationName) {
             entriesToFilter = entriesToFilter.filter(entry => {
                 if (!entry.location) return false;
@@ -204,7 +208,7 @@ export default function DashboardPage() {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                <AddVisitorDialog onEntryAdded={onEntryAdded} />
+                <AddVisitorDialog onEntryAdded={onEntryAdded} userRole={userRole} />
             </div>
             <StatsCards entries={filteredEntries} />
             <VisitorTable entries={filteredEntries} onEntryUpdated={handleEntryUpdated}/>

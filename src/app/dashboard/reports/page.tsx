@@ -99,7 +99,7 @@ export default function ReportsPage() {
     const [date, setDate] = useState<DateRange | undefined>({ from: new Date(), to: new Date() });
     const [userRole, setUserRole] = useState<string | null>(null);
     const [receptionistLocation, setReceptionistLocation] = useState<string | null>(null);
-    const { selectedLocations } = useLocation();
+    const { selectedLocations, setSelectedLocations } = useLocation();
     
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -124,13 +124,15 @@ export default function ReportsPage() {
                  const entryLocationString = `${entry.location.main}${entry.location.sub ? ` - ${entry.location.sub}` : ''}`;
                  return entryLocationString === receptionistLocation;
             });
-        } else if (userRole === 'process-owner' && selectedLocations.length > 0) {
-            entriesToFilter = entriesToFilter.filter(entry => {
-                const entryLocationString = `${entry.location.main}${entry.location.sub ? ` - ${entry.location.sub}` : ''}`;
-                return selectedLocations.includes(entryLocationString);
-            });
-        } else if (userRole === 'process-owner' && selectedLocations.length === 0) {
-            entriesToFilter = []; // If owner has cleared all selections, show no data.
+        } else if (userRole === 'process-owner') {
+             if (selectedLocations.length > 0) {
+                entriesToFilter = entriesToFilter.filter(entry => {
+                    const entryLocationString = `${entry.location.main}${entry.location.sub ? ` - ${entry.location.sub}` : ''}`;
+                    return selectedLocations.includes(entryLocationString);
+                });
+            } else {
+                entriesToFilter = []; // No locations selected, show no data
+            }
         }
 
         // Filter by date
@@ -143,7 +145,7 @@ export default function ReportsPage() {
     }, [date, allEntries, userRole, receptionistLocation, selectedLocations]);
 
     const departmentVisitData = useMemo(() => {
-        const counts = departments.reduce((acc, dep) => ({ ...acc, [dep]: { name: dep, total: 0 } }), {});
+        const counts = departments.reduce((acc, dep) => ({ ...acc, [dep]: { name: dep, total: 0 } }), {} as Record<Department, {name: Department, total: number}>);
         filteredEntries.forEach(entry => {
             if (counts[entry.hostDepartment]) {
                 counts[entry.hostDepartment].total += 1;
@@ -159,6 +161,7 @@ export default function ReportsPage() {
     const trafficRatioData = useMemo(() => {
         const visitors = filteredEntries.filter(e => e.type === 'Visitor').length;
         const employees = filteredEntries.filter(e => e.type === 'Employee').length;
+        if (visitors === 0 && employees === 0) return [];
         return [{ name: 'Visitors', value: visitors }, { name: 'Employees', value: employees }];
     }, [filteredEntries]);
     
@@ -258,6 +261,7 @@ export default function ReportsPage() {
                         <CardDescription>Composition of office traffic.</CardDescription>
                     </CardHeader>
                     <CardContent>
+                       {trafficRatioData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie data={trafficRatioData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
@@ -267,6 +271,9 @@ export default function ReportsPage() {
                                 <Legend />
                             </PieChart>
                         </ResponsiveContainer>
+                        ) : (
+                          <div className="flex items-center justify-center h-[300px] text-muted-foreground">No data to display</div>
+                        )}
                     </CardContent>
                 </Card>
                  <Card className="lg:col-span-2">
@@ -344,3 +351,4 @@ export default function ReportsPage() {
             </div>
         </div>
     );
+}

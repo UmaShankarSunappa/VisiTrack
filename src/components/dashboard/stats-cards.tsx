@@ -23,7 +23,7 @@ export function StatsCards({ entries }: StatsCardsProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card className="rounded-lg shadow-sm transition-transform duration-200 ease-in-out hover:scale-[1.02] hover:shadow-md">
+      <Card className="rounded-xl shadow-md transition-transform duration-300 ease-in-out hover:shadow-lg hover:scale-[1.03]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Active Visitors
@@ -34,7 +34,7 @@ export function StatsCards({ entries }: StatsCardsProps) {
           <div className="text-2xl font-bold">{activeVisitors}</div>
         </CardContent>
       </Card>
-      <Card className="rounded-lg shadow-sm transition-transform duration-200 ease-in-out hover:scale-[1.02] hover:shadow-md">
+      <Card className="rounded-xl shadow-md transition-transform duration-300 ease-in-out hover:shadow-lg hover:scale-[1.03]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Active Employees
@@ -45,7 +45,7 @@ export function StatsCards({ entries }: StatsCardsProps) {
           <div className="text-2xl font-bold">{activeEmployees}</div>
         </CardContent>
       </Card>
-      <Card className="rounded-lg shadow-sm transition-transform duration-200 ease-in-out hover:scale-[1.02] hover:shadow-md">
+      <Card className="rounded-xl shadow-md transition-transform duration-300 ease-in-out hover:shadow-lg hover:scale-[1.03]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Total Check-ins Today
@@ -56,7 +56,7 @@ export function StatsCards({ entries }: StatsCardsProps) {
           <div className="text-2xl font-bold">{totalCheckins}</div>
         </CardContent>
       </Card>
-      <Card className="rounded-lg shadow-sm transition-transform duration-200 ease-in-out hover:scale-[1.02] hover:shadow-md">
+      <Card className="rounded-xl shadow-md transition-transform duration-300 ease-in-out hover:shadow-lg hover:scale-[1.03]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Total Check-outs</CardTitle>
           <LogOut className="h-4 w-4 text-muted-foreground" />

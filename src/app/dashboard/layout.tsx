@@ -186,8 +186,8 @@ export default function DashboardLayout({
       <div className={cn("min-h-screen w-full lg:grid", isSidebarCollapsed ? "lg:grid-cols-[60px_1fr]" : "lg:grid-cols-[256px_1fr]")}>
         <div className={cn("hidden border-r bg-card lg:block transition-all duration-300", isSidebarCollapsed && "w-[60px]")}>
           <div className="flex h-full max-h-screen flex-col gap-2">
-            <div className="flex h-14 items-center border-b px-6">
-              <Link href="#" className="flex items-center gap-2 font-semibold">
+            <div className={cn("flex h-14 items-center border-b", isSidebarCollapsed ? "px-2" : "px-6")}>
+              <Link href="#" className="flex items-center gap-2 font-semibold w-full">
                 <Logo collapsed={isSidebarCollapsed} />
               </Link>
             </div>
@@ -312,5 +312,3 @@ export default function DashboardLayout({
     </LocationProvider>
   );
 }
-
-    

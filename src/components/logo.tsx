@@ -6,9 +6,7 @@ export function Logo({ collapsed, ...props }: SVGProps<SVGSVGElement> & { collap
 
     if (collapsed) {
         return (
-            <div className="flex items-center justify-center w-full h-full">
-                <MapPin className="w-6 h-6 text-primary" />
-            </div>
+            <MapPin className="w-6 h-6 text-primary" />
         )
     }
 

@@ -152,7 +152,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [allEntries, setAllEntries] = React.useState<Entry[]>([]);
 
   useEffect(() => {
@@ -220,7 +220,7 @@ export default function DashboardLayout({
       <div className={cn("min-h-screen w-full lg:grid", isSidebarCollapsed ? "lg:grid-cols-[60px_1fr]" : "lg:grid-cols-[256px_1fr]")}>
         <div className={cn("hidden border-r bg-card lg:block transition-all duration-300", isSidebarCollapsed && "w-[60px]")}>
           <div className="flex h-full max-h-screen flex-col gap-2">
-            <div className={cn("flex h-14 items-center border-b", isSidebarCollapsed ? "px-2" : "px-6")}>
+            <div className={cn("flex h-14 items-center border-b", isSidebarCollapsed ? "px-2 justify-center" : "px-6")}>
               <Link href="#" className="flex items-center gap-2 font-semibold w-full">
                 <Logo collapsed={isSidebarCollapsed} />
               </Link>
@@ -250,7 +250,7 @@ export default function DashboardLayout({
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="flex flex-col p-0 sm:max-w-xs">
-                  <div className="p-4 border-b">
+                  <div className="p-4 border-b flex justify-center">
                     <Link href="#" className="flex items-center gap-2 font-semibold">
                       <Logo collapsed={true} />
                     </Link>

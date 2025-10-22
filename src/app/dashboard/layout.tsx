@@ -221,7 +221,7 @@ export default function DashboardLayout({
         <div className={cn("hidden border-r bg-card lg:block transition-all duration-300", isSidebarCollapsed && "w-[60px]")}>
           <div className="flex h-full max-h-screen flex-col gap-2">
             <div className={cn("flex h-14 items-center border-b", isSidebarCollapsed ? "px-2 justify-center" : "px-6")}>
-              <Link href="#" className="flex items-center gap-2 font-semibold w-full">
+              <Link href="#" className={cn("flex items-center gap-2 font-semibold", !isSidebarCollapsed && "w-full")}>
                 <Logo collapsed={isSidebarCollapsed} />
               </Link>
             </div>

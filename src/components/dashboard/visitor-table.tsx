@@ -308,14 +308,8 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
 
 function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdit, isAdmin }: { entries: Entry[], handleCheckout: (entry: Entry) => void, handleViewDetails: (entry: Entry) => void, handleEdit: (entry: Entry) => void, isAdmin: boolean }) {
     return (
-        <Card className="animate-fade-in-up h-full flex flex-col">
-          <CardHeader>
-            <CardTitle>Entries</CardTitle>
-            <CardDescription>
-              A list of all visitors and employees for the selected date and filters.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-hidden flex flex-col">
+        <Card className="animate-fade-in-up h-full flex flex-col mt-4">
+          <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
             <div className="relative flex-grow overflow-y-auto">
                 <Table>
                 <TableHeader className="sticky top-0 bg-card z-10">
@@ -421,3 +415,5 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
         </Card>
     )
 }
+
+    

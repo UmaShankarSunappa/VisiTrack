@@ -273,7 +273,7 @@ export default function DashboardLayout({
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{userRole === 'process-owner' ? 'Process Owner' : 'Reception'}</p>
+                      <p className="text-sm font-medium leading-none">{userRole === 'process-owner' ? 'Location Master Configurer (Admin)' : 'Reception'}</p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {userRole === 'process-owner' ? 'owner@example.com' : 'reception@example.com'}
                       </p>

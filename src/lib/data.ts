@@ -71,7 +71,7 @@ export const defaultUsers: User[] = [
   {
     id: 'process-owner',
     role: 'process-owner',
-    locationName: 'Process Owner',
+    locationName: 'Location Master Configurer (Admin)',
     email: 'owner@example.com',
     password: 'password123',
     locationId: 'process-owner'

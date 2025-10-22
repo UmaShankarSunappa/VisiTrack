@@ -76,7 +76,7 @@ function CreateUserModal({ onUserCreated }: { onUserCreated: (newUser: User) => 
         role: 'process-owner',
         email,
         password,
-        locationName: 'Process Owner'
+        locationName: 'Location Master Configurer (Admin)'
       };
     } else {
       const mainLoc = locations.find(l => l.subLocations.some(sub => `${l.id}-${sub.id}` === locationId) || l.id === locationId);
@@ -147,7 +147,7 @@ function CreateUserModal({ onUserCreated }: { onUserCreated: (newUser: User) => 
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="process-owner">Process Owner</SelectItem>
+                  <SelectItem value="process-owner">Location Master Configurer (Admin)</SelectItem>
                   <SelectItem value="receptionist">Receptionist</SelectItem>
                 </SelectContent>
               </Select>
@@ -342,7 +342,7 @@ export default function UserManagementPage() {
                     <TableRow key={user.id}>
                         <TableCell>
                             <Badge variant={user.role === 'process-owner' ? 'default' : 'secondary'}>
-                                {user.role === 'process-owner' ? 'Process Owner' : 'Receptionist'}
+                                {user.role === 'process-owner' ? 'Location Master Configurer (Admin)' : 'Receptionist'}
                             </Badge>
                         </TableCell>
                         <TableCell>{user.locationName}</TableCell>

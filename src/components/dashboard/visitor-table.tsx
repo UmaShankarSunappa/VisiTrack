@@ -316,7 +316,7 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden flex flex-col">
-            <div className="flex-grow overflow-y-auto">
+            <div className="relative flex-grow overflow-y-auto">
                 <Table>
                 <TableHeader className="sticky top-0 bg-card z-10">
                     <TableRow>
@@ -421,5 +421,3 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
         </Card>
     )
 }
-
-    

@@ -195,7 +195,7 @@ export default function DashboardLayout({
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Link href={href} className={linkClasses}>
-                            <Icon className="h-4 w-4" />
+                            <Icon className="h-5 w-5" />
                             <span className="sr-only">{label}</span>
                         </Link>
                     </TooltipTrigger>
@@ -226,7 +226,7 @@ export default function DashboardLayout({
               </Link>
             </div>
             <div className="flex-1 overflow-auto py-2">
-              <nav className="grid items-start px-4 text-sm font-medium">
+              <nav className={cn("grid items-start text-sm font-medium", isSidebarCollapsed ? "px-2" : "px-4")}>
                  <NavLink href="/dashboard" icon={Home} label="Dashboard" isCollapsed={isSidebarCollapsed} />
                  <NavLink href="/dashboard/reports" icon={AreaChart} label="Reports" isCollapsed={isSidebarCollapsed} />
                 {isProcessOwner && (

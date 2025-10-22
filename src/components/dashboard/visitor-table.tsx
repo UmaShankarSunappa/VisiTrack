@@ -317,7 +317,7 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
           </CardHeader>
           <CardContent className="flex-1 overflow-auto">
             <Table>
-              <TableHeader>
+              <TableHeader className="sticky top-0 bg-card z-10">
                 <TableRow>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Type</TableHead>
                   <TableHead className="py-2 px-4 whitespace-nowrap">Name</TableHead>

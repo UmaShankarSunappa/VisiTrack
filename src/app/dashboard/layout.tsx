@@ -233,7 +233,7 @@ export default function DashboardLayout({
               <SheetContent side="left" className="flex flex-col p-0 sm:max-w-xs">
                   <div className="p-4 border-b">
                     <Link href="#" className="flex items-center gap-2 font-semibold">
-                      <Logo />
+                      <Logo collapsed={true} />
                     </Link>
                   </div>
                     <nav className="grid gap-2 text-lg font-medium p-4">

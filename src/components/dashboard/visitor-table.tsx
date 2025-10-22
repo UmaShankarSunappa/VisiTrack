@@ -203,7 +203,7 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
 
   return (
     <>
-    <Tabs defaultValue="all" onValueChange={setActiveTab}>
+    <Tabs defaultValue="all" onValueChange={setActiveTab} className="flex flex-col h-full">
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
@@ -252,13 +252,13 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
           </Button>
         </div>
       </div>
-      <TabsContent value="all">
+      <TabsContent value="all" className="flex-1 min-h-0">
         <VisitorListCard entries={entryList} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isProcessOwner}/>
       </TabsContent>
-      <TabsContent value="checked-in">
+      <TabsContent value="checked-in" className="flex-1 min-h-0">
         <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-in')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isProcessOwner}/>
       </TabsContent>
-       <TabsContent value="checked-out">
+       <TabsContent value="checked-out" className="flex-1 min-h-0">
         <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-out')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isProcessOwner}/>
       </TabsContent>
     </Tabs>
@@ -308,14 +308,14 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
 
 function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdit, isAdmin }: { entries: Entry[], handleCheckout: (entry: Entry) => void, handleViewDetails: (entry: Entry) => void, handleEdit: (entry: Entry) => void, isAdmin: boolean }) {
     return (
-        <Card className="animate-fade-in-up">
+        <Card className="animate-fade-in-up h-full flex flex-col">
           <CardHeader>
             <CardTitle>Entries</CardTitle>
             <CardDescription>
               A list of all visitors and employees for the selected date and filters.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -329,7 +329,7 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
                   <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">Card No.</TableHead>
                   <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Check-in</TableHead>
                   <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">Check-out</TableHead>
-                  <TableHead className="py-2 px-4 whitespace-nowrap text-center">Actions</TableHead>
+                  <TableHead className="py-2 px-4 whitespace-nowrap text-center sticky right-0 bg-card">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -390,7 +390,7 @@ function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdi
                     </TableCell>
                     <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{format(new Date(entry.checkInTime), "PPp")}</TableCell>
                     <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">{entry.checkOutTime ? format(new Date(entry.checkOutTime), "PPp") : 'N/A'}</TableCell>
-                    <TableCell className="py-2 px-4 whitespace-nowrap text-center">
+                    <TableCell className="py-2 px-4 whitespace-nowrap text-center sticky right-0 bg-card/95">
                         <TooltipProvider>
                             <div className="flex items-center justify-center gap-2">
                                 <Tooltip>

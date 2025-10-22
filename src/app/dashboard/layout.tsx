@@ -211,7 +211,7 @@ export default function DashboardLayout({
             </div>
           </div>
         </div>
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col h-screen overflow-hidden">
           <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6 shrink-0">
             <Sheet>
               <SheetTrigger asChild>
@@ -299,5 +299,3 @@ export default function DashboardLayout({
     </LocationProvider>
   );
 }
-
-    

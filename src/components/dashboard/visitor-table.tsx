@@ -74,7 +74,7 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
     const [selectedEntry, setSelectedEntry] = React.useState<Entry | null>(null);
     const [editingEntry, setEditingEntry] = React.useState<Entry | null>(null);
     const [checkoutEntry, setCheckoutEntry] = React.useState<Entry | null>(null);
-    const [activeTab, setActiveTab] = React.useState("all");
+    const [activeTab, setActiveTab] = React.useState("checked-in");
     const [selectedDepartments, setSelectedDepartments] = React.useState<Department[]>([]);
     const [searchQuery, setSearchQuery] = React.useState("");
     const [userRole, setUserRole] = React.useState<string | null>(null);
@@ -205,7 +205,7 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
 
   return (
     <>
-    <Tabs defaultValue="all" onValueChange={setActiveTab} className="flex flex-col h-full">
+    <Tabs defaultValue="checked-in" onValueChange={setActiveTab} className="flex flex-col h-full">
       <div className="flex items-center">
         <TabsList className="hidden sm:inline-flex">
           <TabsTrigger value="all">All</TabsTrigger>

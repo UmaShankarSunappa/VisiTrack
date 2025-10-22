@@ -181,6 +181,40 @@ export default function DashboardLayout({
   
   const isProcessOwner = userRole === 'process-owner';
 
+  const NavLink = ({ href, icon: Icon, label, isCollapsed }: { href: string; icon: React.ElementType; label: string; isCollapsed: boolean; }) => {
+    const isActive = pathname === href;
+    const linkClasses = cn(
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+        isActive && "bg-muted text-primary",
+        isCollapsed && "justify-center"
+    );
+
+    if (isCollapsed) {
+        return (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Link href={href} className={linkClasses}>
+                            <Icon className="h-4 w-4" />
+                            <span className="sr-only">{label}</span>
+                        </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                        <p>{label}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
+
+    return (
+        <Link href={href} className={linkClasses}>
+            <Icon className="h-4 w-4" />
+            {label}
+        </Link>
+    );
+};
+
   return (
     <LocationProvider>
       <div className={cn("min-h-screen w-full lg:grid", isSidebarCollapsed ? "lg:grid-cols-[60px_1fr]" : "lg:grid-cols-[256px_1fr]")}>
@@ -193,28 +227,13 @@ export default function DashboardLayout({
             </div>
             <div className="flex-1 overflow-auto py-2">
               <nav className="grid items-start px-4 text-sm font-medium">
-                 <Link href="/dashboard" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
-                      <Home className="h-4 w-4" />
-                      {!isSidebarCollapsed && "Dashboard"}
-                  </Link>
-                 <Link href="/dashboard/reports" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/reports' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
-                    <AreaChart className="h-4 w-4" />
-                    {!isSidebarCollapsed && "Reports"}
-                  </Link>
+                 <NavLink href="/dashboard" icon={Home} label="Dashboard" isCollapsed={isSidebarCollapsed} />
+                 <NavLink href="/dashboard/reports" icon={AreaChart} label="Reports" isCollapsed={isSidebarCollapsed} />
                 {isProcessOwner && (
                   <>
-                    <Link href="/dashboard/location-master" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-master' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
-                        <Building2 className="h-4 w-4" />
-                        {!isSidebarCollapsed && "Location Master"}
-                    </Link>
-                    <Link href="/dashboard/location-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/location-management' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
-                        <Settings className="h-4 w-4" />
-                        {!isSidebarCollapsed && "Location Management"}
-                    </Link>
-                    <Link href="/dashboard/user-management" className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === '/dashboard/user-management' ? 'bg-muted text-primary' : ''} ${isSidebarCollapsed && "justify-center"}`}>
-                        <UserCog className="h-4 w-4" />
-                        {!isSidebarCollapsed && "User Management"}
-                    </Link>
+                    <NavLink href="/dashboard/location-master" icon={Building2} label="Location Master" isCollapsed={isSidebarCollapsed} />
+                    <NavLink href="/dashboard/location-management" icon={Settings} label="Location Management" isCollapsed={isSidebarCollapsed} />
+                    <NavLink href="/dashboard/user-management" icon={UserCog} label="User Management" isCollapsed={isSidebarCollapsed} />
                   </>
                 )}
               </nav>

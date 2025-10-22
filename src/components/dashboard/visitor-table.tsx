@@ -12,6 +12,7 @@ import {
   Search,
   TriangleAlert,
   MapPin,
+  ChevronDown
 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
 import { utils, writeFile } from "xlsx";
@@ -21,7 +22,6 @@ import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -66,6 +66,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { departments } from "@/lib/data"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
 export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], onEntryUpdated: (entry: Entry) => void }) {
     const { toast } = useToast()
@@ -88,6 +89,12 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
     React.useEffect(() => {
         let filtered = entries;
 
+        if (activeTab === "checked-in") {
+            filtered = filtered.filter(v => v.status === "Checked-in");
+        } else if (activeTab === "checked-out") {
+            filtered = filtered.filter(v => v.status === "Checked-out");
+        }
+
         if (selectedDepartments.length > 0) {
             filtered = filtered.filter(v => selectedDepartments.includes(v.hostDepartment));
         }
@@ -97,7 +104,7 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
         }
         
         setEntryList(filtered.sort((a, b) => new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()));
-    }, [entries, selectedDepartments, searchQuery]);
+    }, [entries, selectedDepartments, searchQuery, activeTab]);
 
 
     const handleCheckout = (entryId: string, cardReturned: boolean = true) => {
@@ -148,11 +155,6 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
 
     const handleExport = () => {
         let dataToExport = entryList;
-        if (activeTab === "checked-in") {
-            dataToExport = entryList.filter(v => v.status === "Checked-in");
-        } else if (activeTab === "checked-out") {
-            dataToExport = entryList.filter(v => v.status === "Checked-out");
-        }
         
         const formattedData = dataToExport.map(v => {
             if (v.type === 'Visitor') {
@@ -205,13 +207,29 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
     <>
     <Tabs defaultValue="all" onValueChange={setActiveTab} className="flex flex-col h-full">
       <div className="flex items-center">
-        <TabsList>
+        <TabsList className="hidden sm:inline-flex">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="checked-in">Checked-in</TabsTrigger>
           <TabsTrigger value="checked-out">Checked-out</TabsTrigger>
         </TabsList>
+        <div className="sm:hidden">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 gap-1">
+                        <span>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</span>
+                        <ChevronDown className="h-4 w-4"/>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuCheckboxItem checked={activeTab === 'all'} onSelect={() => setActiveTab('all')}>All</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={activeTab === 'checked-in'} onSelect={() => setActiveTab('checked-in')}>Checked-in</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={activeTab === 'checked-out'} onSelect={() => setActiveTab('checked-out')}>Checked-out</DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+
         <div className="ml-auto flex items-center gap-2">
-            <div className="relative">
+            <div className="relative hidden sm:block">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                     type="search"
@@ -252,15 +270,9 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
           </Button>
         </div>
       </div>
-      <TabsContent value="all" className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 mt-4">
         <VisitorListCard entries={entryList} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isProcessOwner}/>
-      </TabsContent>
-      <TabsContent value="checked-in" className="flex-1 min-h-0">
-        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-in')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isProcessOwner}/>
-      </TabsContent>
-       <TabsContent value="checked-out" className="flex-1 min-h-0">
-        <VisitorListCard entries={entryList.filter(v => v.status === 'Checked-out')} handleCheckout={setCheckoutEntry} handleViewDetails={handleViewDetails} handleEdit={handleEdit} isAdmin={isProcessOwner}/>
-      </TabsContent>
+      </div>
     </Tabs>
      {selectedEntry && (
         <VisitorDetailsDialog 
@@ -308,112 +320,157 @@ export function VisitorTable({ entries, onEntryUpdated }: { entries: Entry[], on
 
 function VisitorListCard({ entries, handleCheckout, handleViewDetails, handleEdit, isAdmin }: { entries: Entry[], handleCheckout: (entry: Entry) => void, handleViewDetails: (entry: Entry) => void, handleEdit: (entry: Entry) => void, isAdmin: boolean }) {
     return (
-        <Card className="animate-fade-in-up h-full flex flex-col mt-4">
-          <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
-            <div className="relative flex-grow overflow-y-auto">
-                <Table>
-                <TableHeader className="sticky top-0 bg-card z-10">
-                    <TableRow>
-                    <TableHead className="py-2 px-4 whitespace-nowrap">Type</TableHead>
-                    <TableHead className="py-2 px-4 whitespace-nowrap">Name</TableHead>
-                    <TableHead className="hidden sm:table-cell py-2 px-4 whitespace-nowrap">Mobile / Emp ID</TableHead>
-                    {isAdmin && <TableHead className="hidden xl:table-cell py-2 px-4 whitespace-nowrap">Location</TableHead>}
-                    <TableHead className="py-2 px-4 whitespace-nowrap">Status</TableHead>
-                    <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Person to Meet</TableHead>
-                    <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Department</TableHead>
-                    <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">Card No.</TableHead>
-                    <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Check-in</TableHead>
-                    <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">Check-out</TableHead>
-                    <TableHead className="py-2 px-4 whitespace-nowrap text-center sticky right-0 bg-card">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    <AnimatePresence>
-                    {entries.map(entry => (
-                    <motion.tr
-                        key={entry.id}
-                        layout
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className={cn("hover:bg-muted/50", entry.type === 'Employee' && 'bg-green-50/50')}
-                    >
-                        <TableCell className="py-2 px-4 whitespace-nowrap">
-                            <Badge
-                            variant="outline"
-                            className={cn(
-                                'rounded-full px-3 py-1 text-xs font-medium',
-                                entry.type === 'Visitor' && 'border-gray-300 bg-background text-gray-700',
-                                entry.type === 'Employee' && 'border-transparent bg-green-100 text-green-800'
-                            )}
-                            >
-                            {entry.type}
-                            </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium py-2 px-4 whitespace-nowrap">{entry.name}</TableCell>
-                        <TableCell className="hidden sm:table-cell py-2 px-4 text-muted-foreground whitespace-nowrap">
-                            {entry.type === 'Visitor' ? entry.mobile : entry.employeeId}
-                        </TableCell>
-                        {isAdmin && <TableCell className="hidden xl:table-cell py-2 px-4 text-muted-foreground whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                            <MapPin className="h-3 w-3" />
-                            <span>{entry.location.main}{entry.location.sub ? ` - ${entry.location.sub}` : ''}</span>
-                        </div>
-                            </TableCell>}
-                        <TableCell className="py-2 px-4 whitespace-nowrap">
-                        <Badge variant={entry.status === 'Checked-in' ? 'default' : 'outline'}>{entry.status}</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{entry.hostName}</TableCell>
-                        <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{entry.hostDepartment}</TableCell>
-                        <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
-                        {entry.type === 'Visitor' ? (
-                            <div className="flex items-center gap-1">
-                            <span>{entry.visitorCardNumber}</span>
-                            {entry.status === 'Checked-out' && !entry.visitorCardReturned && (
-                                <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                    <TriangleAlert className="h-4 w-4 text-destructive" />
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>Card not returned</p></TooltipContent>
-                                </Tooltip>
-                                </TooltipProvider>
-                            )}
+        <div className="h-full flex flex-col">
+            {/* Desktop Table */}
+            <div className="hidden sm:block h-full flex-col">
+                <div className="flex-grow overflow-y-auto">
+                    <Table>
+                    <TableHeader className="sticky top-0 bg-card z-10">
+                        <TableRow>
+                        <TableHead className="py-2 px-4 whitespace-nowrap">Type</TableHead>
+                        <TableHead className="py-2 px-4 whitespace-nowrap">Name</TableHead>
+                        <TableHead className="hidden sm:table-cell py-2 px-4 whitespace-nowrap">Mobile / Emp ID</TableHead>
+                        {isAdmin && <TableHead className="hidden xl:table-cell py-2 px-4 whitespace-nowrap">Location</TableHead>}
+                        <TableHead className="py-2 px-4 whitespace-nowrap">Status</TableHead>
+                        <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Person to Meet</TableHead>
+                        <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Department</TableHead>
+                        <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">Card No.</TableHead>
+                        <TableHead className="hidden md:table-cell py-2 px-4 whitespace-nowrap">Check-in</TableHead>
+                        <TableHead className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">Check-out</TableHead>
+                        <TableHead className="py-2 px-4 whitespace-nowrap text-center sticky right-0 bg-card">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <AnimatePresence>
+                        {entries.map(entry => (
+                        <motion.tr
+                            key={entry.id}
+                            layout
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            className={cn("hover:bg-muted/50", entry.type === 'Employee' && 'bg-green-50/50')}
+                        >
+                            <TableCell className="py-2 px-4 whitespace-nowrap">
+                                <Badge
+                                variant="outline"
+                                className={cn(
+                                    'rounded-full px-3 py-1 text-xs font-medium',
+                                    entry.type === 'Visitor' && 'border-gray-300 bg-background text-gray-700',
+                                    entry.type === 'Employee' && 'border-transparent bg-green-100 text-green-800'
+                                )}
+                                >
+                                {entry.type}
+                                </Badge>
+                            </TableCell>
+                            <TableCell className="font-medium py-2 px-4 whitespace-nowrap">{entry.name}</TableCell>
+                            <TableCell className="hidden sm:table-cell py-2 px-4 text-muted-foreground whitespace-nowrap">
+                                {entry.type === 'Visitor' ? entry.mobile : entry.employeeId}
+                            </TableCell>
+                            {isAdmin && <TableCell className="hidden xl:table-cell py-2 px-4 text-muted-foreground whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                                <MapPin className="h-3 w-3" />
+                                <span>{entry.location.main}{entry.location.sub ? ` - ${entry.location.sub}` : ''}</span>
                             </div>
-                        ) : 'N/A'}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{format(new Date(entry.checkInTime), "PPp")}</TableCell>
-                        <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">{entry.checkOutTime ? format(new Date(entry.checkOutTime), "PPp") : 'N/A'}</TableCell>
-                        <TableCell className="py-2 px-4 whitespace-nowrap text-center sticky right-0 bg-card/95">
-                            <TooltipProvider>
-                                <div className="flex items-center justify-center gap-2">
+                                </TableCell>}
+                            <TableCell className="py-2 px-4 whitespace-nowrap">
+                            <Badge variant={entry.status === 'Checked-in' ? 'default' : 'outline'}>{entry.status}</Badge>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{entry.hostName}</TableCell>
+                            <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{entry.hostDepartment}</TableCell>
+                            <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">
+                            {entry.type === 'Visitor' ? (
+                                <div className="flex items-center gap-1">
+                                <span>{entry.visitorCardNumber}</span>
+                                {entry.status === 'Checked-out' && !entry.visitorCardReturned && (
+                                    <TooltipProvider>
                                     <Tooltip>
-                                        <TooltipTrigger asChild><Button aria-label="View Details" size="icon" variant="outline" onClick={() => handleViewDetails(entry)} className="h-8 w-8"><Eye className="h-4 w-4" /></Button></TooltipTrigger>
-                                        <TooltipContent><p>View Details</p></TooltipContent>
+                                        <TooltipTrigger>
+                                        <TriangleAlert className="h-4 w-4 text-destructive" />
+                                        </TooltipTrigger>
+                                        <TooltipContent><p>Card not returned</p></TooltipContent>
                                     </Tooltip>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild><Button aria-label="Edit" size="icon" variant="outline" onClick={() => handleEdit(entry)} className="h-8 w-8"><Pencil className="h-4 w-4" /></Button></TooltipTrigger>
-                                        <TooltipContent><p>Edit</p></TooltipContent>
-                                    </Tooltip>
-                                    {entry.status === 'Checked-in' ? (
-                                    <Tooltip>
-                                        <TooltipTrigger asChild><Button aria-label="Check-out" size="icon" variant="destructive" className="h-8 w-8" onClick={() => handleCheckout(entry)}><LogOut className="h-4 w-4" /></Button></TooltipTrigger>
-                                        <TooltipContent><p>Check-out</p></TooltipContent>
-                                    </Tooltip>
-                                    ) : ( <div className="w-8" /> )}
+                                    </TooltipProvider>
+                                )}
                                 </div>
-                            </TooltipProvider>
-                        </TableCell>
-                    </motion.tr>
-                    ))}
-                    </AnimatePresence>
-                </TableBody>
-                </Table>
+                            ) : 'N/A'}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell py-2 px-4 whitespace-nowrap">{format(new Date(entry.checkInTime), "PPp")}</TableCell>
+                            <TableCell className="hidden lg:table-cell py-2 px-4 whitespace-nowrap">{entry.checkOutTime ? format(new Date(entry.checkOutTime), "PPp") : 'N/A'}</TableCell>
+                            <TableCell className="py-2 px-4 whitespace-nowrap text-center sticky right-0 bg-card/95">
+                                <TooltipProvider>
+                                    <div className="flex items-center justify-center gap-2">
+                                        <Tooltip>
+                                            <TooltipTrigger asChild><Button aria-label="View Details" size="icon" variant="outline" onClick={() => handleViewDetails(entry)} className="h-8 w-8"><Eye className="h-4 w-4" /></Button></TooltipTrigger>
+                                            <TooltipContent><p>View Details</p></TooltipContent>
+                                        </Tooltip>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild><Button aria-label="Edit" size="icon" variant="outline" onClick={() => handleEdit(entry)} className="h-8 w-8"><Pencil className="h-4 w-4" /></Button></TooltipTrigger>
+                                            <TooltipContent><p>Edit</p></TooltipContent>
+                                        </Tooltip>
+                                        {entry.status === 'Checked-in' ? (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild><Button aria-label="Check-out" size="icon" variant="destructive" className="h-8 w-8" onClick={() => handleCheckout(entry)}><LogOut className="h-4 w-4" /></Button></TooltipTrigger>
+                                            <TooltipContent><p>Check-out</p></TooltipContent>
+                                        </Tooltip>
+                                        ) : ( <div className="w-8" /> )}
+                                    </div>
+                                </TooltipProvider>
+                            </TableCell>
+                        </motion.tr>
+                        ))}
+                        </AnimatePresence>
+                    </TableBody>
+                    </Table>
+                </div>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Mobile Card List */}
+             <div className="sm:hidden space-y-3 overflow-y-auto">
+                {entries.map(entry => (
+                <Collapsible key={entry.id} asChild>
+                    <Card className="animate-fade-in-up">
+                    <CardContent className="p-4 space-y-3">
+                        <div className="flex justify-between items-start">
+                        <div>
+                            <p className="font-semibold">{entry.name}</p>
+                            <p className="text-sm text-muted-foreground">{entry.type === 'Visitor' ? entry.mobile : entry.employeeId}</p>
+                        </div>
+                        <Badge variant={entry.status === 'Checked-in' ? 'default' : 'outline'}>{entry.status}</Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                        <p>Checked in: {format(new Date(entry.checkInTime), "MMM d, h:mm a")}</p>
+                        </div>
+
+                        <CollapsibleContent className="space-y-2 text-sm pt-2">
+                            <div className="grid grid-cols-2 gap-2">
+                                <p><strong className="font-medium">To Meet:</strong><br/> {entry.hostName}</p>
+                                <p><strong className="font-medium">Department:</strong><br/> {entry.hostDepartment}</p>
+                                {entry.type === 'Visitor' && <p><strong className="font-medium">Card No:</strong><br/> {entry.visitorCardNumber}</p>}
+                                <p><strong className="font-medium">Location:</strong><br/> {entry.location.main}</p>
+                            </div>
+                        </CollapsibleContent>
+
+                        <div className="flex items-center justify-between pt-2 border-t">
+                            <CollapsibleTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-primary hover:text-primary">
+                                    Details <ChevronDown className="h-4 w-4 ml-1 transition-transform [&[data-state=open]]:rotate-180" />
+                                </Button>
+                            </CollapsibleTrigger>
+                            <div className="flex gap-2">
+                                <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handleViewDetails(entry)}><Eye className="h-4 w-4" /></Button>
+                                <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handleEdit(entry)}><Pencil className="h-4 w-4" /></Button>
+                                {entry.status === 'Checked-in' && (
+                                    <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => handleCheckout(entry)}><LogOut className="h-4 w-4" /></Button>
+                                )}
+                            </div>
+                        </div>
+                    </CardContent>
+                    </Card>
+                </Collapsible>
+                ))}
+            </div>
+        </div>
     )
 }
-
-    

@@ -9,12 +9,12 @@ import {
   PanelLeft,
   MapPin,
   ChevronDown,
-  List,
   UserCog,
   Building2,
   Settings,
   X,
   AreaChart,
+  UserPlus
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,8 @@ import { Logo } from "@/components/logo";
 import { LocationProvider, useLocation } from "@/context/LocationContext";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
+import { AddVisitorDialog } from "@/components/dashboard/add-visitor-dialog";
+import type { Entry } from "@/lib/types";
 
 function LocationFilter() {
   const { locations, selectedLocations, setSelectedLocations } = useLocation();
@@ -100,7 +101,7 @@ function LocationFilter() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
            <MapPin className="h-4 w-4" />
-           <span>{getDisplayLabel()}</span>
+           <span className="hidden sm:inline">{getDisplayLabel()}</span>
            <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -152,6 +153,7 @@ export default function DashboardLayout({
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [allEntries, setAllEntries] = React.useState<Entry[]>([]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -160,6 +162,14 @@ export default function DashboardLayout({
       setIsLoading(false);
     }
   }, []);
+
+  const onEntryAdded = (newEntry: Entry) => {
+    const updatedEntries = [newEntry, ...allEntries];
+    setAllEntries(updatedEntries);
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('entries', JSON.stringify(updatedEntries));
+    }
+  }
   
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -291,8 +301,11 @@ export default function DashboardLayout({
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 overflow-auto bg-muted/40 p-4 sm:px-6 sm:py-6">
+          <main className="flex-1 overflow-auto bg-muted/40 p-4 sm:p-6 relative">
             {children}
+            <div className="sm:hidden fixed bottom-6 right-6">
+                <AddVisitorDialog onEntryAdded={onEntryAdded} userRole={userRole} isFab={true} />
+            </div>
           </main>
         </div>
       </div>

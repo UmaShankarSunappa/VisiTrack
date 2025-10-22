@@ -76,6 +76,7 @@ type SelfieData = { selfie: string };
 type AddVisitorDialogProps = {
     onEntryAdded: (entry: Entry) => void;
     userRole: string | null;
+    isFab?: boolean;
 };
 
 // Mock HRMS Data
@@ -85,7 +86,7 @@ const hrmsData: { [key: string]: { name: string; department: Department; email: 
 };
 
 
-export function AddVisitorDialog({ onEntryAdded, userRole }: AddVisitorDialogProps) {
+export function AddVisitorDialog({ onEntryAdded, userRole, isFab = false }: AddVisitorDialogProps) {
   const [open, setOpen] = useState(false);
   const [entryType, setEntryType] = useState<EntryType | null>(null);
 
@@ -98,6 +99,20 @@ export function AddVisitorDialog({ onEntryAdded, userRole }: AddVisitorDialogPro
     setOpen(false);
   }, []);
   
+  const trigger = isFab ? (
+    <Button size="icon" className="rounded-full w-14 h-14 shadow-lg">
+      <UserPlus className="h-6 w-6" />
+      <span className="sr-only">Add Entry</span>
+    </Button>
+  ) : (
+    <Button size="sm" className="h-8 gap-1">
+      <UserPlus className="h-3.5 w-3.5" />
+      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+        Add Entry
+      </span>
+    </Button>
+  );
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => {
         if (!isOpen) {
@@ -106,14 +121,9 @@ export function AddVisitorDialog({ onEntryAdded, userRole }: AddVisitorDialogPro
         setOpen(isOpen)
     }}>
       <DialogTrigger asChild>
-        <Button size="sm" className="h-8 gap-1">
-          <UserPlus className="h-3.5 w-3.5" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Add Entry
-          </span>
-        </Button>
+        {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md p-0 sm:p-6 data-[state=open]:h-screen sm:data-[state=open]:h-auto">
         {!entryType ? (
           <TypeSelectionStep onSelect={handleSelectEntryType} />
         ) : (
@@ -127,13 +137,13 @@ export function AddVisitorDialog({ onEntryAdded, userRole }: AddVisitorDialogPro
 function TypeSelectionStep({ onSelect }: { onSelect: (type: EntryType) => void }) {
   return (
     <>
-      <DialogHeader>
+      <DialogHeader className="p-6 pb-0 sm:p-0">
         <DialogTitle>Select Entry Type</DialogTitle>
         <DialogDescription>
           Are you adding a visitor or an employee?
         </DialogDescription>
       </DialogHeader>
-      <div className="grid grid-cols-2 gap-4 py-8">
+      <div className="grid grid-cols-2 gap-4 p-6 sm:py-8">
         <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => onSelect('Visitor')}>
           <User className="h-8 w-8"/>
           <span>Visitor</span>
@@ -276,13 +286,13 @@ function AddEntryFlow({ entryType, onEntryAdded, resetFlow, userRole }: { entryT
 
   return (
     <>
-      <DialogHeader>
+      <DialogHeader className="p-6 pb-0 sm:p-0">
         <DialogTitle>Add New {entryType}</DialogTitle>
         <DialogDescription>
           Manually enter the details for a new {entryType.toLowerCase()}.
         </DialogDescription>
       </DialogHeader>
-      <div className="py-4 space-y-4">
+      <div className="py-4 space-y-4 px-6 sm:px-0">
           <Progress value={progress} className="w-full" />
           <CardTitle className="text-center pt-2 text-lg">Step {step} of {totalSteps}</CardTitle>
           {renderStep()}
@@ -392,7 +402,7 @@ function VisitorMobileStep({ onNext, defaultValues }: { onNext: (data: VisitorMo
           </Form>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="p-6 sm:p-0">
             <Button type="submit" disabled={!isOtpVerified || form.formState.isSubmitting} className="w-full">
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Next
@@ -600,7 +610,7 @@ function VisitorDetailsStep({ onNext, onBack, defaultValues, userRole }: { onNex
             </FormItem>
           )}
         />
-        <DialogFooter className="flex-row gap-4 justify-end">
+        <DialogFooter className="flex-row gap-4 justify-between p-6 sm:p-0">
             <Button type="button" variant="outline" onClick={onBack} className="w-full sm:w-auto">
                 Back
             </Button>
@@ -800,7 +810,7 @@ function EmployeeDetailsStep({ onNext, onBack, defaultValues, userRole }: { onNe
           </>
         )}
 
-        <DialogFooter className="flex-row gap-4 justify-end">
+        <DialogFooter className="flex-row gap-4 justify-between p-6 sm:p-0">
              <Button type="button" variant="outline" onClick={onBack} className="w-full sm:w-auto">
                 Back
             </Button>
@@ -904,7 +914,7 @@ function SelfieStep({ onNext, onBack }: { onNext: (data: SelfieData) => void; on
         </Button>
       )}
 
-      <DialogFooter className="flex-row gap-4 justify-end">
+      <DialogFooter className="flex-row gap-4 justify-between p-6 sm:p-0">
         <Button variant="outline" onClick={() => {stopCamera(); onBack()}} className="w-full sm:w-auto">
           Back
         </Button>

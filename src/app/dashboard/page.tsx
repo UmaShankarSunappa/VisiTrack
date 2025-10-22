@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { format, isWithinInterval, startOfDay, endOfDay, addDays } from "date-fns"
-import { Calendar as CalendarIcon, User, Briefcase, ListFilter } from "lucide-react"
+import { Calendar as CalendarIcon, ListFilter } from "lucide-react"
 import { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
@@ -28,6 +28,90 @@ import { AddVisitorDialog } from "@/components/dashboard/add-visitor-dialog";
 import { mockData } from "@/lib/data";
 import type { Entry, EntryType } from "@/lib/types";
 import { useLocation } from "@/context/LocationContext";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+
+
+function Filters() {
+    const [date, setDate] = React.useState<DateRange | undefined>({
+      from: new Date(),
+      to: new Date(),
+    })
+    const [typeFilter, setTypeFilter] = React.useState<EntryType | 'All'>('All');
+
+    // This component would receive filter state and setters as props
+    // For simplicity, state is managed internally here but should be lifted up
+    return (
+        <div className="flex flex-col gap-4 p-4">
+             <Popover>
+                <PopoverTrigger asChild>
+                <Button
+                    id="date"
+                    variant={"outline"}
+                    className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                    )}
+                >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date?.from ? (
+                    date.to ? (
+                        <>
+                        {format(date.from, "LLL dd, y")} -{" "}
+                        {format(date.to, "LLL dd, y")}
+                        </>
+                    ) : (
+                        format(date.from, "LLL dd, y")
+                    )
+                    ) : (
+                    <span>Pick a date</span>
+                    )}
+                </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={date?.from}
+                    selected={date}
+                    onSelect={(range) => {
+                        if (range?.from && !range.to) {
+                            setDate({from: range.from, to: range.from});
+                        } else if (range?.from && range?.to) {
+                            if (addDays(range.from, 30) < range.to) {
+                                    setDate({from: range.from, to: addDays(range.from, 30)});
+                            } else {
+                                setDate(range);
+                            }
+                        } else {
+                            setDate(range);
+                        }
+                    }}
+                    numberOfMonths={2}
+                    disabled={(day) => day > new Date() || day < new Date("2000-01-01")}
+                />
+                </PopoverContent>
+            </Popover>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-start gap-1">
+                    <ListFilter className="h-3.5 w-3.5" />
+                    <span>
+                    Filter by Type
+                    </span>
+                </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[--radix-dropdown-menu-trigger-width]">
+                <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuCheckboxItem checked={typeFilter === 'All'} onSelect={() => setTypeFilter('All')}>All</DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem checked={typeFilter === 'Visitor'} onSelect={() => setTypeFilter('Visitor')}>Visitor</DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem checked={typeFilter === 'Employee'} onSelect={() => setTypeFilter('Employee')}>Employee</DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button>Apply Filters</Button>
+        </div>
+    )
+}
 
 
 export default function DashboardPage() {
@@ -141,74 +225,89 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4 w-full h-full">
             <div className="flex flex-wrap items-center gap-4">
                 <h1 className="text-lg font-semibold md:text-2xl font-headline flex-1">Dashboard</h1>
-                 <Popover>
-                    <PopoverTrigger asChild>
-                    <Button
-                        id="date"
-                        variant={"outline"}
-                        className={cn(
-                        "w-[260px] justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                        )}
-                    >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date?.from ? (
-                        date.to ? (
-                            <>
-                            {format(date.from, "LLL dd, y")} -{" "}
-                            {format(date.to, "LLL dd, y")}
-                            </>
-                        ) : (
-                            format(date.from, "LLL dd, y")
-                        )
-                        ) : (
-                        <span>Pick a date</span>
-                        )}
-                    </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={date?.from}
-                        selected={date}
-                        onSelect={(range) => {
-                            if (range?.from && !range.to) {
-                                setDate({from: range.from, to: range.from});
-                            } else if (range?.from && range?.to) {
-                                if (addDays(range.from, 30) < range.to) {
-                                     setDate({from: range.from, to: addDays(range.from, 30)});
+                 <div className="hidden sm:flex items-center gap-2">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <Button
+                            id="date"
+                            variant={"outline"}
+                            className={cn(
+                            "w-auto justify-start text-left font-normal",
+                            !date && "text-muted-foreground"
+                            )}
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {date?.from ? (
+                            date.to ? (
+                                <>
+                                {format(date.from, "LLL dd, y")} -{" "}
+                                {format(date.to, "LLL dd, y")}
+                                </>
+                            ) : (
+                                format(date.from, "LLL dd, y")
+                            )
+                            ) : (
+                            <span>Pick a date</span>
+                            )}
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                        <Calendar
+                            initialFocus
+                            mode="range"
+                            defaultMonth={date?.from}
+                            selected={date}
+                            onSelect={(range) => {
+                                if (range?.from && !range.to) {
+                                    setDate({from: range.from, to: range.from});
+                                } else if (range?.from && range?.to) {
+                                    if (addDays(range.from, 30) < range.to) {
+                                        setDate({from: range.from, to: addDays(range.from, 30)});
+                                    } else {
+                                        setDate(range);
+                                    }
                                 } else {
                                     setDate(range);
                                 }
-                            } else {
-                                setDate(range);
-                            }
-                        }}
-                        numberOfMonths={2}
-                        disabled={(day) => day > new Date() || day < new Date("2000-01-01")}
-                    />
-                    </PopoverContent>
-                </Popover>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-10 gap-1">
-                        <ListFilter className="h-3.5 w-3.5" />
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Filter by Type
-                        </span>
-                    </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked={typeFilter === 'All'} onSelect={() => setTypeFilter('All')}>All</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={typeFilter === 'Visitor'} onSelect={() => setTypeFilter('Visitor')}>Visitor</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={typeFilter === 'Employee'} onSelect={() => setTypeFilter('Employee')}>Employee</DropdownMenuCheckboxItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                            }}
+                            numberOfMonths={2}
+                            disabled={(day) => day > new Date() || day < new Date("2000-01-01")}
+                        />
+                        </PopoverContent>
+                    </Popover>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="h-10 gap-1">
+                            <ListFilter className="h-3.5 w-3.5" />
+                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Filter
+                            </span>
+                        </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuCheckboxItem checked={typeFilter === 'All'} onSelect={() => setTypeFilter('All')}>All</DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem checked={typeFilter === 'Visitor'} onSelect={() => setTypeFilter('Visitor')}>Visitor</DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem checked={typeFilter === 'Employee'} onSelect={() => setTypeFilter('Employee')}>Employee</DropdownMenuCheckboxItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
-                <AddVisitorDialog onEntryAdded={onEntryAdded} userRole={userRole} />
+                    <AddVisitorDialog onEntryAdded={onEntryAdded} userRole={userRole} />
+                </div>
+                 <div className="sm:hidden ml-auto">
+                    <Sheet>
+                        <SheetTrigger asChild>
+                           <Button variant="outline" size="sm" className="h-8 gap-1">
+                                <ListFilter className="h-3.5 w-3.5" />
+                                <span className="sr-only sm:not-sr-only">Filter</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="bottom" className="h-auto">
+                           <Filters />
+                        </SheetContent>
+                    </Sheet>
+                </div>
             </div>
             <StatsCards entries={filteredEntries} />
             <div className="flex-1 min-h-0">
@@ -217,5 +316,3 @@ export default function DashboardPage() {
         </div>
     )
 }
-
-    

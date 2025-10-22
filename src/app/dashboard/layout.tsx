@@ -211,8 +211,8 @@ export default function DashboardLayout({
             </div>
           </div>
         </div>
-        <div className="flex flex-col">
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+        <div className="flex flex-col h-screen">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6 shrink-0">
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="lg:hidden">
@@ -291,7 +291,7 @@ export default function DashboardLayout({
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 bg-muted/40 p-4 sm:px-6 sm:py-6 flex">
+          <main className="flex-1 overflow-auto bg-muted/40 p-4 sm:px-6 sm:py-6">
             {children}
           </main>
         </div>
@@ -299,3 +299,5 @@ export default function DashboardLayout({
     </LocationProvider>
   );
 }
+
+    

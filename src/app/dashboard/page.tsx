@@ -138,7 +138,7 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="flex flex-col gap-4 w-full">
+        <div className="flex flex-col gap-4 w-full h-full">
             <div className="flex flex-wrap items-center gap-4">
                 <h1 className="text-lg font-semibold md:text-2xl font-headline flex-1">Dashboard</h1>
                  <Popover>
@@ -211,7 +211,9 @@ export default function DashboardPage() {
                 <AddVisitorDialog onEntryAdded={onEntryAdded} userRole={userRole} />
             </div>
             <StatsCards entries={filteredEntries} />
-            <VisitorTable entries={filteredEntries} onEntryUpdated={handleEntryUpdated}/>
+            <div className="flex-1 min-h-0">
+              <VisitorTable entries={filteredEntries} onEntryUpdated={handleEntryUpdated}/>
+            </div>
         </div>
     )
 }
